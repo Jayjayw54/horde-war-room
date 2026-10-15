@@ -28,7 +28,7 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
   return (
     <div className="min-h-screen">
       <Header page={page} onNavigate={setPage} email={email} />
-      <main className="mx-auto max-w-6xl px-5 py-8">
+      <main className="mx-auto max-w-7xl px-5 py-8">
         {warRoom.error && (
           <p role="alert" className="mb-6 rounded-md border border-blood bg-leather px-4 py-3 text-blood-light">
             {warRoom.error}

@@ -39,7 +39,7 @@ export function ImportPanel({ warRoom, onClose }: { warRoom: WarRoom; onClose: (
   const anyNew = snapshots?.some((s) => isNew(s.name)) ?? false
 
   return (
-    <div className="bg-leather p-5">
+    <div className="panel p-5">
       <h3 className="font-display text-lg font-semibold text-gold">Import from game</h3>
       <p className="mt-1 text-sm text-ash">
         Pick <code className="text-parchment">HordeWarRoom.lua</code> from your WoW folder:{' '}

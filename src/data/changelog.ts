@@ -10,6 +10,17 @@ export interface Release {
 
 export const changelog: Release[] = [
   {
+    version: '2.3',
+    date: '2026-10-15',
+    title: 'Dressing the war room',
+    changes: [
+      'A Horde war banner hangs at the top of every page.',
+      'The menu is now a tab rail that stays at the top while you scroll, all on one line.',
+      'Torchlit, textured background; player names on red ribbons; leather panels throughout.',
+      'The page uses more of wide screens.',
+    ],
+  },
+  {
     version: '2.2',
     date: '2026-10-15',
     title: 'Faces on the roster',

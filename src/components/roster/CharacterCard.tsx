@@ -33,7 +33,7 @@ export function CharacterCard({ character, owner, onToggleMain }: Props) {
 
   return (
     <article
-      className={`border-l-4 bg-leather px-4 pt-4 pb-3 ${character.isMain ? 'ring-1 ring-gold/50' : ''}`}
+      className={`panel border-l-4 px-4 pt-4 pb-3 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.7)] ${character.isMain ? 'ring-1 ring-gold/50' : ''}`}
       style={{ borderLeftColor: color }}
       aria-label={`${character.name}, played by ${owner}${character.isMain ? ', main' : ''}`}
     >

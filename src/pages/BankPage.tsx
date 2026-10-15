@@ -192,7 +192,7 @@ export function BankPage({ warRoom }: { warRoom: WarRoom }) {
       ) : view === 'grid' ? (
         <>
           {/* Details for the clicked item */}
-          <div className="mt-4 min-h-[4.5rem] bg-leather px-4 py-3" aria-live="polite">
+          <div className="mt-4 min-h-[4.5rem] panel px-4 py-3" aria-live="polite">
             {picked ? (
               <div className="flex gap-3">
                 <ItemIcon itemId={picked.itemId} name={picked.name} quality={picked.quality} size={40} />
@@ -232,7 +232,7 @@ export function BankPage({ warRoom }: { warRoom: WarRoom }) {
           </ul>
         </>
       ) : (
-        <ul className="mt-4 divide-y divide-ink bg-leather">
+        <ul className="mt-4 panel divide-y divide-ink">
           {shown.map((s) => (
             <li key={s.itemId} className="flex items-start gap-3 px-3 py-2">
               <ItemIcon itemId={s.itemId} name={s.name} quality={s.quality} size={28} />

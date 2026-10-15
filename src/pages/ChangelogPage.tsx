@@ -8,7 +8,7 @@ export function ChangelogPage() {
       <p className="mt-1 text-ash">Patch notes for the Horde War Room itself.</p>
       <div className="mt-6 space-y-4">
         {changelog.map((r) => (
-          <article key={r.version} className="bg-leather p-5">
+          <article key={r.version} className="panel p-5">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
               <h3 className="font-display text-xl font-semibold text-parchment">
                 <span className="text-gold">v{r.version}</span> {r.title}

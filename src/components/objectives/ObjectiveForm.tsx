@@ -21,7 +21,7 @@ export function ObjectiveForm({ warRoom }: { warRoom: WarRoom }) {
   }
 
   return (
-    <div className="bg-leather p-4">
+    <div className="panel p-4">
       <label htmlFor="new-objective" className="font-display text-sm font-semibold text-gold">
         New objective
       </label>

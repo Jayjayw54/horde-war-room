@@ -60,7 +60,7 @@ export function ObjectivesPage({ warRoom }: { warRoom: WarRoom }) {
           {visible.length === 0 ? (
             <p className="text-ash">No objectives match these filters.</p>
           ) : (
-            <ul className="bg-leather px-4">
+            <ul className="panel px-4">
               {visible.map((o) => (
                 <ObjectiveItem key={o.id} objective={o} warRoom={warRoom} />
               ))}

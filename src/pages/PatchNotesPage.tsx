@@ -97,7 +97,7 @@ export function PatchNotesPage({ warRoom }: { warRoom: WarRoom }) {
           const shown = CLASSES.filter((c) => selected.includes(c) && u.classes[c]?.length)
           const isNew = seenBefore > 0 && u.date.getTime() > seenBefore
           return (
-            <article key={u.id} className="bg-leather p-5">
+            <article key={u.id} className="panel p-5">
               <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="font-display text-xl font-semibold text-parchment">
                   {u.date.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}

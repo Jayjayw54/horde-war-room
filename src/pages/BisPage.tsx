@@ -68,7 +68,7 @@ function Wishlist({ toon, warRoom }: { toon: Character; warRoom: WarRoom }) {
 
   return (
     <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_18rem]">
-      <div className="bg-leather p-4">
+      <div className="panel p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="font-display text-xl font-semibold" style={{ color: classColors[toon.className] }}>
             {toon.name}
@@ -124,7 +124,7 @@ function Wishlist({ toon, warRoom }: { toon: Character; warRoom: WarRoom }) {
         <AddBis toon={toon} warRoom={warRoom} />
       </div>
 
-      <aside className="bg-leather p-4">
+      <aside className="panel p-4">
         <h3 className="font-display font-semibold text-parchment">{toon.className} guides</h3>
         <p className="mt-1 text-xs text-ash">Icy Veins' WoW: Forever guides. Each has a gear and stat priority section.</p>
         <ul className="mt-2 space-y-1 text-sm">

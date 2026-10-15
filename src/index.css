@@ -32,3 +32,51 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* ---------------------------------------------------------------------------
+   The war table: page texture, the hanging banner, the tab rail, ribbons.
+   --------------------------------------------------------------------------- */
+
+/* Page: dark iron with a faint grain and torchlight glowing down from the top. */
+body {
+  background-color: var(--color-ink);
+  background-image:
+    radial-gradient(ellipse 80% 45% at 50% -5%, rgba(155, 35, 24, 0.28), transparent 70%),
+    radial-gradient(ellipse 120% 80% at 50% 120%, rgba(0, 0, 0, 0.55), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.9 0 0 0 0 0.75 0 0 0 0 0.6 0 0 0 0.045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-attachment: fixed, fixed, scroll;
+}
+
+/* In the components layer, so Tailwind utilities on the same element (e.g. border-l-4) still win. */
+@layer components {
+/* The hanging war banner: blood-red cloth, gold trim, swallowtail bottom. */
+.war-banner {
+  position: relative;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.35), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.35)),
+    linear-gradient(180deg, #7d1a12 0%, #9b2318 45%, #861d14 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  box-shadow: inset 4px 0 0 var(--color-gold), inset -4px 0 0 var(--color-gold);
+}
+.war-banner::before {
+  /* stitched hem just inside the gold edges */
+  content: "";
+  position: absolute;
+  inset: 0 12px;
+  border-left: 1px dashed rgba(234, 220, 184, 0.25);
+  border-right: 1px dashed rgba(234, 220, 184, 0.25);
+  pointer-events: none;
+}
+
+/* Section ribbons, e.g. the player names heading each Roster column. */
+.ribbon {
+  background: linear-gradient(90deg, #8a1f15, #9b2318 60%, rgba(155, 35, 24, 0));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%);
+}
+
+/* Panels: leather lit from above, with a hairline of gold. */
+.panel {
+  background: linear-gradient(180deg, #2c1f19 0%, #221813 100%);
+  border: 1px solid rgba(200, 160, 79, 0.12);
+}
+}

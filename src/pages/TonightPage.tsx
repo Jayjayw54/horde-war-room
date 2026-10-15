@@ -22,7 +22,7 @@ export function TonightView({ warRoom }: { warRoom: WarRoom }) {
         {columns.map((who) => {
           const items = tonight.filter((o) => o.assignee === who)
           return (
-            <div key={who} className={`p-4 ${who === 'both' ? 'bg-blood/25 ring-1 ring-blood' : 'bg-leather'}`}>
+            <div key={who} className={`p-4 ${who === 'both' ? 'bg-blood/25 ring-1 ring-blood' : 'panel'}`}>
               <h3 className="font-display text-lg font-semibold">{assigneeLabels[who]}</h3>
               {items.length === 0 ? (
                 <p className="mt-2 text-sm text-ash">No orders.</p>

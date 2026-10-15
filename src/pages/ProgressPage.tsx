@@ -83,12 +83,12 @@ export function ProgressPage({ warRoom }: { warRoom: WarRoom }) {
       </div>
       <p className="mt-1 text-xs text-ash">Pick up to {MAX_LINES} toons. Starts with each player's highest level toon.</p>
 
-      <div className="mt-4 bg-leather p-4">
+      <div className="panel mt-4 p-4">
         <h3 className="font-display text-lg font-semibold text-parchment">Levelling race</h3>
         <LineChart title="Level over time" series={levelSeries} format={(v) => v.toFixed(v % 1 ? 1 : 0)} />
       </div>
 
-      <div className="mt-4 bg-leather p-4">
+      <div className="panel mt-4 p-4">
         <h3 className="font-display text-lg font-semibold text-parchment">Gold by player</h3>
         <LineChart title="Total gold per player over time" series={goldSeries} format={(v) => `${Math.round(v).toLocaleString()}g`} />
       </div>
@@ -97,7 +97,7 @@ export function ProgressPage({ warRoom }: { warRoom: WarRoom }) {
         {showTable ? 'Hide' : 'Show'} as a table
       </button>
       {showTable && (
-        <table className="mt-2 w-full bg-leather text-left text-sm">
+        <table className="mt-2 w-full panel text-left text-sm">
           <thead className="text-ash">
             <tr>
               <th className="px-3 py-2 font-semibold">Toon</th>

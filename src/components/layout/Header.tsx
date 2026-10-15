@@ -5,7 +5,7 @@ import { latestVersion } from '../../data/changelog'
 
 export type Page = 'roster' | 'progress' | 'bank' | 'planner' | 'objectives' | 'notes' | 'bis' | 'changelog'
 
-// Tabs shown in the nav bar ("What's new" is opened from the link in the header instead).
+// Tabs shown on the tab rail ("What's new" is opened from the link in the top corner instead).
 const tabs: { id: Page; label: string }[] = [
   { id: 'roster', label: 'Roster' },
   { id: 'progress', label: 'Progress' },
@@ -46,52 +46,80 @@ export function Header({ page, onNavigate, email }: Props) {
     }
   }
 
+  const link = 'text-gold/90 underline decoration-gold/40 underline-offset-2 hover:text-parchment'
+
   return (
-    <header className="border-b-4 border-blood bg-leather">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pt-8 sm:flex-row sm:items-end sm:justify-between">
-        <div className="pb-4">
-          <h1 className="font-display text-4xl font-extrabold tracking-wide text-gold sm:text-5xl">
-            Horde War Room
-          </h1>
-          <p className="mt-1 text-ash">Two mates. One Horde. Everything still to do.</p>
-          <p className="mt-2 text-sm text-ash">
-            Signed in as {email} ·{' '}
-            <button type="button" onClick={() => supabase.auth.signOut()} className="text-gold underline hover:text-parchment">
-              Sign out
-            </button>{' '}
-            ·{' '}
-            <button type="button" onClick={() => setChangingPassword(true)} className="text-gold underline hover:text-parchment">
-              Change password
-            </button>{' '}
-            ·{' '}
-            <button type="button" onClick={openChangelog} className="text-gold underline hover:text-parchment">
+    <>
+      <header className="relative z-40 mx-auto flex max-w-7xl items-start justify-between gap-4 px-5">
+        {/* The banner hangs from the top edge of the page */}
+        <button
+          type="button"
+          onClick={() => onNavigate('roster')}
+          className="war-banner shrink-0 px-8 pt-6 pb-12 text-center sm:px-10"
+          aria-label="Horde War Room, go to the Roster"
+        >
+          <span className="block font-display text-3xl leading-none font-extrabold tracking-wide text-gold [text-shadow:0_2px_0_#3a0d08] sm:text-4xl">
+            Horde
+            <br />
+            War Room
+          </span>
+          <span className="mt-2 block text-sm text-parchment/80">Two mates. One Horde.</span>
+        </button>
+
+        <div className="pt-5 text-right text-sm text-ash">
+          <p>{email}</p>
+          <p className="mt-1 flex flex-wrap justify-end gap-x-3">
+            <button type="button" onClick={openChangelog} className={link}>
               What's new v{latestVersion}
-              {hasNew && (
-                <span className="ml-1 inline-block h-2 w-2 rounded-full bg-blood-light align-middle" aria-label="(new)" />
-              )}
+              {hasNew && <span className="ml-1 inline-block h-2 w-2 rounded-full bg-blood-light align-middle" aria-label="(new)" />}
+            </button>
+            <button type="button" onClick={() => setChangingPassword(true)} className={link}>
+              Change password
+            </button>
+            <button type="button" onClick={() => supabase.auth.signOut()} className={link}>
+              Sign out
             </button>
           </p>
-          {changingPassword && <SetPassword onDone={() => setChangingPassword(false)} />}
+          {changingPassword && (
+            <div className="flex justify-end">
+              <SetPassword onDone={() => setChangingPassword(false)} />
+            </div>
+          )}
         </div>
-        <nav aria-label="Main" className="flex flex-wrap gap-1">
+      </header>
+
+      {/* Tab rail: an iron bar the tabs hang on. Stays in view while you scroll. */}
+      <nav
+        aria-label="Main"
+        className="sticky top-0 z-30 -mt-6 border-y border-gold/25 bg-[linear-gradient(180deg,#201612,#170f0c)] shadow-[0_6px_16px_-8px_rgba(0,0,0,0.8)]"
+      >
+        <ul className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-5 [scrollbar-width:none]">
           {tabs.map((tab) => {
             const active = tab.id === page
             return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => onNavigate(tab.id)}
-                aria-current={active ? 'page' : undefined}
-                className={`rounded-t-md px-4 py-2 font-display text-sm font-semibold transition-colors ${
-                  active ? 'bg-blood text-parchment' : 'text-ash hover:bg-leather-light hover:text-parchment'
-                }`}
-              >
-                {tab.label}
-              </button>
+              <li key={tab.id} className="shrink-0">
+                <button
+                  type="button"
+                  onClick={() => onNavigate(tab.id)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`relative px-4 py-3 font-display text-sm font-semibold tracking-wide transition-colors ${
+                    active
+                      ? 'bg-[linear-gradient(180deg,rgba(155,35,24,0.45),rgba(155,35,24,0.1))] text-gold'
+                      : 'text-ash hover:text-parchment'
+                  }`}
+                >
+                  {tab.label}
+                  {/* gold bar under the active tab */}
+                  <span
+                    aria-hidden
+                    className={`absolute inset-x-2 bottom-0 h-0.5 bg-gold transition-opacity ${active ? 'opacity-100' : 'opacity-0'}`}
+                  />
+                </button>
+              </li>
             )
           })}
-        </nav>
-      </div>
-    </header>
+        </ul>
+      </nav>
+    </>
   )
 }

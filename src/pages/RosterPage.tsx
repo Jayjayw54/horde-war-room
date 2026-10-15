@@ -48,9 +48,11 @@ export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
           return (
             <div key={player.id}>
               {/* Player banner */}
-              <header className="flex items-end justify-between gap-3 border-b-2 border-blood pb-2">
-                <h3 className="font-display text-2xl font-extrabold tracking-wide text-parchment">{player.displayName}</h3>
-                <p className="text-right text-sm text-ash">
+              <header className="flex items-center justify-between gap-3">
+                <h3 className="ribbon flex-1 py-1.5 pr-10 pl-4 font-display text-2xl font-extrabold tracking-wide text-gold [text-shadow:0_1px_0_#3a0d08]">
+                  {player.displayName}
+                </h3>
+                <p className="shrink-0 text-right text-sm text-ash">
                   {toons.length} {toons.length === 1 ? 'toon' : 'toons'}
                   <br />
                   <Money copper={gold} className="text-parchment" />

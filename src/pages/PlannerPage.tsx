@@ -90,7 +90,7 @@ export function PlannerPage({ warRoom }: { warRoom: WarRoom }) {
       ) : (
         <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,20rem)_1fr]">
           {/* Recipe picker */}
-          <div className="bg-leather p-3">
+          <div className="panel p-3">
             <label htmlFor="recipe-search" className="sr-only">
               Search recipes
             </label>
@@ -137,7 +137,7 @@ export function PlannerPage({ warRoom }: { warRoom: WarRoom }) {
           </div>
 
           {/* The plan */}
-          <div className="bg-leather p-4">
+          <div className="panel p-4">
             {!picked ? (
               <p className="text-ash">Choose a recipe on the left.</p>
             ) : (
