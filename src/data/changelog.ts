@@ -16,6 +16,7 @@ export const changelog: Release[] = [
     changes: [
       'Export backup (top right) downloads everything in the War Room to a file on your computer: toons, bank, recipes, objectives, BiS lists, history and the activity feed.',
       'The Gear upgrades box on the War table always shows, and says why when it is empty.',
+      'Install the War Room on your phone like an app, with its own war banner icon.',
     ],
   },
   {
