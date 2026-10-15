@@ -59,7 +59,8 @@ end
 -- Take a fresh snapshot whenever something we track might have changed.
 local frame = CreateFrame("Frame")
 -- pcall = "try it, and don't crash if this game version doesn't have that event".
-for _, event in ipairs({ "PLAYER_LOGIN", "PLAYER_LEVEL_UP", "SKILL_LINES_CHANGED", "TRADE_SKILL_LIST_UPDATE", "PLAYER_LOGOUT" }) do
+-- No reading at logout: by then the game has already unloaded profession data.
+for _, event in ipairs({ "PLAYER_LOGIN", "PLAYER_LEVEL_UP", "SKILL_LINES_CHANGED", "TRADE_SKILL_LIST_UPDATE" }) do
   pcall(frame.RegisterEvent, frame, event)
 end
 frame:SetScript("OnEvent", function(_, event)
@@ -79,7 +80,7 @@ end)
 SLASH_HORDEWARROOM1 = "/hwr"
 SlashCmdList.HORDEWARROOM = function()
   local c = snapshot()
-  print("|cffc8a04fHorde War Room|r recorded: " .. c.name .. ", level " .. c.level .. " " .. c.race .. " " .. c.class)
+  print("|cffc8a04fHorde War Room v0.2.2|r recorded: " .. c.name .. ", level " .. c.level .. " " .. c.race .. " " .. c.class)
   if #c.professions == 0 then
     print("  No professions found.")
   else

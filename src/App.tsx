@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Header, type Page } from './components/layout/Header'
 import { ObjectivesPage } from './pages/ObjectivesPage'
+import { PatchNotesPage } from './pages/PatchNotesPage'
 import { RosterPage } from './pages/RosterPage'
 import { TonightPage } from './pages/TonightPage'
 import { LoginPage } from './pages/LoginPage'
@@ -33,6 +34,7 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
         {!warRoom.loading && page === 'tonight' && <TonightPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'roster' && <RosterPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'objectives' && <ObjectivesPage warRoom={warRoom} />}
+        {!warRoom.loading && page === 'notes' && <PatchNotesPage warRoom={warRoom} />}
       </main>
     </div>
   )

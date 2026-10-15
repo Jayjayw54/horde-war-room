@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { SetPassword } from './SetPassword'
 
-export type Page = 'tonight' | 'roster' | 'objectives'
+export type Page = 'tonight' | 'roster' | 'objectives' | 'notes'
 
 const tabs: { id: Page; label: string }[] = [
   { id: 'tonight', label: "Tonight's orders" },
   { id: 'roster', label: 'Roster' },
   { id: 'objectives', label: 'Objectives' },
+  { id: 'notes', label: 'Beta notes' },
 ]
 
 interface Props {
