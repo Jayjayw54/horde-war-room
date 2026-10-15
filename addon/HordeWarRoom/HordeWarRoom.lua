@@ -1,9 +1,9 @@
--- Horde War Room exporter (v0.5.0).
+-- Horde War Room exporter (v0.5.1).
 -- Addons can't talk to websites. Instead, this records each character's details into
 -- HordeWarRoomDB, which the game writes to a file (SavedVariables) when you log out or /reload.
 -- The dashboard then imports that file.
 
-local VERSION = "0.5.0"
+local VERSION = "0.5.1"
 
 ---------------------------------------------------------------------------
 -- Reading things from the game
@@ -257,6 +257,8 @@ local function currentCharacter()
   c.class = (UnitClass("player"))
   c.classFile = select(2, UnitClass("player"))
   c.faction = (UnitFactionGroup("player"))
+  c.raceFile = select(2, UnitRace("player")) -- e.g. "Scourge" for Undead: used for the portrait picture
+  c.sex = UnitSex("player")                  -- 2 = male, 3 = female
   return c
 end
 

@@ -8,7 +8,6 @@ import { PlannerPage } from './pages/PlannerPage'
 import { ProgressPage } from './pages/ProgressPage'
 import { PatchNotesPage } from './pages/PatchNotesPage'
 import { RosterPage } from './pages/RosterPage'
-import { TonightPage } from './pages/TonightPage'
 import { LoginPage } from './pages/LoginPage'
 import { useSession } from './state/useSession'
 import { useWarRoom } from './state/useWarRoom'
@@ -23,7 +22,7 @@ export default function App() {
 }
 
 function WarRoom({ email, userId }: { email: string; userId: string }) {
-  const [page, setPage] = useState<Page>('tonight')
+  const [page, setPage] = useState<Page>('roster')
   const warRoom = useWarRoom(userId)
 
   return (
@@ -36,7 +35,6 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
           </p>
         )}
         {warRoom.loading && <p className="text-ash">Unrolling the maps…</p>}
-        {!warRoom.loading && page === 'tonight' && <TonightPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'roster' && <RosterPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'progress' && <ProgressPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'bank' && <BankPage warRoom={warRoom} />}

@@ -151,6 +151,9 @@ export function useWarRoom(userId: string) {
         stats: c.stats ?? null,
         gear: c.gear ?? null,
         weaponSkills: c.weapon_skills ?? null,
+        isMain: c.is_main ?? false,
+        raceFile: c.race_file ?? null,
+        sex: c.sex ?? null,
         professions: (c.professions ?? []).map((p: { id: string; name: string; skill_level: number; max_skill: number }) => ({
           id: p.id,
           name: p.name,
@@ -234,6 +237,8 @@ export function useWarRoom(userId: string) {
       if (snap.stats) details.stats = snap.stats
       if (snap.gear) details.gear = snap.gear
       if (snap.weaponSkills) details.weapon_skills = snap.weaponSkills
+      if (snap.raceFile) details.race_file = snap.raceFile
+      if (snap.sex) details.sex = snap.sex
 
       let characterId = existing?.id
       if (characterId) {
@@ -346,6 +351,13 @@ export function useWarRoom(userId: string) {
     }
   }
 
+  // Star / unstar a toon as a main. Updates the screen straight away, then saves.
+  async function setMain(id: string, isMain: boolean) {
+    setCharacters((prev) => prev.map((c) => (c.id === id ? { ...c, isMain } : c)))
+    const { error } = await supabase.from('characters').update({ is_main: isMain }).eq('id', id)
+    if (error) handleSaveError(error.message)
+  }
+
   // BiS wishlist
   async function addBis(input: Omit<BisItem, 'id'>) {
     const { error } = await supabase.from('bis_items').insert({
@@ -378,6 +390,7 @@ export function useWarRoom(userId: string) {
     history,
     recipes,
     bis,
+    setMain,
     addBis,
     removeBis,
     loading,

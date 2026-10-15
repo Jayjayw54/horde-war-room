@@ -132,6 +132,9 @@ export interface CharacterSnapshot {
   weaponSkills: unknown[] | null
   // Added in addon v0.5.0: recipes by profession name.
   recipes: Record<string, SnapshotRecipe[]> | null
+  // Added in addon v0.5.1:
+  raceFile: string | null
+  sex: number | null
 }
 
 export interface SnapshotRecipe {
@@ -220,5 +223,7 @@ export function readSnapshotFile(text: string): CharacterSnapshot[] {
       gear: list(c.gear),
       weaponSkills: list(c.weaponSkills),
       recipes: readRecipes(c.recipes),
+      raceFile: typeof c.raceFile === 'string' ? c.raceFile : null,
+      sex: num(c.sex),
     }))
 }

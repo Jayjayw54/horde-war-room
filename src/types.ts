@@ -37,6 +37,9 @@ export interface Character {
   stats: CharacterStats | null
   gear: GearItem[] | null
   weaponSkills: WeaponSkill[] | null
+  isMain: boolean
+  raceFile: string | null
+  sex: number | null
 }
 
 export interface StatValue {

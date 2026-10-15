@@ -36,7 +36,10 @@ create table characters (
   bank_seen_at timestamptz,
   stats jsonb,            -- character sheet numbers from the addon
   gear jsonb,             -- equipped items, slot by slot
-  weapon_skills jsonb     -- null if the game doesn't report them
+  weapon_skills jsonb,    -- null if the game doesn't report them
+  is_main boolean not null default false,  -- starred on the Roster
+  race_file text,          -- the game's internal race name, for the portrait
+  sex int                  -- 2 = male, 3 = female
 );
 
 create table professions (

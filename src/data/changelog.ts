@@ -10,6 +10,27 @@ export interface Release {
 
 export const changelog: Release[] = [
   {
+    version: '2.2',
+    date: '2026-10-15',
+    title: 'Faces on the roster',
+    changes: [
+      "Each toon card has a portrait like the in-game unit frame: the toon's race face in a gold ring, the level on the rim and the class crest beside it.",
+      'Bigger player banners at the top of each Roster column.',
+      'Addon v0.5.1 records whether each toon is male or female, so the face matches.',
+    ],
+  },
+  {
+    version: '2.1',
+    date: '2026-10-15',
+    title: 'Mains first',
+    changes: [
+      'Star a toon (☆ next to its name) to mark it as a main. Mains sit at the top of the Roster.',
+      'After mains, toons are sorted by level, highest first.',
+      'Professions moved to their own tab on each toon card. Overview now shows gold, XP and when the toon was last played.',
+      "The War Room now opens on the Roster. Tonight's orders moved inside the Objectives tab.",
+    ],
+  },
+  {
     version: '2.0',
     date: '2026-10-15',
     title: 'The war table expands',

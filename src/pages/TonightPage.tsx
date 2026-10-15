@@ -5,14 +5,13 @@ import type { Assignee } from '../types'
 
 const columns: Assignee[] = ['josh', 'both', 'cel']
 
-export function TonightPage({ warRoom }: { warRoom: WarRoom }) {
+export function TonightView({ warRoom }: { warRoom: WarRoom }) {
   const tonight = warRoom.objectives.filter((o) => o.tonight)
   const remaining = tonight.filter((o) => o.status !== 'done').length
 
   return (
     <section>
-      <h2 className="font-display text-2xl font-semibold text-gold">Tonight's orders</h2>
-      <p className="mt-1 text-ash">
+      <p className="text-ash">
         {tonight.length === 0
           ? 'Nothing planned yet. Flag objectives with "Add to tonight" to build the session plan.'
           : remaining === 0

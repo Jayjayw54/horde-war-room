@@ -4,46 +4,65 @@ import { classColors } from '../../lib/labels'
 import type { Character } from '../../types'
 import { Money } from '../Money'
 import { GearTab } from './GearTab'
+import { Portrait } from './Portrait'
 import { ProfessionBar } from './ProfessionBar'
 import { StatsTab } from './StatsTab'
 import { WeaponsTab } from './WeaponsTab'
 import { XpBar } from './XpBar'
 
 const MAX_LEVEL = 60
-type Tab = 'overview' | 'stats' | 'weapons' | 'gear'
+type Tab = 'overview' | 'professions' | 'stats' | 'weapons' | 'gear'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
+  { id: 'professions', label: 'Professions' },
   { id: 'stats', label: 'Stats' },
   { id: 'weapons', label: 'Weapons' },
   { id: 'gear', label: 'Gear' },
 ]
 
-export function CharacterCard({ character, owner }: { character: Character; owner: string }) {
+interface Props {
+  character: Character
+  owner: string
+  onToggleMain: () => void
+}
+
+export function CharacterCard({ character, owner, onToggleMain }: Props) {
   const [tab, setTab] = useState<Tab>('overview')
   const color = classColors[character.className] ?? '#eadcb8'
   const showXp = character.level < MAX_LEVEL && character.xp !== null && character.xpMax
 
   return (
     <article
-      className="border-l-4 bg-leather px-4 py-3"
+      className={`border-l-4 bg-leather px-4 pt-4 pb-3 ${character.isMain ? 'ring-1 ring-gold/50' : ''}`}
       style={{ borderLeftColor: color }}
-      aria-label={`${character.name}, played by ${owner}`}
+      aria-label={`${character.name}, played by ${owner}${character.isMain ? ', main' : ''}`}
     >
-      <div className="flex items-baseline justify-between gap-3">
-        <h4 className="font-display text-xl font-semibold" style={{ color }}>
-          {character.name}
-        </h4>
-        <span className="font-display text-2xl font-extrabold text-gold tabular-nums">{character.level}</span>
-      </div>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm text-ash">
-        <span>
-          {character.race} {character.className}
-        </span>
-        <Money copper={character.gold} className="text-parchment" />
+      <div className="flex items-center gap-4">
+        <Portrait character={character} color={color} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h4 className="truncate font-display text-xl font-semibold" style={{ color }}>
+              {character.name}
+            </h4>
+            <button
+              type="button"
+              onClick={onToggleMain}
+              aria-pressed={character.isMain}
+              aria-label={character.isMain ? `Unstar ${character.name} as a main` : `Star ${character.name} as a main`}
+              title={character.isMain ? 'Main (click to unstar)' : 'Star as a main'}
+              className={`ml-auto text-xl leading-none transition-colors ${character.isMain ? 'text-gold' : 'text-ash/40 hover:text-gold'}`}
+            >
+              {character.isMain ? '★' : '☆'}
+            </button>
+          </div>
+          <p className="text-sm text-ash">
+            Level {character.level} {character.race} {character.className}
+          </p>
+        </div>
       </div>
 
       {/* Card tabs */}
-      <div className="mt-2 flex gap-1 border-b border-ink" role="tablist" aria-label={`${character.name} details`}>
+      <div className="mt-3 flex flex-wrap gap-1 border-b border-ink" role="tablist" aria-label={`${character.name} details`}>
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -63,21 +82,26 @@ export function CharacterCard({ character, owner }: { character: Character; owne
 
       <div className="mt-3" role="tabpanel">
         {tab === 'overview' && (
-          <>
-            <p className="text-xs text-ash">Last played {timeAgo(character.lastPlayed)}</p>
-            {character.notes && <p className="mt-1 text-sm">{character.notes}</p>}
-            {showXp && (
-              <div className="mt-2">
-                <XpBar xp={character.xp!} xpMax={character.xpMax!} rested={character.restedXp} />
-              </div>
-            )}
-            <div className="mt-3 space-y-2">
-              {character.professions.length === 0 && <p className="text-sm text-ash">No professions yet.</p>}
-              {character.professions.map((p) => (
-                <ProfessionBar key={p.id} profession={p} />
-              ))}
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
+              <Money copper={character.gold} className="font-semibold text-parchment" />
+              <span className="text-xs text-ash">Last played {timeAgo(character.lastPlayed)}</span>
             </div>
-          </>
+            {showXp ? (
+              <XpBar xp={character.xp!} xpMax={character.xpMax!} rested={character.restedXp} />
+            ) : character.level >= MAX_LEVEL ? (
+              <p className="text-xs text-gold">Max level</p>
+            ) : null}
+            {character.notes && <p className="text-sm">{character.notes}</p>}
+          </div>
+        )}
+        {tab === 'professions' && (
+          <div className="space-y-2">
+            {character.professions.length === 0 && <p className="text-sm text-ash">No professions yet.</p>}
+            {character.professions.map((p) => (
+              <ProfessionBar key={p.id} profession={p} />
+            ))}
+          </div>
         )}
         {tab === 'stats' && <StatsTab stats={character.stats} />}
         {tab === 'weapons' && <WeaponsTab skills={character.weaponSkills} />}

@@ -39,20 +39,32 @@ export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
       {/* One column per player: Josh on the left, Cel on the right. */}
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         {warRoom.players.map((player) => {
-          const toons = warRoom.characters.filter((c) => c.playerId === player.id)
+          // Starred mains first, then highest level (and furthest into that level), then A–Z.
+          const progress = (c: (typeof warRoom.characters)[number]) => c.level + (c.xp && c.xpMax ? c.xp / c.xpMax : 0)
+          const toons = warRoom.characters
+            .filter((c) => c.playerId === player.id)
+            .sort((a, b) => Number(b.isMain) - Number(a.isMain) || progress(b) - progress(a) || a.name.localeCompare(b.name))
           const gold = toons.reduce((sum, c) => sum + c.gold, 0)
           return (
             <div key={player.id}>
-              <h3 className="border-b-2 border-blood pb-1 font-display text-lg font-semibold text-parchment">
-                {player.displayName}
-                <span className="ml-2 text-sm font-normal text-ash">
-                  {toons.length} {toons.length === 1 ? 'toon' : 'toons'} · <Money copper={gold} />
-                </span>
-              </h3>
+              {/* Player banner */}
+              <header className="flex items-end justify-between gap-3 border-b-2 border-blood pb-2">
+                <h3 className="font-display text-2xl font-extrabold tracking-wide text-parchment">{player.displayName}</h3>
+                <p className="text-right text-sm text-ash">
+                  {toons.length} {toons.length === 1 ? 'toon' : 'toons'}
+                  <br />
+                  <Money copper={gold} className="text-parchment" />
+                </p>
+              </header>
               <div className="mt-3 space-y-3">
                 {toons.length === 0 && <p className="text-sm text-ash">No toons yet. Use Import from game.</p>}
                 {toons.map((c) => (
-                  <CharacterCard key={c.id} character={c} owner={player.displayName} />
+                  <CharacterCard
+                    key={c.id}
+                    character={c}
+                    owner={player.displayName}
+                    onToggleMain={() => warRoom.setMain(c.id, !c.isMain)}
+                  />
                 ))}
               </div>
             </div>

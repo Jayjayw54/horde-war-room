@@ -2,7 +2,7 @@
 ## Title: Horde War Room
 ## Notes: Records your characters, levels and professions so the Horde War Room dashboard can import them.
 ## Author: Josh
-## Version: 0.5.0
+## Version: 0.5.1
 ## SavedVariables: HordeWarRoomDB
 
 HordeWarRoom.lua

@@ -3,11 +3,10 @@ import { supabase } from '../../lib/supabase'
 import { SetPassword } from './SetPassword'
 import { latestVersion } from '../../data/changelog'
 
-export type Page = 'tonight' | 'roster' | 'progress' | 'bank' | 'planner' | 'objectives' | 'notes' | 'bis' | 'changelog'
+export type Page = 'roster' | 'progress' | 'bank' | 'planner' | 'objectives' | 'notes' | 'bis' | 'changelog'
 
 // Tabs shown in the nav bar ("What's new" is opened from the link in the header instead).
 const tabs: { id: Page; label: string }[] = [
-  { id: 'tonight', label: "Tonight's orders" },
   { id: 'roster', label: 'Roster' },
   { id: 'progress', label: 'Progress' },
   { id: 'bank', label: 'Bank' },
