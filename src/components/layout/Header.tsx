@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { SetPassword } from './SetPassword'
+import { latestVersion } from '../../data/changelog'
 
-export type Page = 'tonight' | 'roster' | 'bank' | 'objectives' | 'notes'
+export type Page = 'tonight' | 'roster' | 'bank' | 'objectives' | 'notes' | 'changelog'
 
+// Tabs shown in the nav bar ("What's new" is opened from the link in the header instead).
 const tabs: { id: Page; label: string }[] = [
   { id: 'tonight', label: "Tonight's orders" },
   { id: 'roster', label: 'Roster' },
@@ -11,6 +13,15 @@ const tabs: { id: Page; label: string }[] = [
   { id: 'objectives', label: 'Objectives' },
   { id: 'notes', label: 'Beta notes' },
 ]
+
+const SEEN_KEY = 'hwr-changelog-seen'
+function readSeenVersion() {
+  try {
+    return localStorage.getItem(SEEN_KEY)
+  } catch {
+    return null
+  }
+}
 
 interface Props {
   page: Page
@@ -20,6 +31,18 @@ interface Props {
 
 export function Header({ page, onNavigate, email }: Props) {
   const [changingPassword, setChangingPassword] = useState(false)
+  const [seenVersion, setSeenVersion] = useState(readSeenVersion)
+  const hasNew = seenVersion !== latestVersion
+
+  function openChangelog() {
+    onNavigate('changelog')
+    setSeenVersion(latestVersion)
+    try {
+      localStorage.setItem(SEEN_KEY, latestVersion)
+    } catch {
+      /* fine: the dot just shows again next time */
+    }
+  }
 
   return (
     <header className="border-b-4 border-blood bg-leather">
@@ -37,6 +60,13 @@ export function Header({ page, onNavigate, email }: Props) {
             ·{' '}
             <button type="button" onClick={() => setChangingPassword(true)} className="text-gold underline hover:text-parchment">
               Change password
+            </button>{' '}
+            ·{' '}
+            <button type="button" onClick={openChangelog} className="text-gold underline hover:text-parchment">
+              What's new v{latestVersion}
+              {hasNew && (
+                <span className="ml-1 inline-block h-2 w-2 rounded-full bg-blood-light align-middle" aria-label="(new)" />
+              )}
             </button>
           </p>
           {changingPassword && <SetPassword onDone={() => setChangingPassword(false)} />}

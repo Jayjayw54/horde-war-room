@@ -53,6 +53,7 @@ create table items (
   item_id int not null,
   name text not null,
   quantity int not null default 1,
+  quality int,                  -- 0 poor, 1 common, 2 uncommon, 3 rare, 4 epic, 5 legendary
   unique (character_id, location, item_id)
 );
 

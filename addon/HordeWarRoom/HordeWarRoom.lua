@@ -1,9 +1,9 @@
--- Horde War Room exporter (v0.3.0).
+-- Horde War Room exporter (v0.3.1).
 -- Addons can't talk to websites. Instead, this records each character's details into
 -- HordeWarRoomDB, which the game writes to a file (SavedVariables) when you log out or /reload.
 -- The dashboard then imports that file.
 
-local VERSION = "0.3.0"
+local VERSION = "0.3.1"
 
 ---------------------------------------------------------------------------
 -- Reading things from the game
@@ -37,10 +37,10 @@ end
 local function slotItem(bag, slot)
   if C_Container and C_Container.GetContainerItemInfo then
     local info = C_Container.GetContainerItemInfo(bag, slot)
-    if info then return info.itemID, info.stackCount, info.hyperlink end
+    if info then return info.itemID, info.stackCount, info.hyperlink, info.quality, info.iconFileID end
   elseif GetContainerItemInfo then
-    local _, count, _, _, _, _, link, _, _, itemID = GetContainerItemInfo(bag, slot)
-    return itemID, count, link
+    local icon, count, _, quality, _, _, link, _, _, itemID = GetContainerItemInfo(bag, slot)
+    return itemID, count, link, quality, icon
   end
 end
 
@@ -50,9 +50,11 @@ local function readBags(bagIds)
   for _, bag in ipairs(bagIds) do
     for slot = 1, slotCount(bag) do
       slotsSeen = slotsSeen + 1
-      local id, count, link = slotItem(bag, slot)
+      local id, count, link, quality, icon = slotItem(bag, slot)
       if id then
-        local entry = items[id] or { name = link and link:match("%[(.-)%]") or ("Item " .. id), count = 0 }
+        local entry = items[id] or {
+          name = link and link:match("%[(.-)%]") or ("Item " .. id), count = 0, quality = quality, icon = icon,
+        }
         entry.count = entry.count + (count or 1)
         items[id] = entry
       end
@@ -60,7 +62,9 @@ local function readBags(bagIds)
   end
   -- Save as a list (simpler for the dashboard to read).
   local list = {}
-  for id, e in pairs(items) do table.insert(list, { id = id, name = e.name, count = e.count }) end
+  for id, e in pairs(items) do
+    table.insert(list, { id = id, name = e.name, count = e.count, quality = e.quality, icon = e.icon })
+  end
   return list, slotsSeen
 end
 

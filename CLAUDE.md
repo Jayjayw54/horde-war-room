@@ -10,6 +10,7 @@ Josh is new to coding. For every change:
 - Keep changes small and working. One feature at a time.
 - Ask before installing new packages or tools.
 - After each working step, suggest a git commit with a clear message.
+- When a user-facing feature ships, add an entry at the top of `src/data/changelog.ts` (the in-app "What's new" page).
 - Josh is here to learn, but prefers Claude to do the work: build the whole step, then explain in plain language what it does and why.
 
 ## Stack

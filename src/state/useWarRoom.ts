@@ -106,6 +106,7 @@ export function useWarRoom(userId: string) {
         itemId: i.item_id,
         name: i.name,
         quantity: i.quantity,
+        quality: i.quality ?? null,
       })),
     )
     setError('')
@@ -197,7 +198,14 @@ export function useWarRoom(userId: string) {
         if (del.error) return `${snap.name} ${location}: ${del.error.message}`
         if (list.length > 0) {
           const ins = await supabase.from('items').insert(
-            list.map((i) => ({ character_id: characterId, location, item_id: i.id, name: i.name, quantity: i.count })),
+            list.map((i) => ({
+              character_id: characterId,
+              location,
+              item_id: i.id,
+              name: i.name,
+              quantity: i.count,
+              quality: i.quality,
+            })),
           )
           if (ins.error) return `${snap.name} ${location}: ${ins.error.message}`
         }

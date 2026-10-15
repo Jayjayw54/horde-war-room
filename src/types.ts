@@ -43,6 +43,7 @@ export interface Item {
   itemId: number
   name: string
   quantity: number
+  quality: number | null
 }
 
 export interface Objective {

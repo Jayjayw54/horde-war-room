@@ -13,6 +13,12 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: () => '/en/wow/t/2360696.json',
       },
+      // Item icons: on your PC, ask Wowhead directly; the page turns the answer into a picture URL.
+      '/api/item-icon': {
+        target: 'https://nether.wowhead.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace('/api/item-icon/', '/classic/tooltip/item/'),
+      },
     },
   },
 })

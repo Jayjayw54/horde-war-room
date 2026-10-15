@@ -106,6 +106,7 @@ export interface SnapshotItem {
   id: number
   name: string
   count: number
+  quality: number | null
 }
 
 export interface CharacterSnapshot {
@@ -135,7 +136,7 @@ function items(v: LuaValue | undefined): SnapshotItem[] | null {
   if (!v || typeof v !== 'object') return null
   return Object.values(v)
     .map(asTable)
-    .map((i) => ({ id: Number(i.id), name: String(i.name ?? ''), count: Number(i.count ?? 1) }))
+    .map((i) => ({ id: Number(i.id), name: String(i.name ?? ''), count: Number(i.count ?? 1), quality: num(i.quality) }))
     .filter((i) => Number.isFinite(i.id) && i.name)
 }
 
