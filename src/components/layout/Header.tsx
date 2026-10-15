@@ -1,3 +1,5 @@
+import { supabase } from '../../lib/supabase'
+
 export type Page = 'tonight' | 'roster' | 'objectives'
 
 const tabs: { id: Page; label: string }[] = [
@@ -9,9 +11,10 @@ const tabs: { id: Page; label: string }[] = [
 interface Props {
   page: Page
   onNavigate: (page: Page) => void
+  email: string
 }
 
-export function Header({ page, onNavigate }: Props) {
+export function Header({ page, onNavigate, email }: Props) {
   return (
     <header className="border-b-4 border-blood bg-leather">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pt-8 sm:flex-row sm:items-end sm:justify-between">
@@ -20,6 +23,12 @@ export function Header({ page, onNavigate }: Props) {
             Horde War Room
           </h1>
           <p className="mt-1 text-ash">Two mates. One Horde. Everything still to do.</p>
+          <p className="mt-2 text-sm text-ash">
+            Signed in as {email} ·{' '}
+            <button type="button" onClick={() => supabase.auth.signOut()} className="text-gold underline hover:text-parchment">
+              Sign out
+            </button>
+          </p>
         </div>
         <nav aria-label="Main" className="flex gap-1">
           {tabs.map((tab) => {

@@ -1,4 +1,4 @@
-// Placeholder data for Milestone 1. Replaced by Supabase in Milestone 3.
+// Placeholder data from Milestone 1. No longer used by the app (it reads Supabase now); kept for reference.
 import type { Character, Objective, Player } from '../types'
 
 export const players: Player[] = [

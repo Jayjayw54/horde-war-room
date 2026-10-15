@@ -36,7 +36,7 @@ Both players can see and edit everything. It is one shared war room, not two sep
 
 ## Milestones
 
-Status: Milestones 1 and 2 are done (local prototype, on GitHub). Next up is Milestone 3.
+Status: Milestones 1–3 are done (Supabase live, magic-link login). Cel still needs to log in once and be linked to the "cel" player. Next up is Milestone 4.
 
 1. **Local prototype.** Scaffold the app. Use mock data from a local TypeScript file. Build three views:
    - Roster: character cards showing level, class, and profession progress bars
