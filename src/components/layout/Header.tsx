@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { downloadBackup } from '../../lib/backup'
 import { supabase } from '../../lib/supabase'
 import { SetPassword } from './SetPassword'
 import { latestVersion } from '../../data/changelog'
@@ -35,6 +36,18 @@ interface Props {
 
 export function Header({ page, onNavigate, email, live }: Props) {
   const [changingPassword, setChangingPassword] = useState(false)
+  const [backupStatus, setBackupStatus] = useState('')
+
+  async function backup() {
+    setBackupStatus('Packing up…')
+    try {
+      const counts = await downloadBackup()
+      const total = Object.values(counts).reduce((a, b) => a + b, 0)
+      setBackupStatus(`Saved ${total.toLocaleString()} records to your Downloads folder.`)
+    } catch (e) {
+      setBackupStatus(`Backup failed: ${(e as Error).message}`)
+    }
+  }
   const [seenVersion, setSeenVersion] = useState(readSeenVersion)
   const hasNew = seenVersion !== latestVersion
 
@@ -84,6 +97,9 @@ export function Header({ page, onNavigate, email, live }: Props) {
               What's new v{latestVersion}
               {hasNew && <span className="ml-1 inline-block h-2 w-2 rounded-full bg-blood-light align-middle" aria-label="(new)" />}
             </button>
+            <button type="button" onClick={backup} className={link}>
+              Export backup
+            </button>
             <button type="button" onClick={() => setChangingPassword(true)} className={link}>
               Change password
             </button>
@@ -91,6 +107,7 @@ export function Header({ page, onNavigate, email, live }: Props) {
               Sign out
             </button>
           </p>
+          {backupStatus && <p className="mt-1 text-xs text-gold">{backupStatus}</p>}
           {changingPassword && (
             <div className="flex justify-end">
               <SetPassword onDone={() => setChangingPassword(false)} />

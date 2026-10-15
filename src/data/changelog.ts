@@ -10,6 +10,15 @@ export interface Release {
 
 export const changelog: Release[] = [
   {
+    version: '3.1',
+    date: '2026-10-15',
+    title: 'Backups',
+    changes: [
+      'Export backup (top right) downloads everything in the War Room to a file on your computer: toons, bank, recipes, objectives, BiS lists, history and the activity feed.',
+      'The Gear upgrades box on the War table always shows, and says why when it is empty.',
+    ],
+  },
+  {
     version: '3.0',
     date: '2026-10-15',
     title: 'The war table',
