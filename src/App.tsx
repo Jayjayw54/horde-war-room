@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { Header, type Page } from './components/layout/Header'
 import { BankPage } from './pages/BankPage'
+import { BisPage } from './pages/BisPage'
 import { ChangelogPage } from './pages/ChangelogPage'
 import { ObjectivesPage } from './pages/ObjectivesPage'
+import { PlannerPage } from './pages/PlannerPage'
+import { ProgressPage } from './pages/ProgressPage'
 import { PatchNotesPage } from './pages/PatchNotesPage'
 import { RosterPage } from './pages/RosterPage'
 import { TonightPage } from './pages/TonightPage'
@@ -35,7 +38,10 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
         {warRoom.loading && <p className="text-ash">Unrolling the maps…</p>}
         {!warRoom.loading && page === 'tonight' && <TonightPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'roster' && <RosterPage warRoom={warRoom} />}
+        {!warRoom.loading && page === 'progress' && <ProgressPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'bank' && <BankPage warRoom={warRoom} />}
+        {!warRoom.loading && page === 'planner' && <PlannerPage warRoom={warRoom} />}
+        {!warRoom.loading && page === 'bis' && <BisPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'objectives' && <ObjectivesPage warRoom={warRoom} />}
         {page === 'changelog' && <ChangelogPage />}
         {!warRoom.loading && page === 'notes' && <PatchNotesPage warRoom={warRoom} />}

@@ -31,7 +31,11 @@ It should feel like a WoW command table, not a corporate dashboard. Readable on 
 - **players**: id, display_name (linked to a Supabase auth user from Milestone 3)
 - **characters**: id, player_id, name, race, class, level, notes, gold (copper), xp, xp_max, rested_xp, last_played, bank_seen_at
 - **professions**: id, character_id, name, skill_level, max_skill
-- **items**: id, character_id, location ("bags" | "bank"), item_id, name, quantity — the shared bank
+- **items**: id, character_id, location ("bags" | "bank"), item_id, name, quantity, quality — the shared bank
+- **character_history**: one row per toon per import (level, xp, gold) — Progress graphs
+- **recipes**: id, character_id, profession, recipe_id, name, item_id, makes, reagents (jsonb) — Planner
+- **bis_items**: id, character_id, slot, item_name, item_id, note — BiS wishlist
+- characters also has stats, gear, weapon_skills (jsonb)
 
 Database changes after the first setup are in numbered files in `supabase/` (e.g. `002-gold-xp-bank.sql`); `schema.sql` always has the full current setup.
 - **objectives**: id, title, description, assignee ("josh" | "cel" | "both"), category ("profession" | "farming" | "dungeon" | "gear" | "gold" | "other"), status ("todo" | "doing" | "done"), tonight (boolean, shows in "Tonight's orders"), created_at
@@ -57,6 +61,11 @@ Status: Milestones 1–4 are done. Live at https://euphonious-fox-f272a5.netlify
 - A manual import: upload the SavedVariables file on the dashboard and update characters and professions from it.
 - A companion app on each PC that watches the SavedVariables file and syncs it to Supabase automatically.
 - A profession planner that calculates materials and decides who gathers and who crafts.
+
+## Netlify
+
+- Functions in `netlify/functions/`: `patch-notes` (Blizzard beta notes), `item-icon` (Wowhead icons), `discord` (import summaries).
+- Environment variables: VITE_SUPABASE_URL, VITE_SUPABASE_KEY, DISCORD_WEBHOOK_URL (secret).
 
 ## WoW: Forever facts (found by testing in the beta, Oct 2026)
 

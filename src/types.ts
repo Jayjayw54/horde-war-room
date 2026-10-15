@@ -34,6 +34,52 @@ export interface Character {
   restedXp: number
   lastPlayed: string | null
   bankSeenAt: string | null
+  stats: CharacterStats | null
+  gear: GearItem[] | null
+  weaponSkills: WeaponSkill[] | null
+}
+
+export interface StatValue {
+  total: number
+  bonus: number
+}
+
+// Everything is optional: Forever may not report every stat.
+export interface CharacterStats {
+  strength?: StatValue
+  agility?: StatValue
+  stamina?: StatValue
+  intellect?: StatValue
+  spirit?: StatValue
+  health?: number
+  power?: number
+  powerType?: string
+  armor?: number
+  attackPower?: number
+  rangedAttackPower?: number
+  meleeCrit?: number
+  rangedCrit?: number
+  spellCrit?: number
+  spellPower?: number
+  healing?: number
+  dodge?: number
+  parry?: number
+  block?: number
+  resistances?: Partial<Record<'fire' | 'nature' | 'frost' | 'shadow' | 'arcane', number>>
+}
+
+export interface GearItem {
+  slot: number
+  id: number
+  name: string
+  quality: number | null
+  ilvl: number | null
+}
+
+export interface WeaponSkill {
+  name: string
+  skill: number
+  max: number
 }
 
 export interface Item {
@@ -55,4 +101,39 @@ export interface Objective {
   status: Status
   tonight: boolean
   createdAt: string
+}
+
+export interface HistoryPoint {
+  characterId: string
+  recordedAt: string
+  level: number
+  xp: number | null
+  xpMax: number | null
+  gold: number | null
+}
+
+export interface Reagent {
+  id: number | null
+  name: string
+  count: number
+}
+
+export interface Recipe {
+  id: string
+  characterId: string
+  profession: string
+  recipeId: number | null
+  name: string
+  itemId: number | null
+  makes: number | null
+  reagents: Reagent[]
+}
+
+export interface BisItem {
+  id: string
+  characterId: string
+  slot: number
+  itemName: string
+  itemId: number | null
+  note: string | null
 }

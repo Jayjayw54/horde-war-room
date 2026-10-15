@@ -1,9 +1,9 @@
--- Horde War Room exporter (v0.3.1).
+-- Horde War Room exporter (v0.5.0).
 -- Addons can't talk to websites. Instead, this records each character's details into
 -- HordeWarRoomDB, which the game writes to a file (SavedVariables) when you log out or /reload.
 -- The dashboard then imports that file.
 
-local VERSION = "0.3.1"
+local VERSION = "0.5.0"
 
 ---------------------------------------------------------------------------
 -- Reading things from the game
@@ -90,6 +90,147 @@ local function bankBagIds()
   return ids
 end
 
+-- Runs fn and returns its results, or nil if this game version doesn't have that function.
+local function safe(fn, ...)
+  local ok, a, b, c, d = pcall(fn, ...)
+  if ok then return a, b, c, d end
+end
+
+-- Character sheet numbers. Each stat records its total and how much of it comes from buffs/gear.
+local STAT_NAMES = { "strength", "agility", "stamina", "intellect", "spirit" }
+local RESIST_NAMES = { [2] = "fire", [3] = "nature", [4] = "frost", [5] = "shadow", [6] = "arcane" }
+
+local function readStats()
+  local stats = {}
+  for i, key in ipairs(STAT_NAMES) do
+    local base, total, posBuff, negBuff = safe(UnitStat, "player", i)
+    if total then stats[key] = { total = total, bonus = (posBuff or 0) + (negBuff or 0) } end
+  end
+  stats.health = safe(UnitHealthMax, "player")
+  stats.power = safe(UnitPowerMax, "player")
+  stats.powerType = select(2, safe(UnitPowerType, "player")) -- "MANA", "RAGE", "ENERGY"
+  stats.armor = select(2, safe(UnitArmor, "player"))
+  local apBase, apPos, apNeg = safe(UnitAttackPower, "player")
+  if apBase then stats.attackPower = apBase + (apPos or 0) + (apNeg or 0) end
+  local rBase, rPos, rNeg = safe(UnitRangedAttackPower, "player")
+  if rBase then stats.rangedAttackPower = rBase + (rPos or 0) + (rNeg or 0) end
+  stats.meleeCrit = safe(GetCritChance)
+  stats.rangedCrit = safe(GetRangedCritChance)
+  local spellCrit
+  for school = 2, 7 do
+    local v = safe(GetSpellCritChance, school)
+    if v and (not spellCrit or v > spellCrit) then spellCrit = v end
+  end
+  stats.spellCrit = spellCrit
+  stats.spellPower = safe(GetSpellBonusDamage, 2)
+  stats.healing = safe(GetSpellBonusHealing)
+  stats.dodge = safe(GetDodgeChance)
+  stats.parry = safe(GetParryChance)
+  stats.block = safe(GetBlockChance)
+  stats.resistances = {}
+  for index, key in pairs(RESIST_NAMES) do
+    local _, total = safe(UnitResistance, "player", index)
+    if total then stats.resistances[key] = total end
+  end
+  return stats
+end
+
+-- Weapon skills live in the old Classic skills list. Forever may not have it, in which case this returns nil.
+local function readWeaponSkills()
+  if not GetNumSkillLines then return nil end
+  local list, inWeapons = {}, false
+  for i = 1, GetNumSkillLines() do
+    local name, isHeader, _, rank, _, _, maxRank = GetSkillLineInfo(i)
+    if isHeader then
+      inWeapons = name and name:find("Weapon") ~= nil
+    elseif inWeapons and name then
+      table.insert(list, { name = name, skill = rank, max = maxRank })
+    end
+  end
+  return list
+end
+
+-- Equipped gear, slot by slot (1 = head ... 19 = tabard).
+local function readGear()
+  local gear = {}
+  for slot = 1, 19 do
+    local link = safe(GetInventoryItemLink, "player", slot)
+    if link then
+      local id = tonumber(link:match("item:(%d+)"))
+      local ilvl
+      if C_Item and C_Item.GetDetailedItemLevelInfo then ilvl = safe(C_Item.GetDetailedItemLevelInfo, link) end
+      if not ilvl and GetItemInfo then ilvl = select(4, GetItemInfo(link)) end
+      table.insert(gear, {
+        slot = slot,
+        id = id,
+        name = link:match("%[(.-)%]") or ("Item " .. tostring(id)),
+        quality = safe(GetInventoryItemQuality, "player", slot),
+        ilvl = ilvl,
+      })
+    end
+  end
+  return gear
+end
+
+-- Recipes can only be read while a profession window is open. We try the modern system first
+-- (C_TradeSkillUI, which Forever's professions use) and fall back to the Classic one.
+local function itemName(id)
+  local name = C_Item and C_Item.GetItemNameByID and safe(C_Item.GetItemNameByID, id)
+  if not name and GetItemInfo then name = safe(GetItemInfo, id) end
+  return name or ("Item " .. tostring(id))
+end
+
+local function readOpenProfessionModern()
+  if not (C_TradeSkillUI and C_TradeSkillUI.GetAllRecipeIDs) then return nil end
+  local profession
+  local base = safe(C_TradeSkillUI.GetBaseProfessionInfo)
+  if type(base) == "table" then profession = base.professionName end
+  if not profession then profession = select(2, safe(C_TradeSkillUI.GetTradeSkillLine)) end
+  if not profession then return nil end
+
+  local list = {}
+  for _, recipeID in ipairs(safe(C_TradeSkillUI.GetAllRecipeIDs) or {}) do
+    local info = safe(C_TradeSkillUI.GetRecipeInfo, recipeID)
+    if info and info.learned then
+      local recipe = { id = recipeID, name = info.name, reagents = {} }
+      local schematic = C_TradeSkillUI.GetRecipeSchematic and safe(C_TradeSkillUI.GetRecipeSchematic, recipeID, false)
+      if type(schematic) == "table" then
+        recipe.itemId = schematic.outputItemID
+        recipe.makes = schematic.quantityMin
+        for _, slot in ipairs(schematic.reagentSlotSchematics or {}) do
+          local first = slot.reagents and slot.reagents[1]
+          if first and first.itemID and (slot.quantityRequired or 0) > 0 then
+            table.insert(recipe.reagents, { id = first.itemID, name = itemName(first.itemID), count = slot.quantityRequired })
+          end
+        end
+      end
+      table.insert(list, recipe)
+    end
+  end
+  return profession, list
+end
+
+local function readOpenProfessionClassic()
+  if not (GetNumTradeSkills and GetTradeSkillLine) then return nil end
+  local profession = GetTradeSkillLine()
+  if not profession or profession == "UNKNOWN" then return nil end
+  local list = {}
+  for i = 1, GetNumTradeSkills() do
+    local name, kind = GetTradeSkillInfo(i)
+    if name and kind ~= "header" then
+      local link = GetTradeSkillItemLink and GetTradeSkillItemLink(i)
+      local recipe = { name = name, itemId = link and tonumber(link:match("item:(%d+)")), reagents = {} }
+      for r = 1, (GetTradeSkillNumReagents(i) or 0) do
+        local rName, _, count = GetTradeSkillReagentInfo(i, r)
+        local rLink = GetTradeSkillReagentItemLink and GetTradeSkillReagentItemLink(i, r)
+        table.insert(recipe.reagents, { id = rLink and tonumber(rLink:match("item:(%d+)")), name = rName, count = count })
+      end
+      table.insert(list, recipe)
+    end
+  end
+  return profession, list
+end
+
 ---------------------------------------------------------------------------
 -- Saving a snapshot of the current character
 ---------------------------------------------------------------------------
@@ -135,7 +276,21 @@ local function snapshot()
 
   local bags, slotsSeen = readBags(carriedBagIds())
   if slotsSeen > 0 then c.bags = bags end -- 0 slots means the bags hadn't loaded yet
+
+  c.stats = readStats()
+  c.gear = readGear()
+  c.weaponSkills = readWeaponSkills()
   return c
+end
+
+local function snapshotRecipes()
+  local profession, list = readOpenProfessionModern()
+  if not profession then profession, list = readOpenProfessionClassic() end
+  if profession and list and #list > 0 then
+    local c = currentCharacter()
+    c.recipes = c.recipes or {}
+    c.recipes[profession] = list
+  end
 end
 
 local function snapshotBank()
@@ -169,6 +324,8 @@ for _, event in ipairs({
   "PLAYER_LOGIN", "PLAYER_LEVEL_UP", "SKILL_LINES_CHANGED", "TRADE_SKILL_LIST_UPDATE",
   "PLAYER_MONEY", "PLAYER_XP_UPDATE", "UPDATE_EXHAUSTION", "BAG_UPDATE_DELAYED",
   "BANKFRAME_OPENED", "PLAYERBANKSLOTS_CHANGED", "PLAYER_LOGOUT",
+  "PLAYER_EQUIPMENT_CHANGED", "UNIT_STATS", "UNIT_RESISTANCES", "UNIT_ATTACK_POWER", "CHARACTER_POINTS_CHANGED",
+  "TRADE_SKILL_SHOW", "TRADE_SKILL_DATA_SOURCE_CHANGED", "NEW_RECIPE_LEARNED",
 }) do
   pcall(frame.RegisterEvent, frame, event)
 end
@@ -185,6 +342,11 @@ frame:SetScript("OnEvent", function(_, event)
       local c = HordeWarRoomDB.characters[GetUnitName("player", true) or UnitName("player")]
       if c then c.lastPlayed = time() end
     end
+  elseif event == "TRADE_SKILL_SHOW" or event == "TRADE_SKILL_LIST_UPDATE" or event == "TRADE_SKILL_DATA_SOURCE_CHANGED"
+    or event == "NEW_RECIPE_LEARNED" then
+    -- A profession window is open (or just changed): read its recipes once the list has loaded.
+    C_Timer.After(1, snapshotRecipes)
+    snapshotSoon()
   elseif event == "BANKFRAME_OPENED" then
     bankOpen = true
     C_Timer.After(0.5, snapshotBank)
@@ -226,6 +388,14 @@ SlashCmdList.HORDEWARROOM = function()
       print("  " .. p.name .. " " .. p.skill .. "/" .. p.max)
     end
   end
+  local s = c.stats or {}
+  print("  Stats: Str " .. tostring(s.strength and s.strength.total) .. "  Agi " .. tostring(s.agility and s.agility.total) ..
+    "  Sta " .. tostring(s.stamina and s.stamina.total) .. "  Armor " .. tostring(s.armor))
+  print("  Gear: " .. #(c.gear or {}) .. " items equipped.   Weapon skills: " ..
+    (c.weaponSkills and (#c.weaponSkills .. " found") or "not available in this game"))
+  local known = {}
+  for prof, list in pairs(c.recipes or {}) do known[#known + 1] = prof .. " " .. #list end
+  print("  Recipes: " .. (#known > 0 and table.concat(known, ", ") or "none yet (open each profession window once)"))
   print("  Bags: " .. #(c.bags or {}) .. " different items.   Bank: " ..
     (c.bank and (#c.bank .. " different items") or "not seen yet (open your bank once)"))
   print("  Type /reload to save it to the file the dashboard reads.")

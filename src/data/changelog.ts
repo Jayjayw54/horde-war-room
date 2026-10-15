@@ -10,6 +10,36 @@ export interface Release {
 
 export const changelog: Release[] = [
   {
+    version: '2.0',
+    date: '2026-10-15',
+    title: 'The war table expands',
+    changes: [
+      'Progress tab: the levelling race and gold by player, charted over time. A point is added on every import.',
+      'Planner tab: pick a recipe and see the materials, what you have between you, what is missing and who should craft it.',
+      'BiS tab: a best-in-slot wishlist per toon that ticks itself off when the item turns up, plus class guide links.',
+      'Discord: a message in your channel whenever someone imports, with dings, skill-ups, new recipes and gold changes.',
+      'Addon v0.5.0 records known recipes (open each profession window once).',
+    ],
+  },
+  {
+    version: '1.7',
+    date: '2026-10-15',
+    title: 'Character sheets',
+    changes: [
+      'Each toon card has tabs: Overview, Stats, Weapons and Gear.',
+      'Stats: attributes, health, mana, armor, attack power, crit, dodge and resistances.',
+      'Gear: everything equipped, with icons, rarity colours and average item level.',
+      "Weapons: weapon skill levels, if WoW: Forever reports them.",
+      'Addon v0.4.0 records stats, gear and weapon skills.',
+    ],
+  },
+  {
+    version: '1.6',
+    date: '2026-10-15',
+    title: "What's new",
+    changes: ["Patch notes for the War Room itself, right here. A red dot means there's something you haven't read."],
+  },
+  {
     version: '1.5',
     date: '2026-10-15',
     title: 'Bank gets a makeover',

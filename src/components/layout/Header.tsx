@@ -3,13 +3,16 @@ import { supabase } from '../../lib/supabase'
 import { SetPassword } from './SetPassword'
 import { latestVersion } from '../../data/changelog'
 
-export type Page = 'tonight' | 'roster' | 'bank' | 'objectives' | 'notes' | 'changelog'
+export type Page = 'tonight' | 'roster' | 'progress' | 'bank' | 'planner' | 'objectives' | 'notes' | 'bis' | 'changelog'
 
 // Tabs shown in the nav bar ("What's new" is opened from the link in the header instead).
 const tabs: { id: Page; label: string }[] = [
   { id: 'tonight', label: "Tonight's orders" },
   { id: 'roster', label: 'Roster' },
+  { id: 'progress', label: 'Progress' },
   { id: 'bank', label: 'Bank' },
+  { id: 'planner', label: 'Planner' },
+  { id: 'bis', label: 'BiS' },
   { id: 'objectives', label: 'Objectives' },
   { id: 'notes', label: 'Beta notes' },
 ]
@@ -71,7 +74,7 @@ export function Header({ page, onNavigate, email }: Props) {
           </p>
           {changingPassword && <SetPassword onDone={() => setChangingPassword(false)} />}
         </div>
-        <nav aria-label="Main" className="flex gap-1">
+        <nav aria-label="Main" className="flex flex-wrap gap-1">
           {tabs.map((tab) => {
             const active = tab.id === page
             return (

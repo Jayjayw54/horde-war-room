@@ -126,11 +126,61 @@ export interface CharacterSnapshot {
   bags: SnapshotItem[] | null
   bank: SnapshotItem[] | null
   bankSeen: Date | null
+  // Added in addon v0.4.0:
+  stats: unknown | null
+  gear: unknown[] | null
+  weaponSkills: unknown[] | null
+  // Added in addon v0.5.0: recipes by profession name.
+  recipes: Record<string, SnapshotRecipe[]> | null
+}
+
+export interface SnapshotRecipe {
+  id: number | null
+  name: string
+  itemId: number | null
+  makes: number | null
+  reagents: { id: number | null; name: string; count: number }[]
 }
 
 const asTable = (v: LuaValue | undefined): LuaTable => (v && typeof v === 'object' ? v : {})
 const num = (v: LuaValue | undefined) => (typeof v === 'number' ? v : null)
 const date = (v: LuaValue | undefined) => (typeof v === 'number' ? new Date(v * 1000) : null)
+
+// Converts a Lua table to plain JSON: tables keyed 1, 2, 3... become arrays.
+function toJson(v: LuaValue | undefined): unknown {
+  if (v === undefined || v === null) return null
+  if (typeof v !== 'object') return v
+  const keys = Object.keys(v)
+  const isList = keys.length > 0 && keys.every((k, i) => k === String(i + 1))
+  if (isList) return keys.map((k) => toJson(v[k]))
+  if (keys.length === 0) return []
+  return Object.fromEntries(keys.map((k) => [k, toJson(v[k])]))
+}
+
+const list = (v: LuaValue | undefined): unknown[] | null => {
+  const j = toJson(v)
+  return Array.isArray(j) ? j : null
+}
+
+function readRecipes(v: LuaValue | undefined): Record<string, SnapshotRecipe[]> | null {
+  if (!v || typeof v !== 'object') return null
+  const out: Record<string, SnapshotRecipe[]> = {}
+  for (const [profession, listValue] of Object.entries(v)) {
+    out[profession] = Object.values(asTable(listValue))
+      .map(asTable)
+      .filter((r) => typeof r.name === 'string')
+      .map((r) => ({
+        id: num(r.id),
+        name: String(r.name),
+        itemId: num(r.itemId),
+        makes: num(r.makes),
+        reagents: Object.values(asTable(r.reagents))
+          .map(asTable)
+          .map((g) => ({ id: num(g.id), name: String(g.name ?? (g.id ? `Item ${g.id}` : '?')), count: Number(g.count ?? 1) })),
+      }))
+  }
+  return out
+}
 
 function items(v: LuaValue | undefined): SnapshotItem[] | null {
   if (!v || typeof v !== 'object') return null
@@ -166,5 +216,9 @@ export function readSnapshotFile(text: string): CharacterSnapshot[] {
       bags: items(c.bags),
       bank: items(c.bank),
       bankSeen: date(c.bankUpdated),
+      stats: c.stats && typeof c.stats === 'object' ? toJson(c.stats) : null,
+      gear: list(c.gear),
+      weaponSkills: list(c.weaponSkills),
+      recipes: readRecipes(c.recipes),
     }))
 }

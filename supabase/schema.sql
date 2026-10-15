@@ -6,7 +6,7 @@
 -- 0. Clear out anything from earlier attempts
 -- ============================================================
 
-drop table if exists items, objectives, professions, characters, players cascade;
+drop table if exists bis_items, recipes, character_history, items, objectives, professions, characters, players cascade;
 drop function if exists is_player();
 
 -- ============================================================
@@ -33,7 +33,10 @@ create table characters (
   xp_max int,
   rested_xp int not null default 0,
   last_played timestamptz,
-  bank_seen_at timestamptz
+  bank_seen_at timestamptz,
+  stats jsonb,            -- character sheet numbers from the addon
+  gear jsonb,             -- equipped items, slot by slot
+  weapon_skills jsonb     -- null if the game doesn't report them
 );
 
 create table professions (
@@ -55,6 +58,38 @@ create table items (
   quantity int not null default 1,
   quality int,                  -- 0 poor, 1 common, 2 uncommon, 3 rare, 4 epic, 5 legendary
   unique (character_id, location, item_id)
+);
+
+create table character_history (
+  id bigint generated always as identity primary key,
+  character_id uuid not null references characters (id) on delete cascade,
+  recorded_at timestamptz not null default now(),
+  level int not null,
+  xp int,
+  xp_max int,
+  gold bigint
+);
+
+create table recipes (
+  id uuid primary key default gen_random_uuid(),
+  character_id uuid not null references characters (id) on delete cascade,
+  profession text not null,
+  recipe_id int,
+  name text not null,
+  item_id int,
+  makes int,
+  reagents jsonb not null default '[]',
+  unique (character_id, profession, name)
+);
+
+create table bis_items (
+  id uuid primary key default gen_random_uuid(),
+  character_id uuid not null references characters (id) on delete cascade,
+  slot int not null,
+  item_name text not null,
+  item_id int,
+  note text,
+  created_at timestamptz not null default now()
 );
 
 create table objectives (
@@ -84,6 +119,9 @@ alter table characters  enable row level security;
 alter table professions enable row level security;
 alter table objectives  enable row level security;
 alter table items       enable row level security;
+alter table character_history enable row level security;
+alter table recipes     enable row level security;
+alter table bis_items   enable row level security;
 
 -- Players can see the player list; changes to it are done by hand in Supabase.
 create policy "players can read players" on players
@@ -96,6 +134,15 @@ create policy "players manage professions" on professions
   for all to authenticated using (is_player()) with check (is_player());
 
 create policy "players manage items" on items
+  for all to authenticated using (is_player()) with check (is_player());
+
+create policy "players manage history" on character_history
+  for all to authenticated using (is_player()) with check (is_player());
+
+create policy "players manage recipes" on recipes
+  for all to authenticated using (is_player()) with check (is_player());
+
+create policy "players manage bis" on bis_items
   for all to authenticated using (is_player()) with check (is_player());
 
 create policy "players manage objectives" on objectives
