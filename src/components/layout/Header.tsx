@@ -55,7 +55,7 @@ export function Header({ page, onNavigate, email }: Props) {
         <button
           type="button"
           onClick={() => onNavigate('roster')}
-          className="war-banner shrink-0 px-8 pt-6 pb-12 text-center sm:px-10"
+          className="war-banner w-60 shrink-0 px-6 pt-6 pb-12 text-center"
           aria-label="Horde War Room, go to the Roster"
         >
           <span className="block font-display text-3xl leading-none font-extrabold tracking-wide text-gold [text-shadow:0_2px_0_#3a0d08] sm:text-4xl">
@@ -91,9 +91,10 @@ export function Header({ page, onNavigate, email }: Props) {
       {/* Tab rail: an iron bar the tabs hang on. Stays in view while you scroll. */}
       <nav
         aria-label="Main"
-        className="sticky top-0 z-30 -mt-6 border-y border-gold/25 bg-[linear-gradient(180deg,#201612,#170f0c)] shadow-[0_6px_16px_-8px_rgba(0,0,0,0.8)]"
+        className="sticky top-0 z-30 border-y sm:-mt-6 border-gold/25 bg-[linear-gradient(180deg,#201612,#170f0c)] shadow-[0_6px_16px_-8px_rgba(0,0,0,0.8)]"
       >
-        <ul className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-5 [scrollbar-width:none]">
+        {/* On wider screens the tabs start to the right of the banner, so it never covers them. */}
+        <ul className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-5 [scrollbar-width:none] sm:pl-[17.5rem]">
           {tabs.map((tab) => {
             const active = tab.id === page
             return (
