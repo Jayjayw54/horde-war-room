@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+/* Design tokens: a WoW command table — iron, leather, blood red, aged gold, parchment. */
+@theme {
+  --color-ink: #17110e;
+  --color-leather: #241915;
+  --color-leather-light: #2f221c;
+  --color-blood: #9b2318;
+  --color-blood-light: #c03a2b;
+  --color-gold: #c8a04f;
+  --color-parchment: #eadcb8;
+  --color-ash: #8d8178;
+
+  --font-display: "Cinzel", Georgia, serif;
+  --font-body: "Alegreya Sans", system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink);
+  color: var(--color-parchment);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

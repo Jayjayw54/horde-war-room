@@ -1,0 +1,74 @@
+# Horde War Room
+
+A private shared dashboard for two players (Josh and his mate) playing World of Warcraft: Forever.
+It tracks characters, professions, and shared objectives in one place.
+
+## Who you're working with
+
+Josh is new to coding. For every change:
+- Explain what you're doing and why, in plain language, before doing it.
+- Keep changes small and working. One feature at a time.
+- Ask before installing new packages or tools.
+- After each working step, suggest a git commit with a clear message.
+
+## Stack
+
+- Vite + React + TypeScript
+- Tailwind CSS for styling
+- Supabase (free tier) for database and login, added in Milestone 3, not before
+- GitHub for source control
+- Hosting later on a free static host (Vercel or Netlify)
+
+## Look and feel
+
+Dark "war room" theme: near-black background, Horde red accents, parchment or gold highlights.
+It should feel like a WoW command table, not a corporate dashboard. Readable on desktop first, okay on mobile.
+
+## Data model (v1)
+
+- **players**: id, display_name (linked to a Supabase auth user from Milestone 3)
+- **characters**: id, player_id, name, race, class, level, notes
+- **professions**: id, character_id, name, skill_level, max_skill
+- **objectives**: id, title, description, assignee ("josh" | "mate" | "both"), category ("profession" | "farming" | "dungeon" | "gear" | "gold" | "other"), status ("todo" | "doing" | "done"), tonight (boolean, shows in "Tonight's orders"), created_at
+
+Both players can see and edit everything. It is one shared war room, not two separate accounts.
+
+## Milestones
+
+Status: Milestones 1 and 2 are done (local prototype, on GitHub). Next up is Milestone 3.
+
+1. **Local prototype.** Scaffold the app. Use mock data from a local TypeScript file. Build three views:
+   - Roster: character cards showing level, class, and profession progress bars
+   - Objectives: list with filters by assignee, category, and status; add, edit, and tick off
+   - Tonight's orders: objectives flagged `tonight`, grouped by assignee
+   Changes can live in React state for now. Runs with `npm run dev`.
+2. **GitHub.** Push to the repo. Add a README explaining how to run it.
+3. **Supabase.** Create tables matching the data model, row-level security allowing only the two players, email magic-link login, and replace the mock data with live queries. Keep keys in `.env.local` and never commit them.
+4. **Deploy.** Host it so Josh's mate can log in from his own PC.
+
+## Later (do not build yet, but don't design against it)
+
+- A WoW: Forever addon that snapshots characters, professions, and known recipes into SavedVariables.
+- A manual import: upload the SavedVariables file on the dashboard and update characters and professions from it.
+- A companion app on each PC that watches the SavedVariables file and syncs it to Supabase automatically.
+- A profession planner that calculates materials and decides who gathers and who crafts.
+
+Addons cannot make network calls. Data only leaves the game when SavedVariables is written on logout or `/reload`.
+So keep character and profession data importable from an external snapshot, keyed by character name.
+
+## Project structure
+
+```
+src/
+  main.tsx              App entry point
+  App.tsx               Page switching
+  index.css             Tailwind import and design tokens (colours, fonts)
+  types.ts              Data shapes, matching the planned Supabase tables
+  data/mockData.ts      Placeholder characters and objectives (Milestone 1 only)
+  state/useWarRoom.ts   All state and actions; swap to Supabase here in Milestone 3
+  lib/labels.ts         Display labels and WoW class colours
+  components/layout/    Header and navigation
+  components/roster/    Character cards and profession bars
+  components/objectives/ Objective list items, add form, filters
+  pages/                Tonight's orders, Roster, Objectives
+```
