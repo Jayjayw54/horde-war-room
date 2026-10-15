@@ -32,6 +32,14 @@ local function snapshot()
   local firstName, surname = UnitName("player")
   local fullName = GetUnitName("player", true) or firstName
 
+  -- While logging in or out, the game can briefly report no professions at all.
+  -- Never let one of those empty readings wipe out professions we already recorded.
+  local previous = HordeWarRoomDB.characters[fullName]
+  local professions = readProfessions()
+  if #professions == 0 and previous and previous.professions and #previous.professions > 0 then
+    professions = previous.professions
+  end
+
   HordeWarRoomDB.characters[fullName] = {
     name = fullName,
     firstName = firstName,
@@ -41,7 +49,7 @@ local function snapshot()
     classFile = select(2, UnitClass("player")),
     level = UnitLevel("player"),
     faction = (UnitFactionGroup("player")),
-    professions = readProfessions(),
+    professions = professions,
     updated = time(),
   }
   HordeWarRoomDB.version = 2
@@ -55,9 +63,13 @@ for _, event in ipairs({ "PLAYER_LOGIN", "PLAYER_LEVEL_UP", "SKILL_LINES_CHANGED
   pcall(frame.RegisterEvent, frame, event)
 end
 frame:SetScript("OnEvent", function(_, event)
-  -- Level-up fires before UnitLevel updates, so wait a moment.
   if event == "PLAYER_LEVEL_UP" then
+    -- Level-up fires before UnitLevel updates, so wait a moment.
     C_Timer.After(1, snapshot)
+  elseif event == "PLAYER_LOGIN" then
+    -- Profession data loads a few seconds after login, so take another reading once it's there.
+    snapshot()
+    C_Timer.After(5, snapshot)
   else
     snapshot()
   end

@@ -1,38 +1,27 @@
 import { useState } from 'react'
 import { CharacterCard } from '../components/roster/CharacterCard'
-import { CharacterForm } from '../components/roster/CharacterForm'
 import { ImportPanel } from '../components/roster/ImportPanel'
 import type { WarRoom } from '../state/useWarRoom'
 
+// The roster is filled from the game: use "Import from game" with the addon's file.
 export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
-  const [adding, setAdding] = useState(false)
   const [importing, setImporting] = useState(false)
-  const ownerName = (id: string) => warRoom.players.find((p) => p.id === id)?.displayName ?? 'Unknown'
 
   return (
     <section>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl font-semibold text-gold">Roster</h2>
-          <p className="mt-1 text-ash">Every character you both play, mains and alts.</p>
+          <p className="mt-1 text-ash">Every character you both play, mains and alts, straight from the game.</p>
         </div>
-        {!adding && !importing && (
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setImporting(true)}
-              className="rounded border border-gold px-4 py-2 font-semibold text-gold hover:bg-leather-light"
-            >
-              Import from game
-            </button>
-            <button
-              type="button"
-              onClick={() => setAdding(true)}
-              className="rounded bg-blood px-4 py-2 font-semibold hover:bg-blood-light"
-            >
-              + Add toon
-            </button>
-          </div>
+        {!importing && (
+          <button
+            type="button"
+            onClick={() => setImporting(true)}
+            className="rounded bg-blood px-4 py-2 font-semibold hover:bg-blood-light"
+          >
+            Import from game
+          </button>
         )}
       </div>
 
@@ -42,22 +31,7 @@ export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
         </div>
       )}
 
-      {adding && (
-        <div className="mt-6">
-          <CharacterForm
-            players={warRoom.players}
-            submitLabel="Add toon"
-            onSave={async (input) => {
-              const problem = await warRoom.addCharacter(input)
-              if (!problem) setAdding(false)
-              return problem
-            }}
-            onCancel={() => setAdding(false)}
-          />
-        </div>
-      )}
-
-      {/* One column per player: Josh on the left, Cel on the right (in the order of the players table). */}
+      {/* One column per player: Josh on the left, Cel on the right. */}
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         {warRoom.players.map((player) => {
           const toons = warRoom.characters.filter((c) => c.playerId === player.id)
@@ -70,9 +44,9 @@ export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
                 </span>
               </h3>
               <div className="mt-3 space-y-3">
-                {toons.length === 0 && <p className="text-sm text-ash">No toons yet.</p>}
+                {toons.length === 0 && <p className="text-sm text-ash">No toons yet. Use Import from game.</p>}
                 {toons.map((c) => (
-                  <CharacterCard key={c.id} character={c} owner={ownerName(c.playerId)} warRoom={warRoom} />
+                  <CharacterCard key={c.id} character={c} owner={player.displayName} />
                 ))}
               </div>
             </div>
