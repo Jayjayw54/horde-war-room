@@ -34,7 +34,7 @@ export function Header({ page, onNavigate, email }: Props) {
             </button>{' '}
             ·{' '}
             <button type="button" onClick={() => setChangingPassword(true)} className="text-gold underline hover:text-parchment">
-              Set password
+              Change password
             </button>
           </p>
           {changingPassword && <SetPassword onDone={() => setChangingPassword(false)} />}
