@@ -1,0 +1,18 @@
+
+HordeWarRoomDB = {
+["characters"] = {
+["Jay-Mcnut"] = {
+["class"] = "Warlock",
+["updated"] = 1792053148,
+["race"] = "Orc",
+["name"] = "Jay",
+["faction"] = "Horde",
+["professions"] = {
+},
+["level"] = 20,
+["classFile"] = "WARLOCK",
+["realm"] = "Mcnut",
+},
+},
+["version"] = 1,
+}

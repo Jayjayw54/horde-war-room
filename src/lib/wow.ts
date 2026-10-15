@@ -1,5 +1,5 @@
 // Choices for the roster forms. Edit these lists if your realm has different options.
-export const races = ['Orc', 'Undead', 'Tauren', 'Troll', 'Blood Elf']
+export const races = ['Orc', 'Undead', 'Tauren', 'Troll', 'Skyborne']
 
 export const classes = ['Warrior', 'Rogue', 'Mage', 'Priest', 'Warlock', 'Hunter', 'Shaman', 'Druid', 'Paladin']
 
