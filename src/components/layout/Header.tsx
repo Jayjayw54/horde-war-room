@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { SetPassword } from './SetPassword'
 
 export type Page = 'tonight' | 'roster' | 'objectives'
 
@@ -15,6 +17,8 @@ interface Props {
 }
 
 export function Header({ page, onNavigate, email }: Props) {
+  const [changingPassword, setChangingPassword] = useState(false)
+
   return (
     <header className="border-b-4 border-blood bg-leather">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 pt-8 sm:flex-row sm:items-end sm:justify-between">
@@ -27,8 +31,13 @@ export function Header({ page, onNavigate, email }: Props) {
             Signed in as {email} ·{' '}
             <button type="button" onClick={() => supabase.auth.signOut()} className="text-gold underline hover:text-parchment">
               Sign out
+            </button>{' '}
+            ·{' '}
+            <button type="button" onClick={() => setChangingPassword(true)} className="text-gold underline hover:text-parchment">
+              Set password
             </button>
           </p>
+          {changingPassword && <SetPassword onDone={() => setChangingPassword(false)} />}
         </div>
         <nav aria-label="Main" className="flex gap-1">
           {tabs.map((tab) => {

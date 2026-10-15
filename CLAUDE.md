@@ -36,7 +36,7 @@ Both players can see and edit everything. It is one shared war room, not two sep
 
 ## Milestones
 
-Status: Milestones 1–3 are done (Supabase live, magic-link login). Cel still needs to log in once and be linked to the "cel" player. Next up is Milestone 4.
+Status: Milestones 1–3 are done (Supabase live, email + password login). Cel still needs to log in once and be linked to the "cel" player. Next up is Milestone 4.
 
 1. **Local prototype.** Scaffold the app. Use mock data from a local TypeScript file. Build three views:
    - Roster: character cards showing level, class, and profession progress bars
@@ -44,7 +44,7 @@ Status: Milestones 1–3 are done (Supabase live, magic-link login). Cel still n
    - Tonight's orders: objectives flagged `tonight`, grouped by assignee
    Changes can live in React state for now. Runs with `npm run dev`.
 2. **GitHub.** Push to the repo. Add a README explaining how to run it.
-3. **Supabase.** Create tables matching the data model, row-level security allowing only the two players, email magic-link login, and replace the mock data with live queries. Keep keys in `.env.local` and never commit them.
+3. **Supabase.** Create tables matching the data model, row-level security allowing only the two players, email + password login (switched from magic links: Supabase's free email limit was too low), and replace the mock data with live queries. Keep keys in `.env.local` and never commit them.
 4. **Deploy.** Host it so Josh's mate can log in from his own PC.
 
 ## Later (do not build yet, but don't design against it)
