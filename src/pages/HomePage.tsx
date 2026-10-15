@@ -77,7 +77,7 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
   })
 
   const nothingToSuggest =
-    closeToDing.length + rested.length + upgrades.length + tonight.length + craftable.length + capped.length === 0
+    closeToDing.length + rested.length + tonight.length + craftable.length + capped.length === 0
 
   const link = 'text-sm text-gold/90 underline decoration-gold/40 underline-offset-2 hover:text-parchment'
 
@@ -124,8 +124,14 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
             </Section>
           )}
 
-          {upgrades.length > 0 && (
-            <Section title="Gear upgrades waiting">
+          <Section title="Gear upgrades waiting">
+            {upgrades.length === 0 ? (
+              <p className="text-sm text-ash">
+                {items.some((i) => i.ilvl)
+                  ? "Nothing in your bags or banks beats what you're wearing right now."
+                  : 'No item levels recorded yet. Use addon v0.6.0, log in on each toon, open your bank, /reload, then import.'}
+              </p>
+            ) : (
               <ul className="space-y-2 text-sm">
                 {upgrades.map((u) => (
                   <li key={`${u.toon.id}-${u.item.itemId}`} className="flex items-center gap-3">
@@ -146,9 +152,9 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-xs text-ash">Based on item level, so check the stats suit your spec.</p>
-            </Section>
-          )}
+            )}
+            <p className="mt-2 text-xs text-ash">Based on item level, so check the stats suit your spec.</p>
+          </Section>
 
           {(closeToDing.length > 0 || rested.length > 0) && (
             <Section title="Worth playing">
