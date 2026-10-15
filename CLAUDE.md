@@ -28,8 +28,11 @@ It should feel like a WoW command table, not a corporate dashboard. Readable on 
 ## Data model (v1)
 
 - **players**: id, display_name (linked to a Supabase auth user from Milestone 3)
-- **characters**: id, player_id, name, race, class, level, notes
+- **characters**: id, player_id, name, race, class, level, notes, gold (copper), xp, xp_max, rested_xp, last_played, bank_seen_at
 - **professions**: id, character_id, name, skill_level, max_skill
+- **items**: id, character_id, location ("bags" | "bank"), item_id, name, quantity — the shared bank
+
+Database changes after the first setup are in numbered files in `supabase/` (e.g. `002-gold-xp-bank.sql`); `schema.sql` always has the full current setup.
 - **objectives**: id, title, description, assignee ("josh" | "cel" | "both"), category ("profession" | "farming" | "dungeon" | "gear" | "gold" | "other"), status ("todo" | "doing" | "done"), tonight (boolean, shows in "Tonight's orders"), created_at
 
 Both players can see and edit everything. It is one shared war room, not two separate accounts.

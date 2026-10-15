@@ -6,7 +6,7 @@
 -- 0. Clear out anything from earlier attempts
 -- ============================================================
 
-drop table if exists objectives, professions, characters, players cascade;
+drop table if exists items, objectives, professions, characters, players cascade;
 drop function if exists is_player();
 
 -- ============================================================
@@ -27,7 +27,13 @@ create table characters (
   race text not null,
   class text not null,
   level int not null default 1 check (level between 1 and 60),
-  notes text
+  notes text,
+  gold bigint not null default 0,     -- in copper (1g = 10,000)
+  xp int,
+  xp_max int,
+  rested_xp int not null default 0,
+  last_played timestamptz,
+  bank_seen_at timestamptz
 );
 
 create table professions (
@@ -37,6 +43,17 @@ create table professions (
   skill_level int not null default 1,
   max_skill int not null default 75,
   unique (character_id, name)
+);
+
+-- Everything each toon carries or has banked, one row per item type per place.
+create table items (
+  id uuid primary key default gen_random_uuid(),
+  character_id uuid not null references characters (id) on delete cascade,
+  location text not null check (location in ('bags', 'bank')),
+  item_id int not null,
+  name text not null,
+  quantity int not null default 1,
+  unique (character_id, location, item_id)
 );
 
 create table objectives (
@@ -65,6 +82,7 @@ alter table players     enable row level security;
 alter table characters  enable row level security;
 alter table professions enable row level security;
 alter table objectives  enable row level security;
+alter table items       enable row level security;
 
 -- Players can see the player list; changes to it are done by hand in Supabase.
 create policy "players can read players" on players
@@ -74,6 +92,9 @@ create policy "players manage characters" on characters
   for all to authenticated using (is_player()) with check (is_player());
 
 create policy "players manage professions" on professions
+  for all to authenticated using (is_player()) with check (is_player());
+
+create policy "players manage items" on items
   for all to authenticated using (is_player()) with check (is_player());
 
 create policy "players manage objectives" on objectives

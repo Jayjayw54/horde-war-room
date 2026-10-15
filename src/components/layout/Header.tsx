@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { SetPassword } from './SetPassword'
 
-export type Page = 'tonight' | 'roster' | 'objectives' | 'notes'
+export type Page = 'tonight' | 'roster' | 'bank' | 'objectives' | 'notes'
 
 const tabs: { id: Page; label: string }[] = [
   { id: 'tonight', label: "Tonight's orders" },
   { id: 'roster', label: 'Roster' },
+  { id: 'bank', label: 'Bank' },
   { id: 'objectives', label: 'Objectives' },
   { id: 'notes', label: 'Beta notes' },
 ]

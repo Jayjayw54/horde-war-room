@@ -55,6 +55,9 @@ export function ImportPanel({ warRoom, onClose }: { warRoom: WarRoom; onClose: (
               <li key={s.name}>
                 <span className={isNew(s.name) ? 'text-gold' : 'text-parchment'}>{isNew(s.name) ? 'New: ' : 'Update: '}</span>
                 <strong>{s.name}</strong>, level {s.level} {s.race} {s.className}
+                {s.gold !== null && <span className="text-ash"> · {Math.floor(s.gold / 10000)}g</span>}
+                {s.bags && <span className="text-ash"> · {s.bags.length} items in bags</span>}
+                {s.bank && <span className="text-ash"> · {s.bank.length} in bank</span>}
                 {s.professions.length > 0 && (
                   <span className="text-ash"> · {s.professions.map((p) => `${p.name} ${p.skill}/${p.max}`).join(', ')}</span>
                 )}

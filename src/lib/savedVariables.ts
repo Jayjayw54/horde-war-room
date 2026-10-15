@@ -102,6 +102,12 @@ export interface SnapshotProfession {
   max: number
 }
 
+export interface SnapshotItem {
+  id: number
+  name: string
+  count: number
+}
+
 export interface CharacterSnapshot {
   name: string
   race: string
@@ -110,9 +116,28 @@ export interface CharacterSnapshot {
   faction: string
   professions: SnapshotProfession[]
   updated: Date | null
+  // Added in addon v0.3.0 (missing from older files, so all optional):
+  gold: number | null // copper
+  xp: number | null
+  xpMax: number | null
+  rested: number | null
+  lastPlayed: Date | null
+  bags: SnapshotItem[] | null
+  bank: SnapshotItem[] | null
+  bankSeen: Date | null
 }
 
 const asTable = (v: LuaValue | undefined): LuaTable => (v && typeof v === 'object' ? v : {})
+const num = (v: LuaValue | undefined) => (typeof v === 'number' ? v : null)
+const date = (v: LuaValue | undefined) => (typeof v === 'number' ? new Date(v * 1000) : null)
+
+function items(v: LuaValue | undefined): SnapshotItem[] | null {
+  if (!v || typeof v !== 'object') return null
+  return Object.values(v)
+    .map(asTable)
+    .map((i) => ({ id: Number(i.id), name: String(i.name ?? ''), count: Number(i.count ?? 1) }))
+    .filter((i) => Number.isFinite(i.id) && i.name)
+}
 
 // Turns the file's text into a list of characters, or throws an Error with a readable message.
 export function readSnapshotFile(text: string): CharacterSnapshot[] {
@@ -131,6 +156,14 @@ export function readSnapshotFile(text: string): CharacterSnapshot[] {
         .map(asTable)
         .map((p) => ({ name: String(p.name ?? ''), skill: Number(p.skill ?? 0), max: Number(p.max ?? 0) }))
         .filter((p) => p.name),
-      updated: typeof c.updated === 'number' ? new Date(c.updated * 1000) : null,
+      updated: date(c.updated),
+      gold: num(c.money),
+      xp: num(c.xp),
+      xpMax: num(c.xpMax),
+      rested: num(c.rested),
+      lastPlayed: date(c.lastPlayed) ?? date(c.updated),
+      bags: items(c.bags),
+      bank: items(c.bank),
+      bankSeen: date(c.bankUpdated),
     }))
 }

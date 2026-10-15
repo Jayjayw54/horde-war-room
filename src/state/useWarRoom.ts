@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { CharacterSnapshot } from '../lib/savedVariables'
-import type { Character, Objective, Player, PlayerId, Status } from '../types'
+import type { Character, Item, Objective, Player, PlayerId, Status } from '../types'
 
 export type NewObjective = Omit<Objective, 'id' | 'createdAt'>
 
@@ -49,18 +49,20 @@ export function useWarRoom(userId: string) {
   const [players, setPlayers] = useState<Player[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
   const [objectives, setObjectives] = useState<Objective[]>([])
+  const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   // Fetch everything from the database.
   const load = useCallback(async () => {
-    const [playersRes, charactersRes, objectivesRes] = await Promise.all([
+    const [playersRes, charactersRes, objectivesRes, itemsRes] = await Promise.all([
       supabase.from('players').select('id, display_name, user_id').order('id'),
       supabase.from('characters').select('*, professions(*)').order('name'),
       supabase.from('objectives').select('*').order('created_at', { ascending: false }),
+      supabase.from('items').select('*').order('name'),
     ])
 
-    const failed = playersRes.error ?? charactersRes.error ?? objectivesRes.error
+    const failed = playersRes.error ?? charactersRes.error ?? objectivesRes.error ?? itemsRes.error
     if (failed) {
       setError(failed.message)
       setLoading(false)
@@ -81,6 +83,12 @@ export function useWarRoom(userId: string) {
         className: c.class,
         level: c.level,
         notes: c.notes ?? undefined,
+        gold: Number(c.gold ?? 0),
+        xp: c.xp,
+        xpMax: c.xp_max,
+        restedXp: c.rested_xp ?? 0,
+        lastPlayed: c.last_played,
+        bankSeenAt: c.bank_seen_at,
         professions: (c.professions ?? []).map((p: { id: string; name: string; skill_level: number; max_skill: number }) => ({
           id: p.id,
           name: p.name,
@@ -90,6 +98,16 @@ export function useWarRoom(userId: string) {
       })),
     )
     setObjectives(((objectivesRes.data ?? []) as ObjectiveRow[]).map(toObjective))
+    setItems(
+      (itemsRes.data ?? []).map((i) => ({
+        id: i.id,
+        characterId: i.character_id,
+        location: i.location,
+        itemId: i.item_id,
+        name: i.name,
+        quantity: i.quantity,
+      })),
+    )
     setError('')
     setLoading(false)
   }, [])
@@ -133,7 +151,19 @@ export function useWarRoom(userId: string) {
   async function importSnapshots(snapshots: CharacterSnapshot[], ownerId: PlayerId) {
     for (const snap of snapshots) {
       const existing = characters.find((c) => c.name.toLowerCase() === snap.name.toLowerCase())
-      const details = { name: snap.name, race: snap.race, class: snap.className, level: Math.min(60, Math.max(1, snap.level)) }
+      const details: Record<string, unknown> = {
+        name: snap.name,
+        race: snap.race,
+        class: snap.className,
+        level: Math.min(60, Math.max(1, snap.level)),
+      }
+      // Only overwrite these when the file has them (older addon versions didn't record them).
+      if (snap.gold !== null) details.gold = snap.gold
+      if (snap.xp !== null) details.xp = snap.xp
+      if (snap.xpMax !== null) details.xp_max = snap.xpMax
+      if (snap.rested !== null) details.rested_xp = snap.rested
+      if (snap.lastPlayed) details.last_played = snap.lastPlayed.toISOString()
+      if (snap.bankSeen) details.bank_seen_at = snap.bankSeen.toISOString()
 
       let characterId = existing?.id
       if (characterId) {
@@ -157,6 +187,22 @@ export function useWarRoom(userId: string) {
         if (error) return `${snap.name} professions: ${error.message}`
       }
 
+      // Items: replace what we have for this toon's bags (and bank, if the bank was opened) with the file's list.
+      for (const [location, list] of [
+        ['bags', snap.bags],
+        ['bank', snap.bank],
+      ] as const) {
+        if (!list) continue
+        const del = await supabase.from('items').delete().eq('character_id', characterId).eq('location', location)
+        if (del.error) return `${snap.name} ${location}: ${del.error.message}`
+        if (list.length > 0) {
+          const ins = await supabase.from('items').insert(
+            list.map((i) => ({ character_id: characterId, location, item_id: i.id, name: i.name, quantity: i.count })),
+          )
+          if (ins.error) return `${snap.name} ${location}: ${ins.error.message}`
+        }
+      }
+
       // Remove professions the character no longer has in game.
       const keep = snap.professions.map((p) => p.name)
       const stale = (existing?.professions ?? []).filter((p) => !keep.includes(p.name)).map((p) => p.id)
@@ -177,6 +223,7 @@ export function useWarRoom(userId: string) {
     players,
     characters,
     objectives,
+    items,
     loading,
     error,
     addObjective,

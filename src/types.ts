@@ -28,6 +28,21 @@ export interface Character {
   level: number
   notes?: string
   professions: Profession[]
+  gold: number // copper
+  xp: number | null
+  xpMax: number | null
+  restedXp: number
+  lastPlayed: string | null
+  bankSeenAt: string | null
+}
+
+export interface Item {
+  id: string
+  characterId: string
+  location: 'bags' | 'bank'
+  itemId: number
+  name: string
+  quantity: number
 }
 
 export interface Objective {
