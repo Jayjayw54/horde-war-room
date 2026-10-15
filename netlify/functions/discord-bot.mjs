@@ -6,6 +6,8 @@
 //   SUPABASE_SERVICE_ROLE_KEY  Supabase secret key (Project Settings > API Keys). SECRET: server-side only.
 //   VITE_SUPABASE_URL          already set for the website
 
+import { createPublicKey, verify as nodeVerify } from 'node:crypto'
+
 const hexToBytes = (hex) => new Uint8Array(hex.match(/.{1,2}/g).map((b) => parseInt(b, 16)))
 
 // Discord signs every request; we must check the signature or Discord refuses to use the bot.
@@ -14,8 +16,20 @@ async function verify(req, body) {
   const timestamp = req.headers.get('x-signature-timestamp')
   const publicKey = process.env.DISCORD_PUBLIC_KEY
   if (!signature || !timestamp || !publicKey) return false
-  const key = await crypto.subtle.importKey('raw', hexToBytes(publicKey), { name: 'Ed25519' }, false, ['verify'])
-  return crypto.subtle.verify('Ed25519', key, hexToBytes(signature), new TextEncoder().encode(timestamp + body))
+  const message = Buffer.from(timestamp + body)
+  try {
+    // Node's own crypto: wrap the raw 32-byte key in the standard Ed25519 key format.
+    const der = Buffer.concat([Buffer.from('302a300506032b6570032100', 'hex'), Buffer.from(publicKey.trim(), 'hex')])
+    const key = createPublicKey({ key: der, format: 'der', type: 'spki' })
+    return nodeVerify(null, message, key, Buffer.from(signature, 'hex'))
+  } catch {
+    try {
+      const key = await crypto.subtle.importKey('raw', hexToBytes(publicKey.trim()), { name: 'Ed25519' }, false, ['verify'])
+      return await crypto.subtle.verify('Ed25519', key, hexToBytes(signature), message)
+    } catch {
+      return false
+    }
+  }
 }
 
 // Read from the database with the server's secret key (the bot isn't a logged-in player).
@@ -90,6 +104,16 @@ async function goldTotals() {
 const COMMANDS = { whohas, toon, tonight, gold: goldTotals }
 
 export default async (req) => {
+  // Open /api/discord-bot in a browser to check the bot's setup (shows only whether keys are set, never the keys).
+  if (req.method === 'GET') {
+    return Response.json({
+      bot: 'Horde War Room',
+      publicKeySet: !!process.env.DISCORD_PUBLIC_KEY,
+      publicKeyLooksRight: /^[0-9a-f]{64}$/.test((process.env.DISCORD_PUBLIC_KEY ?? '').trim()),
+      databaseKeySet: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      databaseUrlSet: !!process.env.VITE_SUPABASE_URL,
+    })
+  }
   const body = await req.text()
   if (!(await verify(req, body))) return new Response('bad signature', { status: 401 })
   const interaction = JSON.parse(body)
