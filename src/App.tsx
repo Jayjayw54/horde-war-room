@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { Backdrop } from './components/layout/Backdrop'
 import { Header, type Page } from './components/layout/Header'
 import { BankPage } from './pages/BankPage'
 import { BisPage } from './pages/BisPage'
 import { ChangelogPage } from './pages/ChangelogPage'
+import { HomePage } from './pages/HomePage'
 import { ObjectivesPage } from './pages/ObjectivesPage'
 import { PlannerPage } from './pages/PlannerPage'
 import { ProgressPage } from './pages/ProgressPage'
@@ -22,12 +24,13 @@ export default function App() {
 }
 
 function WarRoom({ email, userId }: { email: string; userId: string }) {
-  const [page, setPage] = useState<Page>('roster')
+  const [page, setPage] = useState<Page>('home')
   const warRoom = useWarRoom(userId)
 
   return (
-    <div className="min-h-screen">
-      <Header page={page} onNavigate={setPage} email={email} />
+    <div className="relative isolate min-h-screen">
+      <Backdrop />
+      <Header page={page} onNavigate={setPage} email={email} live={warRoom.live} />
       <main className="mx-auto max-w-7xl px-5 py-8">
         {warRoom.error && (
           <p role="alert" className="mb-6 rounded-md border border-blood bg-leather px-4 py-3 text-blood-light">
@@ -35,6 +38,7 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
           </p>
         )}
         {warRoom.loading && <p className="text-ash">Unrolling the maps…</p>}
+        {!warRoom.loading && page === 'home' && <HomePage warRoom={warRoom} onNavigate={setPage} />}
         {!warRoom.loading && page === 'roster' && <RosterPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'progress' && <ProgressPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'bank' && <BankPage warRoom={warRoom} />}

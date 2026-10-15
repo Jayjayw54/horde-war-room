@@ -77,6 +77,8 @@ export interface GearItem {
   name: string
   quality: number | null
   ilvl: number | null
+  subType?: string | null
+  equipLoc?: string | null
 }
 
 export interface WeaponSkill {
@@ -93,6 +95,11 @@ export interface Item {
   name: string
   quantity: number
   quality: number | null
+  ilvl: number | null
+  minLevel: number | null
+  equipLoc: string | null
+  itemType: string | null
+  subType: string | null
 }
 
 export interface Objective {
@@ -139,4 +146,12 @@ export interface BisItem {
   itemName: string
   itemId: number | null
   note: string | null
+}
+
+export interface WarEvent {
+  id: number
+  createdAt: string
+  characterId: string | null
+  kind: string
+  text: string
 }

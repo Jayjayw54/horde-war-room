@@ -35,6 +35,8 @@ It should feel like a WoW command table, not a corporate dashboard. Readable on 
 - **character_history**: one row per toon per import (level, xp, gold) — Progress graphs
 - **recipes**: id, character_id, profession, recipe_id, name, item_id, makes, reagents (jsonb) — Planner
 - **bis_items**: id, character_id, slot, item_name, item_id, note — BiS wishlist
+- **events**: id, created_at, character_id, kind, text — activity feed (written by the importer)
+- items also has ilvl, min_level, equip_loc, item_type, sub_type (gear upgrade finder)
 - characters also has stats, gear, weapon_skills (jsonb)
 
 Database changes after the first setup are in numbered files in `supabase/` (e.g. `002-gold-xp-bank.sql`); `schema.sql` always has the full current setup.
@@ -64,8 +66,9 @@ Status: Milestones 1–4 are done. Live at https://euphonious-fox-f272a5.netlify
 
 ## Netlify
 
-- Functions in `netlify/functions/`: `patch-notes` (Blizzard beta notes), `item-icon` (Wowhead icons), `discord` (import summaries).
-- Environment variables: VITE_SUPABASE_URL, VITE_SUPABASE_KEY, DISCORD_WEBHOOK_URL (secret).
+- Functions in `netlify/functions/`: `patch-notes` (Blizzard beta notes), `item-icon` (Wowhead icons), `discord` (import summaries), `discord-bot` (slash commands; register with `node --env-file=.env.local scripts/register-discord-commands.mjs`).
+- Environment variables: VITE_SUPABASE_URL, VITE_SUPABASE_KEY, DISCORD_WEBHOOK_URL (secret), DISCORD_PUBLIC_KEY, SUPABASE_SERVICE_ROLE_KEY (secret, bot only).
+- Import logic lives in `src/lib/importer.ts` (writes characters, items, recipes, history and the events feed).
 
 ## WoW: Forever facts (found by testing in the beta, Oct 2026)
 

@@ -3,10 +3,11 @@ import { supabase } from '../../lib/supabase'
 import { SetPassword } from './SetPassword'
 import { latestVersion } from '../../data/changelog'
 
-export type Page = 'roster' | 'progress' | 'bank' | 'planner' | 'objectives' | 'notes' | 'bis' | 'changelog'
+export type Page = 'home' | 'roster' | 'progress' | 'bank' | 'planner' | 'objectives' | 'notes' | 'bis' | 'changelog'
 
 // Tabs shown on the tab rail ("What's new" is opened from the link in the top corner instead).
 const tabs: { id: Page; label: string }[] = [
+  { id: 'home', label: 'War table' },
   { id: 'roster', label: 'Roster' },
   { id: 'progress', label: 'Progress' },
   { id: 'bank', label: 'Bank' },
@@ -29,9 +30,10 @@ interface Props {
   page: Page
   onNavigate: (page: Page) => void
   email: string
+  live: boolean
 }
 
-export function Header({ page, onNavigate, email }: Props) {
+export function Header({ page, onNavigate, email, live }: Props) {
   const [changingPassword, setChangingPassword] = useState(false)
   const [seenVersion, setSeenVersion] = useState(readSeenVersion)
   const hasNew = seenVersion !== latestVersion
@@ -54,9 +56,9 @@ export function Header({ page, onNavigate, email }: Props) {
         {/* The banner hangs from the top edge of the page */}
         <button
           type="button"
-          onClick={() => onNavigate('roster')}
+          onClick={() => onNavigate('home')}
           className="war-banner w-60 shrink-0 px-6 pt-6 pb-12 text-center"
-          aria-label="Horde War Room, go to the Roster"
+          aria-label="Horde War Room, go to the war table"
         >
           <span className="block font-display text-3xl leading-none font-extrabold tracking-wide text-gold [text-shadow:0_2px_0_#3a0d08] sm:text-4xl">
             Horde
@@ -67,7 +69,16 @@ export function Header({ page, onNavigate, email }: Props) {
         </button>
 
         <div className="pt-5 text-right text-sm text-ash">
-          <p>{email}</p>
+          <p>
+            <span
+              className={`mr-2 inline-flex items-center gap-1 text-xs ${live ? 'text-[#1eff00]/80' : 'text-ash/60'}`}
+              title={live ? 'Changes from Cel (or the companion app) appear by themselves' : 'Not connected for live updates'}
+            >
+              <span className={`inline-block h-1.5 w-1.5 rounded-full ${live ? 'bg-[#1eff00]' : 'bg-ash/60'}`} />
+              {live ? 'Live' : 'Offline'}
+            </span>
+            {email}
+          </p>
           <p className="mt-1 flex flex-wrap justify-end gap-x-3">
             <button type="button" onClick={openChangelog} className={link}>
               What's new v{latestVersion}

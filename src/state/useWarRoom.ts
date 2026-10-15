@@ -3,8 +3,9 @@
 // placeholder data for the real database.
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { importSnapshots as runImport, notifyDiscord } from '../lib/importer'
 import type { CharacterSnapshot } from '../lib/savedVariables'
-import type { BisItem, Character, HistoryPoint, Item, Objective, Player, PlayerId, Recipe, Status } from '../types'
+import type { BisItem, Character, HistoryPoint, WarEvent, Item, Objective, Player, PlayerId, Recipe, Status } from '../types'
 
 export type NewObjective = Omit<Objective, 'id' | 'createdAt'>
 
@@ -45,23 +46,6 @@ function toObjectiveRow(o: Partial<Objective>) {
   return row
 }
 
-// Plain-language list of what changed for one toon since the last import.
-function describeChanges(before: Character | undefined, snap: CharacterSnapshot): string[] {
-  if (!before) return [`🆕 **${snap.name}** joined the roster (level ${snap.level} ${snap.race} ${snap.className})`]
-  const lines: string[] = []
-  if (snap.level > before.level) lines.push(`⬆️ **${snap.name}** dinged **${snap.level}** (was ${before.level})`)
-  for (const p of snap.professions) {
-    const old = before.professions.find((x) => x.name === p.name)
-    if (!old) lines.push(`📜 **${snap.name}** learned ${p.name} (${p.skill}/${p.max})`)
-    else if (p.skill > old.skillLevel) lines.push(`⚒️ **${snap.name}** ${p.name} ${old.skillLevel} → ${p.skill}`)
-  }
-  if (snap.gold !== null) {
-    const diff = Math.trunc((snap.gold - before.gold) / 10000)
-    if (Math.abs(diff) >= 1) lines.push(`💰 **${snap.name}** ${diff > 0 ? '+' : ''}${diff}g`)
-  }
-  return lines
-}
-
 export function useWarRoom(userId: string) {
   const [players, setPlayers] = useState<Player[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
@@ -70,6 +54,7 @@ export function useWarRoom(userId: string) {
   const [history, setHistory] = useState<HistoryPoint[]>([])
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [bis, setBis] = useState<BisItem[]>([])
+  const [events, setEvents] = useState<WarEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -118,6 +103,17 @@ export function useWarRoom(userId: string) {
         itemName: b.item_name,
         itemId: b.item_id,
         note: b.note,
+      })),
+    )
+
+    const eventsRes = await supabase.from('events').select('*').order('created_at', { ascending: false }).limit(60)
+    setEvents(
+      (eventsRes.data ?? []).map((e) => ({
+        id: e.id,
+        createdAt: e.created_at,
+        characterId: e.character_id,
+        kind: e.kind,
+        text: e.text,
       })),
     )
 
@@ -172,6 +168,11 @@ export function useWarRoom(userId: string) {
         name: i.name,
         quantity: i.quantity,
         quality: i.quality ?? null,
+        ilvl: i.ilvl ?? null,
+        minLevel: i.min_level ?? null,
+        equipLoc: i.equip_loc ?? null,
+        itemType: i.item_type ?? null,
+        subType: i.sub_type ?? null,
       })),
     )
     setError('')
@@ -180,6 +181,24 @@ export function useWarRoom(userId: string) {
 
   useEffect(() => {
     load()
+  }, [load])
+
+  // Live updates: when anything changes in the database (Cel ticks an objective, the companion app
+  // uploads a new file...), reload. Changes often arrive in bursts, so wait a moment and reload once.
+  const [live, setLive] = useState(false)
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const channel = supabase
+      .channel('war-room')
+      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+        clearTimeout(timer)
+        timer = setTimeout(load, 800)
+      })
+      .subscribe((status) => setLive(status === 'SUBSCRIBED'))
+    return () => {
+      clearTimeout(timer)
+      supabase.removeChannel(channel)
+    }
   }, [load])
 
   // If a save fails, show the error and reload so the screen matches the database again.
@@ -211,144 +230,14 @@ export function useWarRoom(userId: string) {
     if (error) handleSaveError(error.message)
   }
 
-  // Import characters from the addon's file. Toons are matched by full name:
-  // existing ones get their level, race, class and professions updated (owner stays the same);
-  // new ones are added to whoever is logged in. Professions are made to match the game exactly.
+  // Import characters from the addon's file (the real work lives in lib/importer.ts, shared with the companion app).
   async function importSnapshots(snapshots: CharacterSnapshot[], ownerId: PlayerId) {
-    const summary: string[] = [] // what changed, for the Discord message
-    const history: Record<string, unknown>[] = [] // one row per toon, for the graphs
-
-    for (const snap of snapshots) {
-      const existing = characters.find((c) => c.name.toLowerCase() === snap.name.toLowerCase())
-      summary.push(...describeChanges(existing, snap))
-      const details: Record<string, unknown> = {
-        name: snap.name,
-        race: snap.race,
-        class: snap.className,
-        level: Math.min(60, Math.max(1, snap.level)),
-      }
-      // Only overwrite these when the file has them (older addon versions didn't record them).
-      if (snap.gold !== null) details.gold = snap.gold
-      if (snap.xp !== null) details.xp = snap.xp
-      if (snap.xpMax !== null) details.xp_max = snap.xpMax
-      if (snap.rested !== null) details.rested_xp = snap.rested
-      if (snap.lastPlayed) details.last_played = snap.lastPlayed.toISOString()
-      if (snap.bankSeen) details.bank_seen_at = snap.bankSeen.toISOString()
-      if (snap.stats) details.stats = snap.stats
-      if (snap.gear) details.gear = snap.gear
-      if (snap.weaponSkills) details.weapon_skills = snap.weaponSkills
-      if (snap.raceFile) details.race_file = snap.raceFile
-      if (snap.sex) details.sex = snap.sex
-
-      let characterId = existing?.id
-      if (characterId) {
-        const { error } = await supabase.from('characters').update(details).eq('id', characterId)
-        if (error) return `${snap.name}: ${error.message}`
-      } else {
-        const { data, error } = await supabase
-          .from('characters')
-          .insert({ ...details, player_id: ownerId })
-          .select('id')
-          .single()
-        if (error) return `${snap.name}: ${error.message}`
-        characterId = data.id as string
-      }
-
-      if (snap.professions.length > 0) {
-        const { error } = await supabase.from('professions').upsert(
-          snap.professions.map((p) => ({ character_id: characterId, name: p.name, skill_level: p.skill, max_skill: p.max })),
-          { onConflict: 'character_id,name' },
-        )
-        if (error) return `${snap.name} professions: ${error.message}`
-      }
-
-      // Items: replace what we have for this toon's bags (and bank, if the bank was opened) with the file's list.
-      for (const [location, list] of [
-        ['bags', snap.bags],
-        ['bank', snap.bank],
-      ] as const) {
-        if (!list) continue
-        const del = await supabase.from('items').delete().eq('character_id', characterId).eq('location', location)
-        if (del.error) return `${snap.name} ${location}: ${del.error.message}`
-        if (list.length > 0) {
-          const ins = await supabase.from('items').insert(
-            list.map((i) => ({
-              character_id: characterId,
-              location,
-              item_id: i.id,
-              name: i.name,
-              quantity: i.count,
-              quality: i.quality,
-            })),
-          )
-          if (ins.error) return `${snap.name} ${location}: ${ins.error.message}`
-        }
-      }
-
-      // Recipes: replace each profession the file has (the addon only knows professions whose window you opened).
-      for (const [profession, list] of Object.entries(snap.recipes ?? {})) {
-        const before = recipes.filter((r) => r.characterId === characterId && r.profession === profession).length
-        const del = await supabase.from('recipes').delete().eq('character_id', characterId).eq('profession', profession)
-        if (del.error) break // recipes table not set up yet: skip quietly
-        // Some games list a recipe twice (e.g. ranks); keep one per name.
-        const unique = [...new Map(list.map((r) => [r.name, r])).values()]
-        if (unique.length > 0) {
-          await supabase.from('recipes').insert(
-            unique.map((r) => ({
-              character_id: characterId,
-              profession,
-              recipe_id: r.id,
-              name: r.name,
-              item_id: r.itemId,
-              makes: r.makes,
-              reagents: r.reagents,
-            })),
-          )
-        }
-        if (existing && unique.length > before && before > 0) {
-          summary.push(`📖 **${snap.name}** learned ${unique.length - before} new ${profession} recipe${unique.length - before === 1 ? '' : 's'}`)
-        }
-      }
-
-      history.push({
-        character_id: characterId,
-        level: snap.level,
-        xp: snap.xp,
-        xp_max: snap.xpMax,
-        gold: snap.gold,
-        recorded_at: (snap.updated ?? new Date()).toISOString(),
-      })
-
-      // Remove professions the character no longer has in game.
-      const keep = snap.professions.map((p) => p.name)
-      const stale = (existing?.professions ?? []).filter((p) => !keep.includes(p.name)).map((p) => p.id)
-      if (stale.length > 0) {
-        const { error } = await supabase.from('professions').delete().in('id', stale)
-        if (error) return `${snap.name} professions: ${error.message}`
-      }
-    }
-    // History for the graphs. If this fails (e.g. the history table isn't set up yet), the import still counts.
-    await supabase.from('character_history').insert(history)
-
+    const result = await runImport(supabase, snapshots, ownerId)
     await load()
-    notifyDiscord(snapshots.length, summary)
+    if (result.error) return result.error
+    const { data } = await supabase.auth.getSession()
+    notifyDiscord(window.location.origin, data.session?.access_token ?? '', me?.displayName ?? 'Someone', snapshots.length, result.summary)
     return null
-  }
-
-  // Posts the import summary to Discord via our Netlify Function. Fire-and-forget: a failure here never
-  // affects the import (and on your PC, where Netlify Functions don't run, it simply does nothing).
-  async function notifyDiscord(count: number, lines: string[]) {
-    try {
-      const { data } = await supabase.auth.getSession()
-      const who = me?.displayName ?? 'Someone'
-      await fetch('/api/discord', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session?.access_token ?? ''}` },
-        body: JSON.stringify({ title: `${who} imported ${count} ${count === 1 ? 'toon' : 'toons'}`, lines }),
-      })
-    } catch {
-      /* ignore */
-    }
   }
 
   // Star / unstar a toon as a main. Updates the screen straight away, then saves.
@@ -390,11 +279,13 @@ export function useWarRoom(userId: string) {
     history,
     recipes,
     bis,
+    events,
     setMain,
     addBis,
     removeBis,
     loading,
     error,
+    live,
     addObjective,
     updateObjective,
     setStatus,

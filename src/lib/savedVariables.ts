@@ -107,6 +107,12 @@ export interface SnapshotItem {
   name: string
   count: number
   quality: number | null
+  // Added in addon v0.6.0, for the gear upgrade finder:
+  ilvl: number | null
+  minLevel: number | null
+  equipLoc: string | null // e.g. "INVTYPE_HEAD"; empty for things you can't wear
+  itemType: string | null // e.g. "Armor", "Weapon"
+  subType: string | null // e.g. "Cloth", "One-Handed Swords"
 }
 
 export interface CharacterSnapshot {
@@ -189,7 +195,17 @@ function items(v: LuaValue | undefined): SnapshotItem[] | null {
   if (!v || typeof v !== 'object') return null
   return Object.values(v)
     .map(asTable)
-    .map((i) => ({ id: Number(i.id), name: String(i.name ?? ''), count: Number(i.count ?? 1), quality: num(i.quality) }))
+    .map((i) => ({
+      id: Number(i.id),
+      name: String(i.name ?? ''),
+      count: Number(i.count ?? 1),
+      quality: num(i.quality),
+      ilvl: num(i.ilvl),
+      minLevel: num(i.minLevel),
+      equipLoc: typeof i.equipLoc === 'string' && i.equipLoc ? i.equipLoc : null,
+      itemType: typeof i.itemType === 'string' ? i.itemType : null,
+      subType: typeof i.subType === 'string' ? i.subType : null,
+    }))
     .filter((i) => Number.isFinite(i.id) && i.name)
 }
 

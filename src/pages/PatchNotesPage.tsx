@@ -79,13 +79,11 @@ export function PatchNotesPage({ warRoom }: { warRoom: WarRoom }) {
           )
         })}
         <button type="button" onClick={() => setSelected(CLASSES)} className="px-2 text-sm text-ash underline hover:text-parchment">
-          All
+          Select all
         </button>
-        {played.length > 0 && (
-          <button type="button" onClick={() => setSelected(played)} className="px-2 text-sm text-ash underline hover:text-parchment">
-            Ours only
-          </button>
-        )}
+        <button type="button" onClick={() => setSelected([])} className="px-2 text-sm text-ash underline hover:text-parchment">
+          Deselect all
+        </button>
       </div>
       <p className="mt-2 text-xs text-ash">● = a class one of you plays</p>
 

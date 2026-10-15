@@ -21,6 +21,7 @@ export function PlannerPage({ warRoom }: { warRoom: WarRoom }) {
   const [profession, setProfession] = useState('all')
   const [pickedKey, setPickedKey] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
+  const [added, setAdded] = useState<string | null>(null)
 
   const character = (id: string) => warRoom.characters.find((c) => c.id === id)
   const owner = (playerId: string) => warRoom.players.find((p) => p.id === playerId)?.displayName ?? ''
@@ -216,6 +217,43 @@ export function PlannerPage({ warRoom }: { warRoom: WarRoom }) {
                   </tbody>
                 </table>
                 {plan.length === 0 && <p className="mt-3 text-sm text-ash">The game didn't share this recipe's materials.</p>}
+
+                {/* Turn the plan into objectives: one to gather each missing material, one to craft. */}
+                <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-ink pt-3">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const goal = `${quantity}× ${picked.name}`
+                      for (const g of plan.filter((g) => g.missing > 0)) {
+                        await warRoom.addObjective({
+                          title: `Get ${g.missing} ${g.name}`,
+                          description: `For ${goal}.`,
+                          assignee: 'both',
+                          category: 'farming',
+                          status: 'todo',
+                          tonight: false,
+                        })
+                      }
+                      await warRoom.addObjective({
+                        title: `Craft ${goal}`,
+                        description: suggested ? `${suggested.name} can craft it.` : undefined,
+                        assignee: suggested?.playerId ?? 'both',
+                        category: 'profession',
+                        status: 'todo',
+                        tonight: false,
+                      })
+                      setAdded(picked.key)
+                    }}
+                    className="rounded bg-blood px-4 py-1.5 text-sm font-semibold hover:bg-blood-light"
+                  >
+                    Add to objectives
+                  </button>
+                  <p className="text-xs text-ash">
+                    {added === picked.key
+                      ? 'Added. Find them on the Objectives tab.'
+                      : `Creates ${plan.filter((g) => g.missing > 0).length} gathering objective(s) for what's missing, plus one to craft it.`}
+                  </p>
+                </div>
                 {plan.length > 0 && plan.every((g) => g.missing === 0) && (
                   <p className="mt-3 font-semibold text-[#1eff00]">You've got everything between you. Get crafting.</p>
                 )}

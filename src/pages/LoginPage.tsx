@@ -1,5 +1,6 @@
 // The front gate: sign in with email and password, or create an account the first time.
 import { useState, type FormEvent } from 'react'
+import { Backdrop } from '../components/layout/Backdrop'
 import { supabase } from '../lib/supabase'
 
 type Mode = 'signin' | 'signup'
@@ -28,7 +29,8 @@ export function LoginPage() {
   const labelClass = 'font-display text-sm font-semibold text-parchment'
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-5">
+    <div className="relative isolate flex min-h-screen items-center justify-center px-5">
+      <Backdrop />
       <div className="w-full max-w-md rounded-lg border-t-4 border-blood bg-leather p-8 shadow-xl">
         <h1 className="font-display text-3xl font-extrabold tracking-wide text-gold">Horde War Room</h1>
         <p className="mt-1 text-ash">Members only. State your name, grunt.</p>

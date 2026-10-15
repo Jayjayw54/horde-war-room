@@ -10,13 +10,28 @@ export interface Release {
 
 export const changelog: Release[] = [
   {
+    version: '3.0',
+    date: '2026-10-15',
+    title: 'The war table',
+    changes: [
+      "New War table home page: tonight's orders, gear upgrades waiting, toons close to dinging or well rested, things you can craft right now, professions ready for their next rank, and who's been on.",
+      'Recent activity feed: dings, skill-ups, new recipes, epics and milestones (level 40, Artisan, 100g, first of the war party...).',
+      'Live updates: when Cel imports or ticks something off, your page updates by itself. Look for the green Live dot.',
+      'Gear upgrade finder: spots items in either of your bags or banks that beat what a toon is wearing.',
+      'Planner: "Add to objectives" turns a crafting plan into gathering and crafting objectives.',
+      'Discord bot: /whohas, /toon, /tonight and /gold, answered right in your Discord.',
+      'Addon v0.6.0 records item level and slot for gear in your bags and bank.',
+    ],
+  },
+  {
     version: '2.3',
     date: '2026-10-15',
     title: 'Dressing the war room',
     changes: [
       'A Horde war banner hangs at the top of every page.',
       'The menu is now a tab rail that stays at the top while you scroll, all on one line.',
-      'Torchlit, textured background; player names on red ribbons; leather panels throughout.',
+      'A new background scene: dusk over red canyon country, a Horde palisade and watchtower on the ridge, and embers drifting up.',
+      'Player names on red ribbons; leather panels throughout.',
       'The page uses more of wide screens.',
     ],
   },

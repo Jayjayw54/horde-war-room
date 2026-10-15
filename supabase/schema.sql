@@ -6,7 +6,7 @@
 -- 0. Clear out anything from earlier attempts
 -- ============================================================
 
-drop table if exists bis_items, recipes, character_history, items, objectives, professions, characters, players cascade;
+drop table if exists events, bis_items, recipes, character_history, items, objectives, professions, characters, players cascade;
 drop function if exists is_player();
 
 -- ============================================================
@@ -60,6 +60,11 @@ create table items (
   name text not null,
   quantity int not null default 1,
   quality int,                  -- 0 poor, 1 common, 2 uncommon, 3 rare, 4 epic, 5 legendary
+  ilvl int,
+  min_level int,
+  equip_loc text,
+  item_type text,
+  sub_type text,
   unique (character_id, location, item_id)
 );
 
@@ -95,6 +100,14 @@ create table bis_items (
   created_at timestamptz not null default now()
 );
 
+create table events (
+  id bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  character_id uuid references characters (id) on delete cascade,
+  kind text not null,
+  text text not null
+);
+
 create table objectives (
   id uuid primary key default gen_random_uuid(),
   title text not null,
@@ -125,6 +138,7 @@ alter table items       enable row level security;
 alter table character_history enable row level security;
 alter table recipes     enable row level security;
 alter table bis_items   enable row level security;
+alter table events      enable row level security;
 
 -- Players can see the player list; changes to it are done by hand in Supabase.
 create policy "players can read players" on players
@@ -146,6 +160,9 @@ create policy "players manage recipes" on recipes
   for all to authenticated using (is_player()) with check (is_player());
 
 create policy "players manage bis" on bis_items
+  for all to authenticated using (is_player()) with check (is_player());
+
+create policy "players manage events" on events
   for all to authenticated using (is_player()) with check (is_player());
 
 create policy "players manage objectives" on objectives
@@ -181,3 +198,8 @@ insert into objectives (title, description, assignee, category, status, tonight)
   ('Clear Ragefire Chasm', 'Bring healing potions.', 'both', 'dungeon', 'todo', true),
   ('Buy a better dagger off the auction house', null, 'josh', 'gear', 'todo', false),
   ('Save 10 gold for level 20 skills', null, 'both', 'gold', 'todo', false);
+
+-- ============================================================
+-- 4. Live updates
+-- ============================================================
+alter publication supabase_realtime add table characters, professions, items, objectives, recipes, bis_items, character_history, events;

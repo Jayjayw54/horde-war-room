@@ -1,9 +1,9 @@
--- Horde War Room exporter (v0.5.1).
+-- Horde War Room exporter (v0.6.0).
 -- Addons can't talk to websites. Instead, this records each character's details into
 -- HordeWarRoomDB, which the game writes to a file (SavedVariables) when you log out or /reload.
 -- The dashboard then imports that file.
 
-local VERSION = "0.5.1"
+local VERSION = "0.6.0"
 
 ---------------------------------------------------------------------------
 -- Reading things from the game
@@ -52,9 +52,23 @@ local function readBags(bagIds)
       slotsSeen = slotsSeen + 1
       local id, count, link, quality, icon = slotItem(bag, slot)
       if id then
-        local entry = items[id] or {
-          name = link and link:match("%[(.-)%]") or ("Item " .. id), count = 0, quality = quality, icon = icon,
-        }
+        local entry = items[id]
+        if not entry then
+          entry = { name = link and link:match("%[(.-)%]") or ("Item " .. id), count = 0, quality = quality, icon = icon }
+          -- For things you can wear, note what slot and how good, so the website can spot upgrades.
+          local getInfo = (C_Item and C_Item.GetItemInfo) or GetItemInfo
+          if getInfo then
+            local ok, _, _, _, ilvl, minLevel, itemType, subType, _, equipLoc = pcall(getInfo, link or id)
+            if ok and equipLoc and equipLoc ~= "" and equipLoc ~= "INVTYPE_BAG" and equipLoc ~= "INVTYPE_AMMO" then
+              local detailed = C_Item and C_Item.GetDetailedItemLevelInfo and link and select(2, pcall(C_Item.GetDetailedItemLevelInfo, link))
+              entry.ilvl = (type(detailed) == "number" and detailed) or ilvl
+              entry.minLevel = minLevel
+              entry.equipLoc = equipLoc
+              entry.itemType = itemType
+              entry.subType = subType
+            end
+          end
+        end
         entry.count = entry.count + (count or 1)
         items[id] = entry
       end
@@ -63,7 +77,10 @@ local function readBags(bagIds)
   -- Save as a list (simpler for the dashboard to read).
   local list = {}
   for id, e in pairs(items) do
-    table.insert(list, { id = id, name = e.name, count = e.count, quality = e.quality, icon = e.icon })
+    table.insert(list, {
+      id = id, name = e.name, count = e.count, quality = e.quality, icon = e.icon,
+      ilvl = e.ilvl, minLevel = e.minLevel, equipLoc = e.equipLoc, itemType = e.itemType, subType = e.subType,
+    })
   end
   return list, slotsSeen
 end
@@ -160,7 +177,15 @@ local function readGear()
       local ilvl
       if C_Item and C_Item.GetDetailedItemLevelInfo then ilvl = safe(C_Item.GetDetailedItemLevelInfo, link) end
       if not ilvl and GetItemInfo then ilvl = select(4, GetItemInfo(link)) end
+      local getInfo = (C_Item and C_Item.GetItemInfo) or GetItemInfo
+      local subType, equipLoc
+      if getInfo then
+        local ok, _, _, _, _, _, _, st, _, el = pcall(getInfo, link)
+        if ok then subType, equipLoc = st, el end
+      end
       table.insert(gear, {
+        subType = subType,
+        equipLoc = equipLoc,
         slot = slot,
         id = id,
         name = link:match("%[(.-)%]") or ("Item " .. tostring(id)),
