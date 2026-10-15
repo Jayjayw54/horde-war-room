@@ -3,7 +3,8 @@
 // placeholder data for the real database.
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import type { Character, Objective, Player, Profession, Status } from '../types'
+import type { CharacterSnapshot } from '../lib/savedVariables'
+import type { Character, Objective, Player, PlayerId, Profession, Status } from '../types'
 
 export type NewObjective = Omit<Objective, 'id' | 'createdAt'>
 export type CharacterInput = Omit<Character, 'id' | 'professions'>
@@ -46,7 +47,7 @@ function toObjectiveRow(o: Partial<Objective>) {
   return row
 }
 
-export function useWarRoom() {
+export function useWarRoom(userId: string) {
   const [players, setPlayers] = useState<Player[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
   const [objectives, setObjectives] = useState<Objective[]>([])
@@ -56,7 +57,7 @@ export function useWarRoom() {
   // Fetch everything from the database.
   const load = useCallback(async () => {
     const [playersRes, charactersRes, objectivesRes] = await Promise.all([
-      supabase.from('players').select('id, display_name').order('id'),
+      supabase.from('players').select('id, display_name, user_id').order('id'),
       supabase.from('characters').select('*, professions(*)').order('name'),
       supabase.from('objectives').select('*').order('created_at', { ascending: false }),
     ])
@@ -70,7 +71,7 @@ export function useWarRoom() {
 
     // Josh first, then everyone else alphabetically (this sets the left/right order on the Roster).
     const sortedPlayers = (playersRes.data ?? [])
-      .map((p) => ({ id: p.id, displayName: p.display_name }))
+      .map((p) => ({ id: p.id, displayName: p.display_name, userId: p.user_id }))
       .sort((a, b) => (a.id === 'josh' ? -1 : b.id === 'josh' ? 1 : a.id.localeCompare(b.id)))
     setPlayers(sortedPlayers)
     setCharacters(
@@ -169,7 +170,53 @@ export function useWarRoom() {
     saveRoster(supabase.from('professions').update(professionRow(changes)).eq('id', id))
   const deleteProfession = (id: string) => saveRoster(supabase.from('professions').delete().eq('id', id))
 
+  // Import characters from the addon's file. Toons are matched by full name:
+  // existing ones get their level, race, class and professions updated (owner stays the same);
+  // new ones are added to whoever is logged in. Professions are made to match the game exactly.
+  async function importSnapshots(snapshots: CharacterSnapshot[], ownerId: PlayerId) {
+    for (const snap of snapshots) {
+      const existing = characters.find((c) => c.name.toLowerCase() === snap.name.toLowerCase())
+      const details = { name: snap.name, race: snap.race, class: snap.className, level: Math.min(60, Math.max(1, snap.level)) }
+
+      let characterId = existing?.id
+      if (characterId) {
+        const { error } = await supabase.from('characters').update(details).eq('id', characterId)
+        if (error) return `${snap.name}: ${error.message}`
+      } else {
+        const { data, error } = await supabase
+          .from('characters')
+          .insert({ ...details, player_id: ownerId })
+          .select('id')
+          .single()
+        if (error) return `${snap.name}: ${error.message}`
+        characterId = data.id as string
+      }
+
+      if (snap.professions.length > 0) {
+        const { error } = await supabase.from('professions').upsert(
+          snap.professions.map((p) => ({ character_id: characterId, name: p.name, skill_level: p.skill, max_skill: p.max })),
+          { onConflict: 'character_id,name' },
+        )
+        if (error) return `${snap.name} professions: ${error.message}`
+      }
+
+      // Remove professions the character no longer has in game.
+      const keep = snap.professions.map((p) => p.name)
+      const stale = (existing?.professions ?? []).filter((p) => !keep.includes(p.name)).map((p) => p.id)
+      if (stale.length > 0) {
+        const { error } = await supabase.from('professions').delete().in('id', stale)
+        if (error) return `${snap.name} professions: ${error.message}`
+      }
+    }
+    await load()
+    return null
+  }
+
+  const me = players.find((p) => p.userId === userId) ?? null
+
   return {
+    me,
+    importSnapshots,
     players,
     characters,
     objectives,

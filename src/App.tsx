@@ -13,12 +13,12 @@ export default function App() {
   // Wait until we know whether someone is logged in, so the login screen doesn't flash.
   if (loading) return null
   if (!session) return <LoginPage />
-  return <WarRoom email={session.user.email ?? ''} />
+  return <WarRoom email={session.user.email ?? ''} userId={session.user.id} />
 }
 
-function WarRoom({ email }: { email: string }) {
+function WarRoom({ email, userId }: { email: string; userId: string }) {
   const [page, setPage] = useState<Page>('tonight')
-  const warRoom = useWarRoom()
+  const warRoom = useWarRoom(userId)
 
   return (
     <div className="min-h-screen">

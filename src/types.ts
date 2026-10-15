@@ -9,6 +9,7 @@ export type Status = 'todo' | 'doing' | 'done'
 export interface Player {
   id: PlayerId
   displayName: string
+  userId?: string | null
 }
 
 export interface Profession {

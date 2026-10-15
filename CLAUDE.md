@@ -36,7 +36,7 @@ Both players can see and edit everything. It is one shared war room, not two sep
 
 ## Milestones
 
-Status: Milestones 1–4 are done. Live at https://euphonious-fox-f272a5.netlify.app (Netlify, auto-deploys on every push to main). Josh and Cel are both linked to their players; public sign-ups should be switched off in Supabase. Next: the "Later" list.
+Status: Milestones 1–4 are done. Live at https://euphonious-fox-f272a5.netlify.app (Netlify, auto-deploys on every push to main). Josh and Cel are both linked to their players. The addon (addon/HordeWarRoom) and the Roster "Import from game" button are built and tested against the Forever beta. Next: the companion sync app or the profession planner.
 
 1. **Local prototype.** Scaffold the app. Use mock data from a local TypeScript file. Build three views:
    - Roster: character cards showing level, class, and profession progress bars
@@ -53,6 +53,14 @@ Status: Milestones 1–4 are done. Live at https://euphonious-fox-f272a5.netlify
 - A manual import: upload the SavedVariables file on the dashboard and update characters and professions from it.
 - A companion app on each PC that watches the SavedVariables file and syncs it to Supabase automatically.
 - A profession planner that calculates materials and decides who gathers and who crafts.
+
+## WoW: Forever facts (found by testing in the beta, Oct 2026)
+
+- Interface version (for the addon .toc): 16001.
+- No realms. Characters have a first name and surname. `UnitName("player")` returns (firstName, surname); `GetUnitName("player", true)` returns "First Surname". The full name is the unique key we match on.
+- Professions use the modern API: `GetProfessions()` returns slot indexes (some nil), `GetProfessionInfo(slot)` returns name, icon, skill, max. `GetNumSkillLines` does not exist.
+- Horde races: Orc, Undead, Tauren, Troll, Skyborne. Level cap 60.
+- SavedVariables file: `WTF\Account\<account>\SavedVariables\HordeWarRoom.lua`. Example in `addon/example-SavedVariables.lua`.
 
 Addons cannot make network calls. Data only leaves the game when SavedVariables is written on logout or `/reload`.
 So keep character and profession data importable from an external snapshot, keyed by character name.
