@@ -3,7 +3,7 @@ import { assigneeLabels, categoryLabels } from '../../lib/labels'
 import type { Assignee, Category } from '../../types'
 import type { WarRoom } from '../../state/useWarRoom'
 
-const assignees: Assignee[] = ['josh', 'mate', 'both']
+const assignees: Assignee[] = ['josh', 'cel', 'both']
 const categories = Object.keys(categoryLabels) as Category[]
 
 export function ObjectiveForm({ warRoom }: { warRoom: WarRoom }) {

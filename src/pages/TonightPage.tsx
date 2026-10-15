@@ -3,7 +3,7 @@ import { assigneeLabels } from '../lib/labels'
 import type { WarRoom } from '../state/useWarRoom'
 import type { Assignee } from '../types'
 
-const columns: Assignee[] = ['josh', 'both', 'mate']
+const columns: Assignee[] = ['josh', 'both', 'cel']
 
 export function TonightPage({ warRoom }: { warRoom: WarRoom }) {
   const tonight = warRoom.objectives.filter((o) => o.tonight)

@@ -3,7 +3,7 @@ import type { Character, Objective, Player } from '../types'
 
 export const players: Player[] = [
   { id: 'josh', displayName: 'Josh' },
-  { id: 'mate', displayName: 'Mate' },
+  { id: 'cel', displayName: 'Cel' },
 ]
 
 export const characters: Character[] = [
@@ -21,7 +21,7 @@ export const characters: Character[] = [
   },
   {
     id: 'c2',
-    playerId: 'mate',
+    playerId: 'cel',
     name: 'Kragnor',
     race: 'Orc',
     className: 'Warrior',
@@ -37,7 +37,7 @@ const now = new Date().toISOString()
 
 export const objectives: Objective[] = [
   { id: 'o1', title: 'Get Alchemy to 100', assignee: 'josh', category: 'profession', status: 'doing', tonight: true, createdAt: now },
-  { id: 'o2', title: 'Mine 20 copper ore for blacksmithing', assignee: 'mate', category: 'farming', status: 'todo', tonight: true, createdAt: now },
+  { id: 'o2', title: 'Mine 20 copper ore for blacksmithing', assignee: 'cel', category: 'farming', status: 'todo', tonight: true, createdAt: now },
   { id: 'o3', title: 'Clear Ragefire Chasm', description: 'Bring healing potions.', assignee: 'both', category: 'dungeon', status: 'todo', tonight: true, createdAt: now },
   { id: 'o4', title: 'Buy a better dagger off the auction house', assignee: 'josh', category: 'gear', status: 'todo', tonight: false, createdAt: now },
   { id: 'o5', title: 'Save 10 gold for level 20 skills', assignee: 'both', category: 'gold', status: 'todo', tonight: false, createdAt: now },

@@ -1,6 +1,6 @@
 // Shapes of the data the war room tracks. These match the Supabase tables planned in CLAUDE.md.
 
-export type PlayerId = 'josh' | 'mate'
+export type PlayerId = 'josh' | 'cel'
 export type Assignee = PlayerId | 'both'
 
 export type Category = 'profession' | 'farming' | 'dungeon' | 'gear' | 'gold' | 'other'

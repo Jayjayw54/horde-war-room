@@ -17,7 +17,7 @@ export const statusLabels: Record<Status, string> = {
 
 export const assigneeLabels: Record<Assignee, string> = {
   josh: 'Josh',
-  mate: 'Mate',
+  cel: 'Cel',
   both: 'Both',
 }
 

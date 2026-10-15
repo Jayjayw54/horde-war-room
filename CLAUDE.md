@@ -1,6 +1,6 @@
 # Horde War Room
 
-A private shared dashboard for two players (Josh and his mate) playing World of Warcraft: Forever.
+A private shared dashboard for two players (Josh and his mate Cel) playing World of Warcraft: Forever.
 It tracks characters, professions, and shared objectives in one place.
 
 ## Who you're working with
@@ -10,6 +10,7 @@ Josh is new to coding. For every change:
 - Keep changes small and working. One feature at a time.
 - Ask before installing new packages or tools.
 - After each working step, suggest a git commit with a clear message.
+- Josh is here to learn, but prefers Claude to do the work: build the whole step, then explain in plain language what it does and why.
 
 ## Stack
 
@@ -29,7 +30,7 @@ It should feel like a WoW command table, not a corporate dashboard. Readable on 
 - **players**: id, display_name (linked to a Supabase auth user from Milestone 3)
 - **characters**: id, player_id, name, race, class, level, notes
 - **professions**: id, character_id, name, skill_level, max_skill
-- **objectives**: id, title, description, assignee ("josh" | "mate" | "both"), category ("profession" | "farming" | "dungeon" | "gear" | "gold" | "other"), status ("todo" | "doing" | "done"), tonight (boolean, shows in "Tonight's orders"), created_at
+- **objectives**: id, title, description, assignee ("josh" | "cel" | "both"), category ("profession" | "farming" | "dungeon" | "gear" | "gold" | "other"), status ("todo" | "doing" | "done"), tonight (boolean, shows in "Tonight's orders"), created_at
 
 Both players can see and edit everything. It is one shared war room, not two separate accounts.
 
