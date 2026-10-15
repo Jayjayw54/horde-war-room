@@ -12,6 +12,7 @@ interface Props {
   warRoom: WarRoom
 }
 
+// owner isn't shown on the card any more (the column heading says who plays it), but it's kept for screen readers.
 export function CharacterCard({ character, owner, warRoom }: Props) {
   const [editing, setEditing] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -40,19 +41,19 @@ export function CharacterCard({ character, owner, warRoom }: Props) {
   }
 
   return (
-    <article className="border-l-4 bg-leather p-5" style={{ borderLeftColor: color }}>
+    <article className="border-l-4 bg-leather px-4 py-3" style={{ borderLeftColor: color }} aria-label={`${character.name}, played by ${owner}`}>
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="font-display text-2xl font-semibold" style={{ color }}>
+        <h4 className="font-display text-xl font-semibold" style={{ color }}>
           {character.name}
-        </h3>
-        <span className="font-display text-3xl font-extrabold text-gold tabular-nums">{character.level}</span>
+        </h4>
+        <span className="font-display text-2xl font-extrabold text-gold tabular-nums">{character.level}</span>
       </div>
-      <p className="text-ash">
-        {character.race} {character.className}, played by {owner}
+      <p className="text-sm text-ash">
+        {character.race} {character.className}
       </p>
-      {character.notes && <p className="mt-2">{character.notes}</p>}
+      {character.notes && <p className="mt-1 text-sm">{character.notes}</p>}
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-3 space-y-2">
         {character.professions.length === 0 && <p className="text-sm text-ash">No professions yet.</p>}
         {character.professions.map((p) => (
           <ProfessionBar key={p.id} profession={p} warRoom={warRoom} />
@@ -60,7 +61,7 @@ export function CharacterCard({ character, owner, warRoom }: Props) {
         <AddProfession character={character} warRoom={warRoom} />
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-ink pt-3 text-sm">
+      <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-ink pt-2 text-sm">
         {confirmingDelete ? (
           <>
             <span>Remove {character.name} and their professions?</span>

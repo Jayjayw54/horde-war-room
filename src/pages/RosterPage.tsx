@@ -40,15 +40,28 @@ export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
         </div>
       )}
 
-      {warRoom.characters.length === 0 && !adding ? (
-        <p className="mt-6 text-ash">No toons yet. Add your first one.</p>
-      ) : (
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {warRoom.characters.map((c) => (
-            <CharacterCard key={c.id} character={c} owner={ownerName(c.playerId)} warRoom={warRoom} />
-          ))}
-        </div>
-      )}
+      {/* One column per player: Josh on the left, Cel on the right (in the order of the players table). */}
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
+        {warRoom.players.map((player) => {
+          const toons = warRoom.characters.filter((c) => c.playerId === player.id)
+          return (
+            <div key={player.id}>
+              <h3 className="border-b-2 border-blood pb-1 font-display text-lg font-semibold text-parchment">
+                {player.displayName}
+                <span className="ml-2 text-sm font-normal text-ash">
+                  {toons.length} {toons.length === 1 ? 'toon' : 'toons'}
+                </span>
+              </h3>
+              <div className="mt-3 space-y-3">
+                {toons.length === 0 && <p className="text-sm text-ash">No toons yet.</p>}
+                {toons.map((c) => (
+                  <CharacterCard key={c.id} character={c} owner={ownerName(c.playerId)} warRoom={warRoom} />
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </section>
   )
 }

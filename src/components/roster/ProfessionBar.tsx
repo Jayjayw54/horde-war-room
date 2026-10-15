@@ -80,7 +80,7 @@ export function ProfessionBar({ profession, warRoom }: { profession: Profession;
         )}
       </div>
       <div
-        className="mt-1 h-2.5 overflow-hidden rounded-full bg-ink"
+        className="mt-1 h-2 overflow-hidden rounded-full bg-ink"
         role="progressbar"
         aria-valuenow={profession.skillLevel}
         aria-valuemin={0}

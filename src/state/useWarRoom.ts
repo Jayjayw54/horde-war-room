@@ -68,7 +68,11 @@ export function useWarRoom() {
       return
     }
 
-    setPlayers((playersRes.data ?? []).map((p) => ({ id: p.id, displayName: p.display_name })))
+    // Josh first, then everyone else alphabetically (this sets the left/right order on the Roster).
+    const sortedPlayers = (playersRes.data ?? [])
+      .map((p) => ({ id: p.id, displayName: p.display_name }))
+      .sort((a, b) => (a.id === 'josh' ? -1 : b.id === 'josh' ? 1 : a.id.localeCompare(b.id)))
+    setPlayers(sortedPlayers)
     setCharacters(
       (charactersRes.data ?? []).map((c) => ({
         id: c.id,
