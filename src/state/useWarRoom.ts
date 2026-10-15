@@ -3,9 +3,11 @@
 // placeholder data for the real database.
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import type { Character, Objective, Player, Status } from '../types'
+import type { Character, Objective, Player, Profession, Status } from '../types'
 
 export type NewObjective = Omit<Objective, 'id' | 'createdAt'>
+export type CharacterInput = Omit<Character, 'id' | 'professions'>
+export type ProfessionInput = Omit<Profession, 'id'>
 
 // The database uses snake_case column names (created_at); the app uses camelCase (createdAt).
 // These helpers translate between the two.
@@ -122,7 +124,64 @@ export function useWarRoom() {
     if (error) handleSaveError(error.message)
   }
 
-  return { players, characters, objectives, loading, error, addObjective, updateObjective, setStatus, deleteObjective }
+  // Roster changes: save to the database, then reload so every card shows what's really stored.
+  // Returns an error message if the save failed (e.g. a toon with that name already exists).
+  async function saveRoster(request: PromiseLike<{ error: { message: string; code?: string } | null }>) {
+    const { error } = await request
+    if (error) {
+      return error.code === '23505' ? 'That name is already taken.' : error.message
+    }
+    await load()
+    return null
+  }
+
+  function characterRow(c: Partial<CharacterInput>) {
+    const row: Record<string, unknown> = {}
+    if (c.playerId !== undefined) row.player_id = c.playerId
+    if (c.name !== undefined) row.name = c.name
+    if (c.race !== undefined) row.race = c.race
+    if (c.className !== undefined) row.class = c.className
+    if (c.level !== undefined) row.level = c.level
+    if (c.notes !== undefined) row.notes = c.notes || null
+    return row
+  }
+
+  function professionRow(p: Partial<ProfessionInput>) {
+    const row: Record<string, unknown> = {}
+    if (p.name !== undefined) row.name = p.name
+    if (p.skillLevel !== undefined) row.skill_level = p.skillLevel
+    if (p.maxSkill !== undefined) row.max_skill = p.maxSkill
+    return row
+  }
+
+  const addCharacter = (input: CharacterInput) => saveRoster(supabase.from('characters').insert(characterRow(input)))
+  const updateCharacter = (id: string, changes: Partial<CharacterInput>) =>
+    saveRoster(supabase.from('characters').update(characterRow(changes)).eq('id', id))
+  const deleteCharacter = (id: string) => saveRoster(supabase.from('characters').delete().eq('id', id))
+
+  const addProfession = (characterId: string, input: ProfessionInput) =>
+    saveRoster(supabase.from('professions').insert({ character_id: characterId, ...professionRow(input) }))
+  const updateProfession = (id: string, changes: Partial<ProfessionInput>) =>
+    saveRoster(supabase.from('professions').update(professionRow(changes)).eq('id', id))
+  const deleteProfession = (id: string) => saveRoster(supabase.from('professions').delete().eq('id', id))
+
+  return {
+    players,
+    characters,
+    objectives,
+    loading,
+    error,
+    addObjective,
+    updateObjective,
+    setStatus,
+    deleteObjective,
+    addCharacter,
+    updateCharacter,
+    deleteCharacter,
+    addProfession,
+    updateProfession,
+    deleteProfession,
+  }
 }
 
 export type WarRoom = ReturnType<typeof useWarRoom>
