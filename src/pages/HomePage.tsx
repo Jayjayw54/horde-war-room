@@ -4,11 +4,11 @@ import type { ReactNode } from 'react'
 import { ItemIcon, qualityColor } from '../components/bank/ItemIcon'
 import type { Page } from '../components/layout/Header'
 import { timeAgo } from '../lib/format'
-import { classColors } from '../lib/labels'
+import { assigneeLabel, classColors } from '../lib/labels'
 import { SLOT_NAMES } from '../lib/slots'
 import { findUpgrades } from '../lib/upgrades'
 import type { WarRoom } from '../state/useWarRoom'
-import type { Character } from '../types'
+import { EVERYONE, type Character } from '../types'
 
 const MAX_LEVEL = 60
 
@@ -117,7 +117,7 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
               <ul className="space-y-1 text-sm">
                 {tonight.slice(0, 6).map((o) => (
                   <li key={o.id}>
-                    {o.title} <span className="text-ash">· {o.assignee === 'both' ? 'both of you' : (players.find((p) => p.id === o.assignee)?.displayName ?? o.assignee)}</span>
+                    {o.title} <span className="text-ash">· {o.assignee === EVERYONE ? (players.length === 2 ? 'both of you' : 'everyone') : assigneeLabel(o.assignee, players)}</span>
                   </li>
                 ))}
               </ul>

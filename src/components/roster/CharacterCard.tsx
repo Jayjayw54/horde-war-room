@@ -23,7 +23,8 @@ const TABS: { id: Tab; label: string }[] = [
 interface Props {
   character: Character
   owner: string
-  onToggleMain: () => void
+  // Only your own toons can be starred; leave this out for everyone else's.
+  onToggleMain?: () => void
 }
 
 export function CharacterCard({ character, owner, onToggleMain }: Props) {
@@ -44,16 +45,24 @@ export function CharacterCard({ character, owner, onToggleMain }: Props) {
             <h4 className="truncate font-display text-xl font-semibold" style={{ color }}>
               {character.name}
             </h4>
-            <button
-              type="button"
-              onClick={onToggleMain}
-              aria-pressed={character.isMain}
-              aria-label={character.isMain ? `Unstar ${character.name} as a main` : `Star ${character.name} as a main`}
-              title={character.isMain ? 'Main (click to unstar)' : 'Star as a main'}
-              className={`ml-auto text-xl leading-none transition-colors ${character.isMain ? 'text-gold' : 'text-ash/40 hover:text-gold'}`}
-            >
-              {character.isMain ? '★' : '☆'}
-            </button>
+            {onToggleMain ? (
+              <button
+                type="button"
+                onClick={onToggleMain}
+                aria-pressed={character.isMain}
+                aria-label={character.isMain ? `Unstar ${character.name} as a main` : `Star ${character.name} as a main`}
+                title={character.isMain ? 'Main (click to unstar)' : 'Star as a main'}
+                className={`ml-auto text-xl leading-none transition-colors ${character.isMain ? 'text-gold' : 'text-ash/40 hover:text-gold'}`}
+              >
+                {character.isMain ? '★' : '☆'}
+              </button>
+            ) : (
+              character.isMain && (
+                <span title="Main" aria-hidden className="ml-auto text-xl leading-none text-gold">
+                  ★
+                </span>
+              )
+            )}
           </div>
           <p className="text-sm text-ash">
             Level {character.level} {character.race} {character.className}

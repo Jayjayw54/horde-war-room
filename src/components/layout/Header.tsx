@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { SetPassword } from './SetPassword'
 import { latestVersion } from '../../data/changelog'
 
-export type Page = 'home' | 'roster' | 'progress' | 'bank' | 'planner' | 'objectives' | 'notes' | 'bis' | 'changelog'
+export type Page = 'home' | 'roster' | 'progress' | 'bank' | 'planner' | 'objectives' | 'notes' | 'bis' | 'changelog' | 'party'
 
 // Tabs shown on the tab rail ("What's new" is opened from the link in the top corner instead).
 const tabs: { id: Page; label: string }[] = [
@@ -16,6 +16,7 @@ const tabs: { id: Page; label: string }[] = [
   { id: 'bis', label: 'BiS' },
   { id: 'objectives', label: 'Objectives' },
   { id: 'notes', label: 'Beta notes' },
+  { id: 'party', label: 'War party' },
 ]
 
 const SEEN_KEY = 'hwr-changelog-seen'
@@ -32,9 +33,14 @@ interface Props {
   onNavigate: (page: Page) => void
   email: string
   live: boolean
+  // The war party on screen, and the others you're in (for the switcher).
+  partyName: string
+  parties: { id: string; name: string }[]
+  partyId: string | null
+  onSwitchParty: (id: string) => void
 }
 
-export function Header({ page, onNavigate, email, live }: Props) {
+export function Header({ page, onNavigate, email, live, partyName, parties, partyId, onSwitchParty }: Props) {
   const [changingPassword, setChangingPassword] = useState(false)
   const [backupStatus, setBackupStatus] = useState('')
 
@@ -78,20 +84,36 @@ export function Header({ page, onNavigate, email, live }: Props) {
             <br />
             War Room
           </span>
-          <span className="mt-2 block text-sm text-parchment/80">Two mates. One Horde.</span>
+          <span className="mt-2 block text-sm text-parchment/80">{partyName || 'For the Horde.'}</span>
         </button>
 
         <div className="pt-5 text-right text-sm text-ash">
           <p>
             <span
               className={`mr-2 inline-flex items-center gap-1 text-xs ${live ? 'text-[#1eff00]/80' : 'text-ash/60'}`}
-              title={live ? 'Changes from Cel (or the companion app) appear by themselves' : 'Not connected for live updates'}
+              title={live ? 'Changes from your war party appear by themselves' : 'Not connected for live updates'}
             >
               <span className={`inline-block h-1.5 w-1.5 rounded-full ${live ? 'bg-[#1eff00]' : 'bg-ash/60'}`} />
               {live ? 'Live' : 'Offline'}
             </span>
             {email}
           </p>
+          {parties.length > 1 && (
+            <label className="mt-1 flex items-center justify-end gap-2 text-xs">
+              War party
+              <select
+                value={partyId ?? ''}
+                onChange={(e) => onSwitchParty(e.target.value)}
+                className="rounded bg-ink px-2 py-0.5 text-sm text-parchment"
+              >
+                {parties.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <p className="mt-1 flex flex-wrap justify-end gap-x-3">
             <button type="button" onClick={openChangelog} className={link}>
               What's new v{latestVersion}

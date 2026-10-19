@@ -1,5 +1,7 @@
 // Netlify Function: the Horde War Room Discord bot. Discord sends each slash command here
 // (/whohas, /toon, /tonight, /gold), we look up the answer in the database and reply.
+// One bot serves every war party: each party leader links their Discord server on the War party
+// page, and the bot only ever answers with that party's toons, bank and orders.
 //
 // Netlify environment variables it needs:
 //   DISCORD_PUBLIC_KEY         from the Discord Developer Portal (General Information > Public Key)
@@ -7,6 +9,7 @@
 //   VITE_SUPABASE_URL          already set for the website
 
 import { createPublicKey, verify as nodeVerify } from 'node:crypto'
+import { db, oneOf } from '../lib/admin.mjs'
 
 const hexToBytes = (hex) => new Uint8Array(hex.match(/.{1,2}/g).map((b) => parseInt(b, 16)))
 
@@ -32,16 +35,6 @@ async function verify(req, body) {
   }
 }
 
-// Read from the database with the server's secret key (the bot isn't a logged-in player).
-async function db(path) {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  const headers = { apikey: key }
-  if (key.startsWith('eyJ')) headers.Authorization = `Bearer ${key}` // older-style keys need this too
-  const res = await fetch(`${process.env.VITE_SUPABASE_URL}/rest/v1/${path}`, { headers })
-  if (!res.ok) throw new Error(`database said ${res.status}`)
-  return res.json()
-}
-
 const gold = (copper) => {
   const g = Math.floor(copper / 10000)
   const s = Math.floor(copper / 100) % 100
@@ -51,9 +44,21 @@ const gold = (copper) => {
 const option = (interaction, name) => interaction.data.options?.find((o) => o.name === name)?.value ?? ''
 const like = (text) => encodeURIComponent(`*${text.replace(/[*,()]/g, '')}*`)
 
-async function whohas(interaction) {
+// Which war party is asking? The party leader links their Discord server on the War party page.
+async function partyForServer(guildId) {
+  if (!guildId) return null
+  const rows = await db(`party_secrets?select=party_id&discord_guild_id=eq.${encodeURIComponent(guildId)}`)
+  if (rows.length === 0) return null
+  const partyId = rows[0].party_id
+  const members = await db(`party_members?select=player_id&party_id=eq.${partyId}`)
+  return { partyId, memberIds: members.map((m) => m.player_id) }
+}
+
+async function whohas(interaction, party) {
   const search = String(option(interaction, 'item')).trim()
-  const rows = await db(`items?select=name,quantity,location,characters(name)&name=ilike.${like(search)}&order=name&limit=200`)
+  const rows = await db(
+    `items?select=name,quantity,location,characters!inner(name,player_id)&characters.player_id=${oneOf(party.memberIds)}&name=ilike.${like(search)}&order=name&limit=200`,
+  )
   if (rows.length === 0) return `Nobody has anything matching **${search}**.`
   const byItem = new Map()
   for (const r of rows) {
@@ -68,10 +73,10 @@ async function whohas(interaction) {
     .join('\n')
 }
 
-async function toon(interaction) {
+async function toon(interaction, party) {
   const search = String(option(interaction, 'name')).trim()
   const rows = await db(
-    `characters?select=name,level,race,class,gold,xp,xp_max,rested_xp,players(display_name),professions(name,skill_level,max_skill)&name=ilike.${like(search)}&limit=3`,
+    `characters?select=name,level,race,class,gold,xp,xp_max,rested_xp,players(display_name),professions(name,skill_level,max_skill)&player_id=${oneOf(party.memberIds)}&name=ilike.${like(search)}&limit=3`,
   )
   if (rows.length === 0) return `No toon called **${search}** on the roster.`
   return rows
@@ -84,15 +89,21 @@ async function toon(interaction) {
     .join('\n\n')
 }
 
-async function tonight() {
-  const rows = await db(`objectives?select=title,assignee&tonight=eq.true&status=neq.done&order=created_at`)
+async function tonight(_interaction, party) {
+  const rows = await db(`objectives?select=title,assignee&party_id=eq.${party.partyId}&tonight=eq.true&status=neq.done&order=created_at`)
   if (rows.length === 0) return 'No orders for tonight. Free roam!'
-  const names = Object.fromEntries((await db('players?select=id,display_name')).map((p) => [p.id, p.display_name]))
-  return `**Tonight's orders**\n${rows.map((o) => `• ${o.title} (${o.assignee === 'both' ? 'both' : (names[o.assignee] ?? o.assignee)})`).join('\n')}`
+  const names = Object.fromEntries(
+    (await db(`players?select=id,display_name&id=${oneOf(party.memberIds)}`)).map((p) => [p.id, p.display_name]),
+  )
+  const everyone = party.memberIds.length === 2 ? 'both' : 'everyone'
+  return `**Tonight's orders**\n${rows.map((o) => `• ${o.title} (${o.assignee === 'everyone' ? everyone : (names[o.assignee] ?? 'former member')})`).join('\n')}`
 }
 
-async function goldTotals() {
-  const [chars, players] = await Promise.all([db('characters?select=gold,player_id'), db('players?select=id,display_name')])
+async function goldTotals(_interaction, party) {
+  const [chars, players] = await Promise.all([
+    db(`characters?select=gold,player_id&player_id=${oneOf(party.memberIds)}`),
+    db(`players?select=id,display_name&id=${oneOf(party.memberIds)}`),
+  ])
   const lines = players.map((p) => {
     const total = chars.filter((c) => c.player_id === p.id).reduce((s, c) => s + (c.gold ?? 0), 0)
     return `**${p.display_name}**: ${gold(total)}`
@@ -124,7 +135,12 @@ export default async (req) => {
     const handler = COMMANDS[interaction.data.name]
     let content
     try {
-      content = handler ? await handler(interaction) : 'Unknown command.'
+      const party = await partyForServer(interaction.guild_id)
+      if (!handler) content = 'Unknown command.'
+      else if (!party)
+        content =
+          "This Discord server isn't linked to a war party yet. Party leader: open the War Room, go to War party, and paste this server's ID under Discord."
+      else content = await handler(interaction, party)
     } catch (e) {
       content = `Couldn't reach the War Room: ${e.message}`
     }

@@ -1,7 +1,9 @@
-// "Export backup": downloads everything in the War Room database as one file on your computer.
+// "Export backup": downloads everything you can see in the War Room (your war parties) as one file on your computer.
 import { supabase } from './supabase'
 
 const TABLES = [
+  'parties',
+  'party_members',
   'players',
   'characters',
   'professions',

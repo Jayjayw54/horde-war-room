@@ -1,6 +1,8 @@
 # Horde War Room
 
-A shared dashboard for two Horde players in World of Warcraft: Forever: characters, professions, and objectives in one place.
+A shared dashboard for war parties in World of Warcraft: Forever: characters, professions, the shared bank and
+objectives in one place, on the website and in game (`/hwr`). Anyone can sign up, then start a war party or
+join one with an invite code.
 
 ## Run it
 
@@ -28,13 +30,18 @@ The Supabase keys are set in Netlify under Project configuration > Environment v
 
 ## Database
 
-`supabase/schema.sql` creates the tables, security rules and starter data. Paste it into
+`supabase/schema.sql` creates the tables and security rules for a brand-new project. Paste it into
 Supabase > SQL Editor and run it (it wipes existing tables first, so only do this on purpose).
 
-To let a player in: they create an account on the login page, then link them in the SQL Editor:
+People let themselves in: they sign up on the website, pick a name, then start a war party or join one with
+its invite code (War party page). Nothing to do in Supabase.
 
-```sql
-update players
-set user_id = (select id from auth.users where email = 'their-email@example.com')
-where id = 'cel';
-```
+## The addon and the launcher
+
+- `addon/HordeWarRoom/`: the WoW addon. `/hwr` opens the War Room window in game.
+- `launcher/`: the optional Windows launcher that syncs while you play (see `launcher/README.txt`).
+- `npm run package` zips both into `public/downloads/` (the build does this too); the website links to them.
+
+## Updating the live site
+
+See `UPDATE-GUIDE.md` for taking the war parties update live.

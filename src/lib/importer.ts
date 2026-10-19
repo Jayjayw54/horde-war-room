@@ -1,8 +1,8 @@
 // Saves characters from the addon's file into the database. Shared by the website's
-// "Import from game" button and the companion app, so both behave exactly the same.
+// "Import from game" button and the sync function the launcher uses, so both behave exactly the same.
 // (Only type imports here, so Node can run this file directly for the companion.)
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { CharacterSnapshot } from './savedVariables'
+import type { CharacterSnapshot, GameAction } from './savedVariables'
 
 export interface ImportResult {
   error: string | null
@@ -38,16 +38,35 @@ const SKILL_MILESTONES: Record<number, string> = { 75: 'Journeyman', 150: 'Exper
 
 const crossed = (before: number, after: number, mark: number) => before < mark && after >= mark
 
-export async function importSnapshots(db: SupabaseClient, snapshots: CharacterSnapshot[], ownerId: string): Promise<ImportResult> {
-  // What's already stored, to work out what changed.
+// ownerId: the player whose file this is. Only their toons are ever read or changed, so this is safe
+//   to run with the server's all-access key too (the website's sync function does).
+// partyPlayerIds: everyone in the owner's war parties, for "first of the war party to get there".
+export async function importSnapshots(
+  db: SupabaseClient,
+  snapshots: CharacterSnapshot[],
+  ownerId: string,
+  partyPlayerIds: string[] = [],
+): Promise<ImportResult> {
+  // What's already stored for this player, to work out what changed.
   const { data: beforeRows, error: loadError } = await db
     .from('characters')
     .select('id, name, level, gold, player_id, gear, professions(id, name, skill_level)')
+    .eq('player_id', ownerId)
   if (loadError) return { error: loadError.message, summary: [] }
   const all = (beforeRows ?? []) as Before[]
+  const myIds = all.map((c) => c.id)
 
-  const { data: epicRows } = await db.from('items').select('character_id, item_id').gte('quality', 4)
-  const { data: recipeRows } = await db.from('recipes').select('character_id, profession')
+  // Levels of everyone else's toons in the party, for "first to get there".
+  const others = partyPlayerIds.filter((p) => p !== ownerId)
+  const { data: otherRows } =
+    others.length > 0 ? await db.from('characters').select('level').in('player_id', others) : { data: [] }
+  const otherLevels = (otherRows ?? []).map((r) => r.level as number)
+
+  const none = { data: [] as { character_id: string; item_id?: number; profession?: string }[] }
+  const { data: epicRows } =
+    myIds.length > 0 ? await db.from('items').select('character_id, item_id').in('character_id', myIds).gte('quality', 4) : none
+  const { data: recipeRows } =
+    myIds.length > 0 ? await db.from('recipes').select('character_id, profession').in('character_id', myIds) : none
 
   const summary: string[] = []
   const events: Event[] = []
@@ -96,7 +115,7 @@ export async function importSnapshots(db: SupabaseClient, snapshots: CharacterSn
       if (snap.level > existing.level) note('ding', `⬆️ **${snap.name}** dinged **${snap.level}** (was ${existing.level})`)
       for (const [mark, text] of Object.entries(LEVEL_MILESTONES)) {
         if (crossed(existing.level, snap.level, Number(mark))) {
-          const first = !all.some((c) => c.id !== existing.id && c.level >= Number(mark))
+          const first = !all.some((c) => c.id !== existing.id && c.level >= Number(mark)) && !otherLevels.some((l) => l >= Number(mark))
           note('milestone', `🏆 **${snap.name}** ${text}${first ? ' First of the war party to get there.' : ''}`)
         }
       }
@@ -216,6 +235,26 @@ export async function importSnapshots(db: SupabaseClient, snapshots: CharacterSn
   if (events.length > 0) await db.from('events').insert(events)
 
   return { error: null, summary }
+}
+
+// Objectives ticked off (or reopened) in the game's War Room window.
+// partyIds: the parties the player is in. Objectives from any other party are ignored.
+// A change made on the website after the tick in game wins: we only apply it if the objective
+// hasn't been touched since. Returns how many were applied.
+export async function applyActions(db: SupabaseClient, actions: GameAction[], partyIds: string[]): Promise<number> {
+  if (partyIds.length === 0) return 0
+  let applied = 0
+  for (const a of actions) {
+    const { data, error } = await db
+      .from('objectives')
+      .update({ status: a.status })
+      .eq('id', a.objectiveId)
+      .in('party_id', partyIds)
+      .lt('updated_at', a.at.toISOString())
+      .select('id')
+    if (!error && data && data.length > 0) applied++
+  }
+  return applied
 }
 
 // Posts an import summary to Discord through the live site's Netlify Function.
