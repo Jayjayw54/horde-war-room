@@ -1,21 +1,21 @@
 <#
-  Horde War Room launcher.
+  Warcall launcher.
 
   What it does, in order:
     1. Fetches your war party's latest data and puts it where the addon reads it
-       (Interface\AddOns\HordeWarRoom\WarRoomData.lua), so /hwr is fresh when you log in.
+       (Interface\AddOns\Warcall\WarcallData.lua), so /warcall is fresh when you log in.
     2. Waits while you play. Every time the game saves the addon's file (on /reload or logout),
-       it sends that file to the War Room website and brings the party's newest data back.
+       it sends that file to the Warcall website and brings the party's newest data back.
     3. When you close WoW, it does one last sync and closes itself.
 
   What it does NOT do: it never touches the game itself, never runs in the background after you
-  close it, never installs anything, and only talks to the War Room website. It reads one file
-  (the addon's SavedVariables) and writes one file (WarRoomData.lua in the addon's folder).
+  close it, never installs anything, and only talks to the Warcall website. It reads one file
+  (the addon's SavedVariables) and writes one file (WarcallData.lua in the addon's folder).
 
   Your settings (website, game folder, and your sync key, encrypted so only your Windows account
-  can read it) are saved in %APPDATA%\HordeWarRoom\launcher.json.
+  can read it) are saved in %APPDATA%\Warcall\launcher.json.
 
-  Run it with "Play War Room.cmd". Options:
+  Run it with "Play Warcall.cmd". Options:
     -Setup   ask the setup questions again
     -Once    sync once and close (no waiting)
 #>
@@ -29,7 +29,7 @@ $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $DefaultSite = 'https://euphonious-fox-f272a5.netlify.app'
-$ConfigDir = Join-Path $env:APPDATA 'HordeWarRoom'
+$ConfigDir = Join-Path $env:APPDATA 'Warcall'
 $ConfigFile = Join-Path $ConfigDir 'launcher.json'
 $Utf8 = New-Object System.Text.UTF8Encoding $false  # UTF-8 without the invisible marker at the start
 
@@ -70,7 +70,7 @@ function Pick-Folder {
 function Ask-GameFolder {
   $candidates = @(Find-GameFolders)
   # Prefer a folder where the addon has already saved something.
-  $withAddon = @($candidates | Where-Object { Get-ChildItem (Join-Path $_ 'WTF\Account\*\SavedVariables\HordeWarRoom.lua') -ErrorAction SilentlyContinue })
+  $withAddon = @($candidates | Where-Object { Get-ChildItem (Join-Path $_ 'WTF\Account\*\SavedVariables\Warcall.lua') -ErrorAction SilentlyContinue })
   if ($withAddon.Count -eq 1) { $candidates = $withAddon }
 
   if ($candidates.Count -eq 1) {
@@ -93,14 +93,14 @@ function Ask-GameFolder {
 
 function Run-Setup {
   Say ''
-  Say 'Horde War Room launcher setup' 'Yellow'
-  Say 'You need a sync key: on the War Room website, open War party, then "Make a sync key".'
+  Say 'Warcall launcher setup' 'Yellow'
+  Say 'You need a sync key: on the Warcall website, open War party, then "Make a sync key".'
   do {
     $key = (Read-Host 'Paste your sync key').Trim()
     if ($key -notmatch '^hwr_[0-9a-f]{64}$') { Say "That doesn't look like a sync key (it starts with hwr_). Try again." 'Red' }
   } until ($key -match '^hwr_[0-9a-f]{64}$')
 
-  $site = Read-Host "War Room website (press Enter for $DefaultSite)"
+  $site = Read-Host "Warcall website (press Enter for $DefaultSite)"
   if (-not $site) { $site = $DefaultSite }
   $site = $site.Trim().TrimEnd('/')
 
@@ -114,7 +114,7 @@ function Run-Setup {
   }
   New-Item -ItemType Directory -Force -Path $ConfigDir | Out-Null
   [IO.File]::WriteAllText($ConfigFile, ($config | ConvertTo-Json), $Utf8)
-  Say "Saved. (Run 'Play War Room.cmd' with -Setup to change these later.)" 'Green'
+  Say "Saved. (Run 'Play Warcall.cmd' with -Setup to change these later.)" 'Green'
   return Load-Config
 }
 
@@ -131,7 +131,7 @@ function Load-Config {
 # ---------------------------------------------------------------------------
 
 # Sends a request and returns the answer as text, read as UTF-8 (so accented names come through right).
-function Call-WarRoom($config, $method, $bodyText) {
+function Call-Warcall($config, $method, $bodyText) {
   $params = @{
     Uri             = "$($config.site)/api/sync"
     Method          = $method
@@ -147,7 +147,7 @@ function Call-WarRoom($config, $method, $bodyText) {
     $response = Invoke-WebRequest @params
     return [pscustomobject]@{
       text   = $Utf8.GetString($response.RawContentStream.ToArray())
-      player = [Uri]::UnescapeDataString([string]$response.Headers['X-War-Room-Player'])
+      player = [Uri]::UnescapeDataString([string]$response.Headers['X-Warcall-Player'])
     }
   } catch [System.Net.WebException] {
     $text = ''
@@ -157,20 +157,20 @@ function Call-WarRoom($config, $method, $bodyText) {
     }
     $message = $_.Exception.Message
     try { $message = ($text | ConvertFrom-Json).error } catch { }
-    throw "The War Room said: $message"
+    throw "Warcall said: $message"
   } catch {
-    throw "Couldn't reach the War Room: $($_.Exception.Message)"
+    throw "Couldn't reach Warcall: $($_.Exception.Message)"
   }
 }
 
 # Fetches the party's latest in-game data and writes it for the addon. Returns the player's name.
 function Refresh-GameData($config) {
-  $answer = Call-WarRoom $config 'GET' $null
+  $answer = Call-Warcall $config 'GET' $null
   Write-GameData $config $answer.text
   return $answer.player
 }
 
-function Addon-Folder($config) { Join-Path $config.gameFolder 'Interface\AddOns\HordeWarRoom' }
+function Addon-Folder($config) { Join-Path $config.gameFolder 'Interface\AddOns\Warcall' }
 
 function Write-GameData($config, $lua) {
   $folder = Addon-Folder $config
@@ -179,14 +179,14 @@ function Write-GameData($config, $lua) {
     return
   }
   # Write to a temporary file first, then swap it in, so the game never sees half a file.
-  $target = Join-Path $folder 'WarRoomData.lua'
+  $target = Join-Path $folder 'WarcallData.lua'
   $temp = "$target.tmp"
   [IO.File]::WriteAllText($temp, $lua, $Utf8)
   Move-Item -Force $temp $target
 }
 
 function Saved-Files($config) {
-  @(Get-ChildItem (Join-Path $config.gameFolder 'WTF\Account\*\SavedVariables\HordeWarRoom.lua') -ErrorAction SilentlyContinue)
+  @(Get-ChildItem (Join-Path $config.gameFolder 'WTF\Account\*\SavedVariables\Warcall.lua') -ErrorAction SilentlyContinue)
 }
 
 function Sync-File($config, $file) {
@@ -197,7 +197,7 @@ function Sync-File($config, $file) {
     Start-Sleep -Milliseconds 500
   }
   $text = [IO.File]::ReadAllText($file.FullName, $Utf8)
-  $result = (Call-WarRoom $config 'POST' $text).text | ConvertFrom-Json
+  $result = (Call-Warcall $config 'POST' $text).text | ConvertFrom-Json
   Refresh-GameData $config | Out-Null
   $line = "$(Stamp)  Synced $($result.imported) toon(s)."
   if ($result.ordersUpdated -gt 0) { $line += " $($result.ordersUpdated) order(s) ticked off." }
@@ -218,8 +218,8 @@ function Game-Running($config) {
 # Main
 # ---------------------------------------------------------------------------
 
-$Host.UI.RawUI.WindowTitle = 'Horde War Room launcher'
-Say 'Horde War Room launcher' 'Yellow'
+$Host.UI.RawUI.WindowTitle = 'Warcall launcher'
+Say 'Warcall launcher' 'Yellow'
 
 $config = $null
 if (-not $Setup) {
@@ -231,7 +231,7 @@ try {
   Say "$(Stamp)  Fetching your war party's latest..."
   $player = Refresh-GameData $config
   $hello = if ($player) { "Ready, $player." } else { 'Ready.' }
-  Say "$(Stamp)  $hello /hwr in game shows the War Room." 'Green'
+  Say "$(Stamp)  $hello /warcall in game opens Warcall." 'Green'
 } catch {
   Say "$(Stamp)  $($_.Exception.Message)" 'Red'
   if ($_.Exception.Message -match 'sync key') { Say '        Make a new key on the website, then run this with -Setup.' 'Yellow' }
@@ -272,7 +272,7 @@ while ($true) {
   } elseif ($wasRunning) {
     if (-not $stoppedAt) { $stoppedAt = Get-Date }
     elseif (((Get-Date) - $stoppedAt).TotalSeconds -ge 10) {
-      Say "$(Stamp)  WoW closed. All synced. Lok'tar!" 'Yellow'
+      Say "$(Stamp)  WoW closed. All synced. Victory!" 'Yellow'
       Start-Sleep -Seconds 3
       exit 0
     }

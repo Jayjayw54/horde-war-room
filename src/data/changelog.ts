@@ -10,6 +10,18 @@ export interface Release {
 
 export const changelog: Release[] = [
   {
+    version: '4.1',
+    date: '2026-10-19',
+    title: 'Horde War Room is now Warcall',
+    changes: [
+      'New name: Warcall. It works for Horde and Alliance crews alike.',
+      'The addon is now called Warcall (v0.8.0). Delete the old HordeWarRoom folder from Interface\\AddOns, then install Warcall from the War party page.',
+      'In game, type /warcall (or /wcall) to open the window. The old /hwr still works too. /warcall status shows the old check.',
+      'The launcher is now "Play Warcall.cmd". If you set up the old one, run the new one once to set it up again.',
+      'Your toons, orders and party are all still here. Nothing to redo on the website.',
+    ],
+  },
+  {
     version: '4.0',
     date: '2026-10-19',
     title: 'War parties, and the War Room in game',

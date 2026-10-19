@@ -1,4 +1,4 @@
-// One-off: tells Discord which slash commands the Horde War Room bot has.
+// One-off: tells Discord which slash commands the Warcall bot has.
 // Run from the project folder (needs DISCORD_APP_ID and DISCORD_BOT_TOKEN in .env.local):
 //   node --env-file=.env.local scripts/register-discord-commands.mjs
 const appId = process.env.DISCORD_APP_ID

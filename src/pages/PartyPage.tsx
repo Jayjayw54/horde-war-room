@@ -331,7 +331,7 @@ function DiscordSettings({ warRoom }: { warRoom: WarRoom }) {
   )
 }
 
-// The War Room in game: the addon, the in-game data file, and sync keys for the launcher.
+// Warcall in game: the addon, the in-game data file, and sync keys for the launcher.
 function GameCard({ warRoom }: { warRoom: WarRoom }) {
   type Key = Awaited<ReturnType<WarRoom['listSyncKeys']>>[number]
   const [keys, setKeys] = useState<Key[]>([])
@@ -353,21 +353,21 @@ function GameCard({ warRoom }: { warRoom: WarRoom }) {
       <ol className="list-decimal space-y-2 pl-5 text-sm text-ash">
         <li>
           Install the addon:{' '}
-          <a href="/downloads/HordeWarRoom.zip" download={`HordeWarRoom-v${__ADDON_VERSION__}.zip`} className="text-gold underline">
-            HordeWarRoom v{__ADDON_VERSION__}.zip
+          <a href="/downloads/Warcall.zip" download={`Warcall-v${__ADDON_VERSION__}.zip`} className="text-gold underline">
+            Warcall v{__ADDON_VERSION__}.zip
           </a>
           . Unzip it
           into the <code className="text-parchment">Interface\AddOns</code> folder inside your WoW: Forever game folder (next to <code className="text-parchment">WTF</code>).
         </li>
         <li>
-          In game, type <code className="text-parchment">/hwr</code> to open the War Room window.
+          In game, type <code className="text-parchment">/warcall</code> to open the Warcall window. Using the old Horde War Room addon? Delete its <code className="text-parchment">HordeWarRoom</code> folder first.
         </li>
         <li>
           To keep it up to date, either use the launcher (below), or after each import here click{' '}
           <button type="button" className="text-gold underline" onClick={() => downloadGameData(warRoom.gameDataFile())}>
             Download in-game data
           </button>{' '}
-          and put <code className="text-parchment">WarRoomData.lua</code> in the addon's folder.
+          and put <code className="text-parchment">WarcallData.lua</code> in the addon's folder.
         </li>
       </ol>
 
@@ -376,7 +376,7 @@ function GameCard({ warRoom }: { warRoom: WarRoom }) {
         Start WoW with the launcher instead of the usual shortcut and everything syncs by itself: each /reload or logout sends
         your toons and in-game tick-offs here, and brings the party's latest back. It only runs while you play, installs
         nothing, and you can read every line of it first.{' '}
-        <a href="/downloads/WarRoomLauncher.zip" className="text-gold underline">
+        <a href="/downloads/WarcallLauncher.zip" className="text-gold underline">
           Download the launcher
         </a>
         .

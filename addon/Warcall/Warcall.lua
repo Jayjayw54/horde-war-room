@@ -1,13 +1,13 @@
--- Horde War Room (v0.7.0).
+-- Warcall (v0.8.0). Formerly Horde War Room.
 -- Addons can't talk to websites. Instead, this records each character's details into
--- HordeWarRoomDB, which the game writes to a file (SavedVariables) when you log out or /reload.
--- The website then imports that file (by hand, or through the launcher).
--- The other way round, WarRoomData.lua (in this folder) brings the war party's data into the game
--- for the /hwr window (UI.lua).
+-- WarcallDB, which the game writes to a file (SavedVariables) when you log out or /reload.
+-- The Warcall website then imports that file (by hand, or through the launcher).
+-- The other way round, WarcallData.lua (in this folder) brings the war party's data into the game
+-- for the /warcall window (UI.lua).
 
 local _, ns = ...
 ns = ns or {}
-local VERSION = "0.7.0"
+local VERSION = "0.8.0"
 ns.VERSION = VERSION
 
 ---------------------------------------------------------------------------
@@ -266,19 +266,19 @@ end
 ---------------------------------------------------------------------------
 
 local function currentCharacter()
-  HordeWarRoomDB = HordeWarRoomDB or {}
+  WarcallDB = WarcallDB or {}
   -- Data saved by the very first test version used the wrong name format, so start fresh.
-  if HordeWarRoomDB.version ~= 2 then HordeWarRoomDB.characters = nil end
-  HordeWarRoomDB.version = 2
-  HordeWarRoomDB.addonVersion = VERSION
-  HordeWarRoomDB.characters = HordeWarRoomDB.characters or {}
+  if WarcallDB.version ~= 2 then WarcallDB.characters = nil end
+  WarcallDB.version = 2
+  WarcallDB.addonVersion = VERSION
+  WarcallDB.characters = WarcallDB.characters or {}
 
   -- Forever has no realms. UnitName gives the first name and the surname separately,
   -- and GetUnitName(..., true) joins them ("Jay Mcnut"). The full name is the key the dashboard matches on.
   local firstName, surname = UnitName("player")
   local fullName = GetUnitName("player", true) or firstName
-  local c = HordeWarRoomDB.characters[fullName] or {}
-  HordeWarRoomDB.characters[fullName] = c
+  local c = WarcallDB.characters[fullName] or {}
+  WarcallDB.characters[fullName] = c
 
   c.name = fullName
   c.firstName = firstName
@@ -372,8 +372,8 @@ frame:SetScript("OnEvent", function(_, event)
     C_Timer.After(5, snapshot)
   elseif event == "PLAYER_LOGOUT" then
     -- Only note the time: by now the game has already unloaded professions and bags.
-    if HordeWarRoomDB and HordeWarRoomDB.characters then
-      local c = HordeWarRoomDB.characters[GetUnitName("player", true) or UnitName("player")]
+    if WarcallDB and WarcallDB.characters then
+      local c = WarcallDB.characters[GetUnitName("player", true) or UnitName("player")]
       if c then c.lastPlayed = time() end
     end
   elseif event == "TRADE_SKILL_SHOW" or event == "TRADE_SKILL_LIST_UPDATE" or event == "TRADE_SKILL_DATA_SOURCE_CHANGED"
@@ -409,11 +409,11 @@ local function formatMoney(copper)
   return string.format("%dg %ds %dc", math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100)
 end
 
--- /hwr opens the War Room window. /hwr status shows what the addon has recorded for this character,
+-- /warcall opens the Warcall window. /warcall status shows what the addon has recorded for this character,
 -- so you can check it's working.
 local function printStatus()
   local c = snapshot()
-  print("|cffc8a04fHorde War Room v" .. VERSION .. "|r recorded: " .. c.name .. ", level " .. c.level .. " " .. c.race .. " " .. c.class)
+  print("|cffc8a04fWarcall v" .. VERSION .. "|r recorded: " .. c.name .. ", level " .. c.level .. " " .. c.race .. " " .. c.class)
   print("  Gold: " .. formatMoney(c.money) .. "   XP: " .. c.xp .. "/" .. c.xpMax .. "   Rested: " .. c.rested)
   if #c.professions == 0 then
     print("  No professions found.")
@@ -433,21 +433,22 @@ local function printStatus()
   print("  Bags: " .. #(c.bags or {}) .. " different items.   Bank: " ..
     (c.bank and (#c.bank .. " different items") or "not seen yet (open your bank once)"))
   print("  Type /reload to save it to the file the dashboard reads.")
-  local d = HordeWarRoomData
+  local d = WarcallData
   if d and d.generatedAt then
     local mins = math.floor((time() - d.generatedAt) / 60)
-    print("  War Room data: from " .. mins .. " min ago, " .. #(d.toons or {}) .. " toons, " .. #(d.items or {}) .. " kinds of item.")
+    print("  Warcall data: from " .. mins .. " min ago, " .. #(d.toons or {}) .. " toons, " .. #(d.items or {}) .. " kinds of item.")
   else
-    print("  War Room data: none yet (use the launcher, or Download in-game data on the website).")
+    print("  Warcall data: none yet (use the launcher, or Download in-game data on the website).")
   end
   local pending = 0
-  for _ in pairs((HordeWarRoomDB and HordeWarRoomDB.actions) or {}) do pending = pending + 1 end
+  for _ in pairs((WarcallDB and WarcallDB.actions) or {}) do pending = pending + 1 end
   if pending > 0 then print("  " .. pending .. " tick-off(s) waiting to sync.") end
 end
 
-SLASH_HORDEWARROOM1 = "/hwr"
-SLASH_HORDEWARROOM2 = "/warroom"
-SlashCmdList.HORDEWARROOM = function(msg)
+SLASH_WARCALL1 = "/warcall"
+SLASH_WARCALL2 = "/wcall"
+SLASH_WARCALL3 = "/hwr" -- the old Horde War Room command, so muscle memory still works
+SlashCmdList.WARCALL = function(msg)
   msg = string.lower(msg or "")
   if msg == "status" or msg == "check" then
     printStatus()
@@ -458,9 +459,9 @@ SlashCmdList.HORDEWARROOM = function(msg)
   end
 end
 
--- /hwrdebug: an investigation tool, for when something in Forever works differently than expected.
-SLASH_HORDEWARROOMDEBUG1 = "/hwrdebug"
-SlashCmdList.HORDEWARROOMDEBUG = function()
+-- /warcalldebug: an investigation tool, for when something in Forever works differently than expected.
+SLASH_WARCALLDEBUG1 = "/warcalldebug"
+SlashCmdList.WARCALLDEBUG = function()
   local function show(label, ...)
     local parts = {}
     for i = 1, select("#", ...) do parts[#parts + 1] = tostring((select(i, ...))) end
@@ -471,7 +472,7 @@ SlashCmdList.HORDEWARROOMDEBUG = function()
     if results[1] then show(label, unpack(results, 2)) else print(label .. " not available") end
   end
 
-  print("|cffc8a04f--- Horde War Room debug ---|r")
+  print("|cffc8a04f--- Warcall debug ---|r")
   try("GetUnitName", function() return GetUnitName("player", true) end)
   try("GetProfessions", function() return GetProfessions() end)
   try("Money / XP / XPMax / Rested", function() return GetMoney(), UnitXP("player"), UnitXPMax("player"), GetXPExhaustion() end)

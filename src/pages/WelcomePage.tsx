@@ -45,7 +45,7 @@ export function WelcomePage({ warRoom }: { warRoom: WarRoom }) {
     <div className="relative isolate flex min-h-screen items-center justify-center px-5 py-10">
       <Backdrop />
       <div className="w-full max-w-lg rounded-lg border-t-4 border-blood bg-leather p-8 shadow-xl">
-        <h1 className="font-display text-3xl font-extrabold tracking-wide text-gold">Welcome to the War Room</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-wide text-gold">Welcome to Warcall</h1>
 
         {!warRoom.me ? (
           <>
@@ -71,7 +71,7 @@ export function WelcomePage({ warRoom }: { warRoom: WarRoom }) {
         ) : (
           <>
             <p className="mt-2 text-ash">
-              Lok'tar, <span className="text-parchment">{warRoom.me.displayName}</span>. A war room belongs to a war party: you and
+              Welcome, <span className="text-parchment">{warRoom.me.displayName}</span>. Warcall works in war parties: you and
               your mates, or your whole guild. Join one, or start your own and invite people.
             </p>
 

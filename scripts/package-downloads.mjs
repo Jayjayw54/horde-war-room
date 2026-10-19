@@ -1,6 +1,6 @@
 // Packs the addon and the launcher into zip files the website offers for download:
-//   public/downloads/HordeWarRoom.zip       (unzip into Interface\AddOns)
-//   public/downloads/WarRoomLauncher.zip    (unzip anywhere)
+//   public/downloads/Warcall.zip            (unzip into Interface\AddOns)
+//   public/downloads/WarcallLauncher.zip    (unzip anywhere)
 // Runs automatically at the start of `npm run build` (so Netlify always serves the latest), or by
 // hand with `npm run package`. Uses only what comes with Node: no extra packages.
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -79,11 +79,11 @@ function zip(files) {
 const crlf = (buf) => Buffer.from(buf.toString('utf8').replace(/\r?\n/g, '\r\n'), 'utf8')
 
 // ---- The addon ----
-const addonDir = join(root, 'addon', 'HordeWarRoom')
+const addonDir = join(root, 'addon', 'Warcall')
 const addonFiles = readdirSync(addonDir)
   .filter((f) => /\.(lua|toc)$/.test(f))
-  .map((f) => ({ name: `HordeWarRoom/${f}`, data: readFileSync(join(addonDir, f)) }))
-writeFileSync(join(out, 'HordeWarRoom.zip'), zip(addonFiles))
+  .map((f) => ({ name: `Warcall/${f}`, data: readFileSync(join(addonDir, f)) }))
+writeFileSync(join(out, 'Warcall.zip'), zip(addonFiles))
 
 // ---- The launcher ----
 // Netlify tells the build its own web address (URL), so the launcher points at the right site.
@@ -91,11 +91,11 @@ const site = (process.env.URL || '').replace(/\/$/, '')
 const launcherDir = join(root, 'launcher')
 const launcherFiles = readdirSync(launcherDir).map((f) => {
   let data = readFileSync(join(launcherDir, f))
-  if (f === 'WarRoomLauncher.ps1' && /^https:\/\//.test(site)) {
+  if (f === 'WarcallLauncher.ps1' && /^https:\/\//.test(site)) {
     data = Buffer.from(data.toString('utf8').replace(/^\$DefaultSite = '.*'$/m, `$DefaultSite = '${site}'`), 'utf8')
   }
-  return { name: `Horde War Room Launcher/${f}`, data: crlf(data) }
+  return { name: `Warcall Launcher/${f}`, data: crlf(data) }
 })
-writeFileSync(join(out, 'WarRoomLauncher.zip'), zip(launcherFiles))
+writeFileSync(join(out, 'WarcallLauncher.zip'), zip(launcherFiles))
 
 console.log(`Packed ${addonFiles.length} addon files and ${launcherFiles.length} launcher files into public/downloads${site ? ` (site: ${site})` : ''}.`)

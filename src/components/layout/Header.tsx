@@ -79,14 +79,12 @@ export function Header({ page, onNavigate, email, live, partyName, parties, part
           type="button"
           onClick={() => onNavigate('home')}
           className="war-banner w-60 shrink-0 px-6 pt-6 pb-12 text-center"
-          aria-label="Horde War Room, go to the war table"
+          aria-label="Warcall, go to the war table"
         >
           <span className="block font-display text-3xl leading-none font-extrabold tracking-wide text-gold [text-shadow:0_2px_0_#3a0d08] sm:text-4xl">
-            Horde
-            <br />
-            War Room
+            Warcall
           </span>
-          <span className="mt-2 block text-sm text-parchment/80">{partyName || 'For the Horde.'}</span>
+          <span className="mt-2 block text-sm text-parchment/80">{partyName || 'Answer the call.'}</span>
         </button>
 
         <div className="pt-5 text-right text-sm text-ash">

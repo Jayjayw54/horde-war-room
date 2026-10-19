@@ -1,4 +1,4 @@
-// The war table: what's worth doing tonight, worked out from everything the War Room knows,
+// The war table: what's worth doing tonight, worked out from everything Warcall knows,
 // plus who's been on and what's happened lately.
 import type { ReactNode } from 'react'
 import { ItemIcon, qualityColor } from '../components/bank/ItemIcon'
@@ -84,7 +84,7 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
   return (
     <div>
       <h2 className="font-display text-2xl font-semibold text-gold">War table</h2>
-      <p className="mt-1 text-ash">What's worth doing tonight, from everything the War Room knows.</p>
+      <p className="mt-1 text-ash">What's worth doing tonight, from everything Warcall knows.</p>
 
       {/* Who's been on */}
       <div className="mt-4 flex flex-wrap gap-x-8 gap-y-1 text-sm">

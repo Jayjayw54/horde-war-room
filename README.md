@@ -1,7 +1,7 @@
-# Horde War Room
+# Warcall
 
 A shared dashboard for war parties in World of Warcraft: Forever: characters, professions, the shared bank and
-objectives in one place, on the website and in game (`/hwr`). Anyone can sign up, then start a war party or
+objectives in one place, on the website and in game (`/warcall`). Formerly Horde War Room. Anyone can sign up, then start a war party or
 join one with an invite code.
 
 ## Run it
@@ -38,7 +38,7 @@ its invite code (War party page). Nothing to do in Supabase.
 
 ## The addon and the launcher
 
-- `addon/HordeWarRoom/`: the WoW addon. `/hwr` opens the War Room window in game.
+- `addon/Warcall/`: the WoW addon. `/warcall` opens the Warcall window in game.
 - `launcher/`: the optional Windows launcher that syncs while you play (see `launcher/README.txt`).
 - `npm run package` zips both into `public/downloads/` (the build does this too); the website links to them.
 

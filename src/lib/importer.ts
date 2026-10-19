@@ -237,7 +237,7 @@ export async function importSnapshots(
   return { error: null, summary }
 }
 
-// Objectives ticked off (or reopened) in the game's War Room window.
+// Objectives ticked off (or reopened) in the game's Warcall window.
 // partyIds: the parties the player is in. Objectives from any other party are ignored.
 // A change made on the website after the tick in game wins: we only apply it if the objective
 // hasn't been touched since. Returns how many were applied.

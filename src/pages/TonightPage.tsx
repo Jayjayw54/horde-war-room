@@ -22,7 +22,7 @@ export function TonightView({ warRoom }: { warRoom: WarRoom }) {
         {tonight.length === 0
           ? 'Nothing planned yet. Flag objectives with "Add to tonight" to build the session plan.'
           : remaining === 0
-            ? 'Every order complete. Lok’tar.'
+            ? 'Every order complete. Victory!'
             : `${remaining} of ${tonight.length} still to do.`}
       </p>
       <div className="mt-6 grid gap-4 md:grid-cols-3">

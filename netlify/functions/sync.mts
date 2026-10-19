@@ -1,9 +1,9 @@
-// Netlify Function: /api/sync — how the launcher (or anything you give your sync key to) talks to the War Room.
+// Netlify Function: /api/sync — how the launcher (or anything you give your sync key to) talks to Warcall.
 //
-//   POST /api/sync   body: the addon's file (HordeWarRoom.lua from WTF\…\SavedVariables)
+//   POST /api/sync   body: the addon's file (Warcall.lua from WTF\…\SavedVariables)
 //                    → imports your toons and applies anything ticked off in game. Answers with a
 //                      short summary (JSON).
-//   GET  /api/sync   → the fresh in-game data: the WarRoomData.lua file itself, as plain text.
+//   GET  /api/sync   → the fresh in-game data: the WarcallData.lua file itself, as plain text.
 //                      (Plain text rather than JSON, because older Windows PowerShell struggles
 //                      with very big JSON answers, and a guild's bank gets big.)
 //
@@ -106,7 +106,7 @@ export default async (req: Request) => {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'no-store',
-        'X-War-Room-Player': encodeURIComponent(player.name),
+        'X-Warcall-Player': encodeURIComponent(player.name),
       },
     })
   }

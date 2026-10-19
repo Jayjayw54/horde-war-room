@@ -1,6 +1,6 @@
-// Builds WarRoomData.lua: everything the in-game War Room window shows, written as Lua so the addon
+// Builds WarcallData.lua: everything the in-game Warcall window shows, written as Lua so the addon
 // can read it. The game only reads it at login or /reload. It goes in the addon's own folder:
-//   <your WoW: Forever folder>\Interface\AddOns\HordeWarRoom\WarRoomData.lua
+//   <your WoW: Forever folder>\Interface\AddOns\Warcall\WarcallData.lua
 // The launcher writes it after every sync; the website's "Download in-game data" button gives you
 // the same file by hand. (Only type imports here, so the server can use this file too.)
 import type { Character, Item, Objective, Party, Player } from '../types'
@@ -109,9 +109,9 @@ export function buildGameData(input: GameDataInput): string {
   }
 
   return [
-    '-- Horde War Room: data for the in-game window. Made by the War Room; safe to delete.',
+    '-- Warcall: data for the in-game window. Made by the Warcall website; safe to delete.',
     `-- Made ${now.toISOString()}. Type /reload in game to load a newer copy.`,
-    `HordeWarRoomData = ${toLua(data as unknown as LuaValue)}`,
+    `WarcallData = ${toLua(data as unknown as LuaValue)}`,
     '',
   ].join('\n')
 }

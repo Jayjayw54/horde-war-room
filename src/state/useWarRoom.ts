@@ -236,7 +236,7 @@ export function useWarRoom(userId: string) {
 
   // Import characters from the addon's file (the real work lives in lib/importer.ts, shared with the
   // website's sync function). Toons always belong to whoever is logged in.
-  // Also applies anything ticked off in the game's War Room window.
+  // Also applies anything ticked off in the game's Warcall window.
   async function importSnapshots(snapshots: CharacterSnapshot[], actions: GameAction[] = []) {
     if (!me) return 'Set up your name first.'
     const result = await runImport(supabase, snapshots, me.id, allPlayers.map((p) => p.id))
@@ -371,7 +371,7 @@ export function useWarRoom(userId: string) {
     return error ? error.message : null
   }
 
-  // The file the addon reads for its in-game War Room window (every party you're in).
+  // The file the addon reads for its in-game Warcall window (every party you're in).
   function gameDataFile() {
     if (!me) return ''
     return buildGameData({

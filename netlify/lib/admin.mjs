@@ -58,7 +58,7 @@ export async function postToPartyDiscords(playerId, title, lines) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        username: 'Horde War Room',
+        username: 'Warcall',
         embeds: [{ title: String(title).slice(0, 250), description, color: 0x9b2318 }],
       }),
     }).catch(() => null)

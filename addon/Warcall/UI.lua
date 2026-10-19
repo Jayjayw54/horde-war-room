@@ -1,13 +1,13 @@
--- Horde War Room: the in-game window (/hwr).
+-- Warcall: the in-game window (/warcall).
 --
--- It shows what the website knows, from WarRoomData.lua in this folder. The launcher (or the website's
+-- It shows what the website knows, from WarcallData.lua in this folder. The launcher (or the website's
 -- "Download in-game data" button) writes that file; the game reads it at login and on /reload.
 --   Orders  : tonight's orders and the rest of the to-do list. Tick them off here.
 --   Who has : search everyone's bags and banks.
 --   Needs   : materials still missing for planned crafts ("Get 20 Copper Ore").
 --   Party   : everyone's toons, levels and professions.
 --
--- Addons can't go online, so ticking an order off is written down in HordeWarRoomDB.actions.
+-- Addons can't go online, so ticking an order off is written down in WarcallDB.actions.
 -- The next sync (on /reload or logout) carries it to the website.
 
 local _, ns = ...
@@ -37,12 +37,12 @@ local function ago(t)
 end
 
 ---------------------------------------------------------------------------
--- Reading the War Room data
+-- Reading the Warcall data
 ---------------------------------------------------------------------------
 
 local state = { tab = "orders", party = 1, search = "" }
 
-local function data() return HordeWarRoomData end
+local function data() return WarcallData end
 
 local function currentParty()
   local d = data()
@@ -79,7 +79,7 @@ end
 
 -- An order's status, counting anything ticked here that hasn't synced yet.
 local function pendingAction(id)
-  return HordeWarRoomDB and HordeWarRoomDB.actions and HordeWarRoomDB.actions[id]
+  return WarcallDB and WarcallDB.actions and WarcallDB.actions[id]
 end
 
 local function statusOf(order)
@@ -88,12 +88,12 @@ local function statusOf(order)
 end
 
 local function setStatus(order, status)
-  HordeWarRoomDB = HordeWarRoomDB or {}
-  HordeWarRoomDB.actions = HordeWarRoomDB.actions or {}
+  WarcallDB = WarcallDB or {}
+  WarcallDB.actions = WarcallDB.actions or {}
   if status == order.status then
-    HordeWarRoomDB.actions[order.id] = nil -- back to how the website has it: nothing to send
+    WarcallDB.actions[order.id] = nil -- back to how the website has it: nothing to send
   else
-    HordeWarRoomDB.actions[order.id] = { status = status, at = time() }
+    WarcallDB.actions[order.id] = { status = status, at = time() }
   end
 end
 
@@ -278,19 +278,19 @@ local function refresh()
   local d, party = data(), currentParty()
 
   if not d then
-    title:SetText("Horde War Room")
-    statusLine:SetText(color(ASH, "No War Room data yet."))
+    title:SetText("Warcall")
+    statusLine:SetText(color(ASH, "No Warcall data yet."))
     addLine("This window shows your war party: orders, who has what, and everyone's toons.")
     addLine(" ")
     addLine("To fill it in, either:")
-    addLine("- start WoW with the War Room launcher, or", nil, 1)
-    addLine("- on the website, open War party > Download in-game data, put WarRoomData.lua", nil, 1)
-    addLine("  in Interface\\AddOns\\HordeWarRoom, then type /reload.", nil, 1)
+    addLine("- start WoW with the Warcall launcher, or", nil, 1)
+    addLine("- on the website, open War party > Download in-game data, put WarcallData.lua", nil, 1)
+    addLine("  in Interface\\AddOns\\Warcall, then type /reload.", nil, 1)
   elseif not party then
-    title:SetText("Horde War Room")
+    title:SetText("Warcall")
     statusLine:SetText(color(ASH, "You're not in a war party yet. Join or start one on the website."))
   else
-    title:SetText("Horde War Room · " .. (party.name or "?"))
+    title:SetText("Warcall · " .. (party.name or "?"))
     statusLine:SetText(color(ASH, "Synced " .. ago(d.generatedAt) .. ". /reload picks up newer data."))
     if state.tab == "orders" then ordersTab(party)
     elseif state.tab == "whohas" then whoHasTab(party)
@@ -331,7 +331,7 @@ local function refresh()
 end
 
 local function build()
-  frame = make("Frame", "HordeWarRoomFrame", UIParent, "BasicFrameTemplateWithInset")
+  frame = make("Frame", "WarcallFrame", UIParent, "BasicFrameTemplateWithInset")
   frame:SetSize(WIDTH, HEIGHT)
   frame:SetPoint("CENTER")
   frame:SetFrameStrata("HIGH")
@@ -342,7 +342,7 @@ local function build()
   frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
   frame:SetClampedToScreen(true)
   -- Escape closes it, like other game windows.
-  if UISpecialFrames then table.insert(UISpecialFrames, "HordeWarRoomFrame") end
+  if UISpecialFrames then table.insert(UISpecialFrames, "WarcallFrame") end
   if not frame.CloseButton then
     local close = make("Button", nil, frame, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -2, -2)
@@ -385,7 +385,7 @@ local function build()
     refresh()
   end)
 
-  searchBox = make("EditBox", "HordeWarRoomSearch", frame, "InputBoxTemplate")
+  searchBox = make("EditBox", "WarcallSearch", frame, "InputBoxTemplate")
   searchBox:SetSize(220, 20)
   searchBox:SetPoint("TOPLEFT", frame, "TOPLEFT", 22, -78)
   searchBox:SetAutoFocus(false)
@@ -396,7 +396,7 @@ local function build()
   searchBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
   searchBox:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 
-  scroll = make("ScrollFrame", "HordeWarRoomScroll", frame, "UIPanelScrollFrameTemplate")
+  scroll = make("ScrollFrame", "WarcallScroll", frame, "UIPanelScrollFrameTemplate")
   scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -104)
   scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -34, 14)
   content = CreateFrame("Frame", nil, scroll)
@@ -429,9 +429,9 @@ end
 -- (The data file is made right after each sync, so anything older than it has been handled.)
 function ns.ForgetSyncedActions()
   local d = data()
-  if not (d and d.generatedAt and HordeWarRoomDB and HordeWarRoomDB.actions) then return end
-  for id, a in pairs(HordeWarRoomDB.actions) do
-    if (a.at or 0) <= d.generatedAt then HordeWarRoomDB.actions[id] = nil end
+  if not (d and d.generatedAt and WarcallDB and WarcallDB.actions) then return end
+  for id, a in pairs(WarcallDB.actions) do
+    if (a.at or 0) <= d.generatedAt then WarcallDB.actions[id] = nil end
   end
 end
 

@@ -1,8 +1,9 @@
-# Horde War Room
+# Warcall (formerly Horde War Room)
 
-A shared dashboard for war parties playing World of Warcraft: Forever. Started by Josh and his mate Cel;
+A shared dashboard for war parties playing World of Warcraft: Forever, for Horde and Alliance alike. Started by Josh and his mate Cel;
 now anyone can sign up, start a war party (a duo, a guild...) or join one with an invite code.
-It tracks characters, professions, the shared bank and objectives, on the website and in game (/hwr).
+It tracks characters, professions, the shared bank and objectives, on the website and in game (/warcall).
+Renamed from Horde War Room in Oct 2026 (that name was taken, and the site is cross-faction). Internal code names (useWarRoom, the `hwr_` sync-key prefix, `hwr-` browser storage keys, the repo and Netlify site name) were left as they are.
 
 ## Who you're working with
 
@@ -57,9 +58,9 @@ Who can do what (row-level security, see `supabase/009-war-parties.sql`):
 
 ## Milestones
 
-Status: Milestones 1–4 are done. Live at https://euphonious-fox-f272a5.netlify.app (Netlify, auto-deploys on every push to main). Josh and Cel are both linked to their players. The addon (addon/HordeWarRoom) and the Roster "Import from game" button are built and tested against the Forever beta. The planner, progress, BiS, Discord bot and war table are live.
+Status: Milestones 1–4 are done. Live at https://euphonious-fox-f272a5.netlify.app (Netlify, auto-deploys on every push to main). Josh and Cel are both linked to their players. The addon (now addon/Warcall) and the Roster "Import from game" button are built and tested against the Forever beta. The planner, progress, BiS, Discord bot and war table are live.
 
-Milestone 5 (war parties + the War Room in game) is built on the `dev` branch but NOT live yet. `UPDATE-GUIDE.md` has the go-live steps. Not yet tested for real: the launcher (needs Windows), the /hwr window (needs the game), and /api/sync (needs Netlify + Supabase).
+Milestone 5 (war parties + the in-game window) went live on 19 Oct 2026 (database update 009 run, main deployed), then the rename to Warcall. Not yet tested for real: the launcher (needs Windows) and the in-game window (needs the game).
 
 1. **Local prototype.** Scaffold the app. Use mock data from a local TypeScript file. Build three views:
    - Roster: character cards showing level, class, and profession progress bars
@@ -69,12 +70,12 @@ Milestone 5 (war parties + the War Room in game) is built on the `dev` branch bu
 2. **GitHub.** Push to the repo. Add a README explaining how to run it.
 3. **Supabase.** Create tables matching the data model, row-level security allowing only the two players, email + password login (switched from magic links: Supabase's free email limit was too low), and replace the mock data with live queries. Keep keys in `.env.local` and never commit them.
 4. **Deploy.** Host it so Josh's mate can log in from his own PC.
-5. **War parties and the War Room in game.** Sign-up, parties with invite codes, party-only data, per-party Discord; addon v0.7.0 with the /hwr window; sync keys, `/api/sync`, and the optional launcher.
+5. **War parties and Warcall in game.** Sign-up, parties with invite codes, party-only data, per-party Discord; addon v0.7.0 with the in-game window (v0.8.0 after the rename); sync keys, `/api/sync`, and the optional launcher.
 
 ## How data moves between the game and the website
 
-- Game → website: the addon writes `HordeWarRoomDB` to SavedVariables on /reload or logout (toons, plus `actions`: orders ticked off in the /hwr window). It reaches the website by the Roster's "Import from game" upload, or the launcher POSTing it to `/api/sync`.
-- Website → game: `src/lib/gameData.ts` builds `WarRoomData.lua` (`HordeWarRoomData = {...}`), which lives in the addon's own folder and is read at login or /reload. The launcher GETs it from `/api/sync`; without the launcher, "Download in-game data" gives the same file.
+- Game → website: the addon writes `WarcallDB` to SavedVariables on /reload or logout (toons, plus `actions`: orders ticked off in the /warcall window). It reaches the website by the Roster's "Import from game" upload, or the launcher POSTing it to `/api/sync`.
+- Website → game: `src/lib/gameData.ts` builds `WarcallData.lua` (`WarcallData = {...}`), which lives in the addon's own folder and is read at login or /reload. The launcher GETs it from `/api/sync`; without the launcher, "Download in-game data" gives the same file.
 - A tick-off from the game is only applied if the objective hasn't been changed on the website since (objectives.updated_at). The addon forgets a tick-off once it has data made after it.
 
 ## Later (do not build yet, but don't design against it)
@@ -97,9 +98,9 @@ Milestone 5 (war parties + the War Room in game) is built on the `dev` branch bu
 - No realms. Characters have a first name and surname. `UnitName("player")` returns (firstName, surname); `GetUnitName("player", true)` returns "First Surname". The full name is the unique key we match on.
 - Professions use the modern API: `GetProfessions()` returns slot indexes (some nil), `GetProfessionInfo(slot)` returns name, icon, skill, max. `GetNumSkillLines` does not exist.
 - Horde races: Orc, Undead, Tauren, Troll, Skyborne. Level cap 60.
-- SavedVariables file: `WTF\Account\<account>\SavedVariables\HordeWarRoom.lua`. Example in `addon/example-SavedVariables.lua`.
-- Addon files: `HordeWarRoom.toc`, `WarRoomData.lua` (data from the website; ships empty), `HordeWarRoom.lua` (recording, slash commands), `UI.lua` (the /hwr window). Files share a table through `local _, ns = ...`.
-- When the addon changes, bump `## Version` in `HordeWarRoom.toc` (and `VERSION` in `HordeWarRoom.lua`). The website reads the .toc at build time and shows that version on the download link.
+- SavedVariables file: `WTF\Account\<account>\SavedVariables\Warcall.lua` (the old addon wrote `HordeWarRoom.lua`; the website imports either). Example in `addon/example-SavedVariables.lua`.
+- Addon (`addon/Warcall/`): `Warcall.toc`, `WarcallData.lua` (data from the website, `WarcallData = {...}`; ships empty), `Warcall.lua` (recording into `WarcallDB`, slash commands /warcall and /wcall), `UI.lua` (the window). Files share a table through `local _, ns = ...`.
+- When the addon changes, bump `## Version` in `Warcall.toc` (and `VERSION` in `Warcall.lua`). The website reads the .toc at build time and shows that version on the download link.
 - Write addon Lua for Lua 5.1 (no goto, no //). Stick to plain characters in UI text: WoW's font may not draw symbols like … • ›.
 - The addon's UI can be tested outside the game with a pretend WoW API (texlua works as a Lua interpreter).
 
@@ -120,14 +121,14 @@ src/
   lib/rows.ts           Database rows to app shapes, and paged fetching (shared with the server)
   lib/importer.ts       Saves the addon's file to the database (shared with the server)
   lib/savedVariables.ts Reads the addon's file
-  lib/gameData.ts       Writes WarRoomData.lua for the in-game window
+  lib/gameData.ts       Writes WarcallData.lua for the in-game window
   lib/invite.ts         Invite links (?join=CODE)
   components/layout/    Header and navigation
   components/roster/    Character cards and profession bars
   components/objectives/ Objective list items, add form, filters
   pages/                War table, Roster, Progress, Bank, Planner, BiS, Objectives, War party, Welcome, Login
 netlify/functions/      Server functions (see Netlify above)
-addon/HordeWarRoom/     The WoW addon
+addon/Warcall/          The WoW addon
 launcher/               The optional Windows launcher (PowerShell 5.1, nothing to install)
 supabase/               schema.sql (full setup) and numbered updates
 ```
