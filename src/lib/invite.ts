@@ -22,6 +22,15 @@ export function captureInviteCode() {
   window.history.replaceState(null, '', window.location.pathname + (rest ? `?${rest}` : ''))
 }
 
+// Remember a code someone typed in on the landing page, for after they sign up or sign in.
+export function saveInviteCode(code: string) {
+  try {
+    localStorage.setItem(KEY, code.toUpperCase())
+  } catch {
+    /* fine: they can type it again on the Welcome step */
+  }
+}
+
 export function readInviteCode() {
   try {
     return localStorage.getItem(KEY) ?? ''

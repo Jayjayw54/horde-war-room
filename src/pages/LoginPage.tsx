@@ -1,10 +1,55 @@
-// The front gate: sign in with email and password, or create an account the first time.
-import { useState, type FormEvent } from 'react'
+// The front gate and landing page: what The Bloodbound is, then sign in, create an account, or
+// bring an invite code. The sign-in logic is unchanged; the page around it explains the product.
+import { useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { BloodboundMark, Wordmark } from '../components/brand/Logo'
+import {
+  OrdersIcon,
+  PlannerIcon,
+  ProgressIcon,
+  RosterIcon,
+  ScrollIcon,
+  StoresIcon,
+  SyncIcon,
+  WishlistIcon,
+} from '../components/brand/Icons'
 import { Backdrop } from '../components/layout/Backdrop'
-import { readInviteCode } from '../lib/invite'
+import { readInviteCode, saveInviteCode } from '../lib/invite'
 import { supabase } from '../lib/supabase'
 
-type Mode = 'signin' | 'signup'
+type Mode = 'signin' | 'signup' | 'join'
+
+const FEATURES: { icon: ReactNode; title: string; text: string }[] = [
+  {
+    icon: <RosterIcon />,
+    title: 'Roster',
+    text: "Every member's characters in one place: level, class, professions, gold, gear and stats, straight from the game.",
+  },
+  {
+    icon: <OrdersIcon />,
+    title: 'Orders',
+    text: "A shared to-do list for the crew. Assign tasks, flag tonight's plan, and tick things off on the site or in game.",
+  },
+  {
+    icon: <StoresIcon />,
+    title: 'Shared stores',
+    text: 'Search everyone’s bags and banks at once. Find out who has the Copper Ore before anyone farms more.',
+  },
+  {
+    icon: <PlannerIcon />,
+    title: 'Profession planner',
+    text: 'Pick a craft and see the materials, what the crew already holds, what is missing, and who should make it.',
+  },
+  {
+    icon: <WishlistIcon />,
+    title: 'Best-in-slot lists',
+    text: 'A gear wishlist for each character that ticks itself off when the item turns up in bags, bank or gear.',
+  },
+  {
+    icon: <ProgressIcon />,
+    title: 'Progress',
+    text: 'The levelling race and the crew’s gold over time, charted from every sync.',
+  },
+]
 
 export function LoginPage() {
   // Arriving from an invite link usually means you're new, so start on "Create account".
@@ -13,14 +58,34 @@ export function LoginPage() {
   const [notice, setNotice] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [code, setCode] = useState(readInviteCode)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const panel = useRef<HTMLDivElement>(null)
+
+  // The hero buttons open the right form and bring it into view (it sits beside the hero on wide screens).
+  function open(next: Mode) {
+    setMode(next)
+    setError('')
+    setNotice('')
+    panel.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    setTimeout(() => panel.current?.querySelector<HTMLInputElement>('input')?.focus({ preventScroll: true }), 350)
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    setBusy(true)
     setError('')
     setNotice('')
+    if (mode === 'join') {
+      // Remember the code; after signing up (or in), the Welcome step offers to join with it.
+      const clean = code.trim().toUpperCase()
+      if (!/^[A-Z0-9]{6}$/.test(clean)) return setError('Invite codes are 6 letters and numbers, like K7Q2MX.')
+      saveInviteCode(clean)
+      setMode('signup')
+      setNotice(`Code ${clean} saved. Make an account (or sign in) and you'll be asked to join that crew.`)
+      return
+    }
+    setBusy(true)
     if (mode === 'signin') {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) setError(error.message)
@@ -30,73 +95,230 @@ export function LoginPage() {
       // If Supabase is set to confirm emails, there's no login yet: say so instead of doing nothing.
       else if (!data.session) setNotice('Check your email for a link to confirm your account, then sign in here.')
     }
-    // On success, useSession notices the new login and the war room opens by itself.
+    // On success, useSession notices the new login and the stronghold opens by itself.
     setBusy(false)
   }
 
-  const inputClass = 'rounded-md border border-leather-light bg-ink px-3 py-2 text-parchment placeholder:text-ash'
-  const labelClass = 'font-display text-sm font-semibold text-parchment'
+  const input =
+    'w-full rounded-md border border-rim bg-ink/80 px-3 py-2.5 text-parchment placeholder:text-ash/70 focus:border-gold/60 focus:outline-none'
+  const label = 'text-sm font-semibold text-parchment'
+  const title = { signin: 'Sign in', signup: 'Create your account', join: 'Join with an invite code' }[mode]
 
   return (
-    <div className="relative isolate flex min-h-screen items-center justify-center px-5">
+    <div className="relative isolate min-h-screen">
       <Backdrop />
-      <div className="w-full max-w-md rounded-lg border-t-4 border-blood bg-leather p-8 shadow-xl">
-        <h1 className="font-display text-3xl font-extrabold tracking-wide text-gold">The Bloodbound</h1>
-        <p className="mt-1 text-ash">
-          {invited ? "You've been summoned to a crew. Make an account to answer the call." : 'Members only. Answer the call, champion.'}
-        </p>
 
-        <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-3">
-          <label htmlFor="email" className={labelClass}>
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={inputClass}
-          />
-          <label htmlFor="password" className={labelClass}>
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={inputClass}
-          />
-          <button
-            type="submit"
-            disabled={busy}
-            className="mt-2 rounded-md bg-blood px-4 py-2 font-display font-semibold text-parchment transition-colors hover:bg-blood-light disabled:opacity-60"
-          >
-            {busy ? 'One moment…' : mode === 'signin' ? 'Sign in' : 'Create account'}
-          </button>
-          {error && <p className="text-error">{error}</p>}
-          {notice && <p className="text-gold">{notice}</p>}
-        </form>
+      {/* ---- Hero: name, oath, and the way in ---- */}
+      <header className="mx-auto grid max-w-6xl items-center gap-10 px-5 pt-12 pb-16 sm:pt-16 lg:grid-cols-[1fr_24rem] lg:gap-16 lg:pt-24 lg:pb-24">
+        <div>
+          <div className="flex items-center gap-4 sm:gap-5">
+            <BloodboundMark className="h-16 w-16 shrink-0 drop-shadow-[0_6px_14px_rgba(0,0,0,0.6)] sm:h-24 sm:w-24" />
+            <Wordmark className="items-start! text-[2rem] text-parchment [text-shadow:0_2px_12px_rgba(0,0,0,0.6)] sm:text-6xl" />
+          </div>
+          <p className="mt-6 font-display text-xl text-gold sm:text-2xl">Bound by blood. United by battle.</p>
+          <p className="mt-4 max-w-xl text-lg leading-relaxed text-parchment/90">
+            A shared stronghold for World of Warcraft: Forever crews. Keep everyone’s characters, orders, bags and
+            profession plans in one place, so the whole crew knows what to do next.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => open('signup')}
+              className="rounded-md bg-blood px-5 py-3 font-semibold text-parchment shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors hover:bg-blood-light focus-visible:outline-2"
+            >
+              Start a crew
+            </button>
+            <button
+              type="button"
+              onClick={() => open('join')}
+              className="rounded-md border border-gold/50 px-5 py-3 font-semibold text-gold transition-colors hover:border-gold hover:bg-gold/10"
+            >
+              Join with an invite code
+            </button>
+          </div>
+          <p className="mt-4 text-sm text-ash">Free. One crew or several: a duo of mates or a whole guild.</p>
+        </div>
 
-        <p className="mt-6 text-sm text-ash">
-          {mode === 'signin' ? 'First time here? ' : 'Already have an account? '}
-          <button
-            type="button"
-            onClick={() => {
-              setMode(mode === 'signin' ? 'signup' : 'signin')
-              setError('')
-            }}
-            className="text-gold underline hover:text-parchment"
-          >
-            {mode === 'signin' ? 'Create an account' : 'Sign in instead'}
-          </button>
-        </p>
-      </div>
+        {/* ---- The gate: sign in / create account / invite code ---- */}
+        <div ref={panel} className="panel scroll-mt-6 border-t-2 border-t-blood p-6 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.9)] sm:p-7">
+          <h2 className="font-display text-xl font-semibold text-parchment">{title}</h2>
+          {invited && mode !== 'join' && (
+            <p className="mt-1 text-sm text-gold">You've been invited to a crew. Make an account to take your oath.</p>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
+            {mode === 'join' ? (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="invite" className={label}>
+                  Invite code
+                </label>
+                <input
+                  id="invite"
+                  required
+                  autoComplete="off"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder="K7Q2MX"
+                  className={`${input} font-stat text-xl tracking-[0.3em] uppercase`}
+                />
+                <p className="text-sm text-ash">Ask your crew leader. It's on their Crew page.</p>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="email" className={label}>
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={input}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="password" className={label}>
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={input}
+                  />
+                  {mode === 'signup' && <p className="text-sm text-ash">At least 8 characters.</p>}
+                </div>
+              </>
+            )}
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="mt-1 rounded-md bg-blood px-4 py-2.5 font-semibold text-parchment transition-colors hover:bg-blood-light disabled:cursor-wait disabled:opacity-60"
+            >
+              {busy ? 'One moment…' : mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Use this code'}
+            </button>
+            {error && (
+              <p role="alert" className="text-sm text-error">
+                {error}
+              </p>
+            )}
+            {notice && (
+              <p role="status" className="text-sm text-success">
+                {notice}
+              </p>
+            )}
+          </form>
+
+          <div className="mt-6 flex flex-wrap gap-x-4 gap-y-1 border-t border-rim pt-4 text-sm">
+            {mode !== 'signin' && (
+              <button type="button" onClick={() => open('signin')} className="text-gold underline-offset-4 hover:underline">
+                I have an account
+              </button>
+            )}
+            {mode !== 'signup' && (
+              <button type="button" onClick={() => open('signup')} className="text-gold underline-offset-4 hover:underline">
+                Create an account
+              </button>
+            )}
+            {mode !== 'join' && (
+              <button type="button" onClick={() => open('join')} className="text-gold underline-offset-4 hover:underline">
+                I have an invite code
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <main className="relative bg-[linear-gradient(180deg,rgba(17,19,21,0)_0%,#111315_6rem)]">
+        {/* ---- What the crew gets ---- */}
+        <section className="mx-auto max-w-6xl px-5 pt-10 pb-16" aria-labelledby="features">
+          <h2 id="features" className="font-display text-2xl font-semibold text-parchment sm:text-3xl">
+            One stronghold for the whole crew
+          </h2>
+          <p className="mt-2 max-w-2xl text-ash">
+            Everything below is filled in from the game by a small addon, so nobody has to type their bags in by hand.
+          </p>
+          <ul className="mt-8 grid gap-px overflow-hidden rounded-lg border border-rim bg-rim sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((f) => (
+              <li key={f.title} className="bg-leather p-6">
+                <span className="text-gold">{f.icon}</span>
+                <h3 className="mt-3 text-lg font-semibold text-parchment">{f.title}</h3>
+                <p className="mt-1.5 leading-relaxed text-ash">{f.text}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* ---- The game side ---- */}
+        <section className="mx-auto max-w-6xl px-5 pb-16" aria-labelledby="ingame">
+          <div className="grid gap-6 rounded-lg border border-rim bg-[linear-gradient(135deg,#1f1a1c,#1c2022_55%)] p-6 sm:p-8 lg:grid-cols-2 lg:gap-10">
+            <div>
+              <h2 id="ingame" className="font-display text-2xl font-semibold text-parchment">In the game, too</h2>
+              <p className="mt-2 leading-relaxed text-ash">
+                The Bloodbound addon records your characters as you play. Type <span className="font-stat text-lg text-parchment">/bloodbound</span>{' '}
+                in game for the crew window: tonight's orders, who has an item, what's still needed, and everyone's toons.
+              </p>
+            </div>
+            <ul className="space-y-4">
+              <li className="flex gap-3">
+                <ScrollIcon className="mt-0.5 h-6 w-6 shrink-0 text-gold" />
+                <p className="text-ash">
+                  <span className="font-semibold text-parchment">Addon.</span> Tick off orders in game; they reach the website on your next
+                  reload.
+                </p>
+              </li>
+              <li className="flex gap-3">
+                <SyncIcon className="mt-0.5 h-6 w-6 shrink-0 text-gold" />
+                <p className="text-ash">
+                  <span className="font-semibold text-parchment">Optional launcher.</span> Syncs both ways every time you reload or log
+                  out, then closes when you quit. Prefer not to? Upload the addon's file on the website instead.
+                </p>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        {/* ---- How a crew comes together (a real sequence, so it's numbered) ---- */}
+        <section className="mx-auto max-w-6xl px-5 pb-20" aria-labelledby="how">
+          <h2 id="how" className="font-display text-2xl font-semibold text-parchment">How a crew comes together</h2>
+          <ol className="mt-6 grid gap-6 sm:grid-cols-3">
+            {[
+              ['Make an account', 'Sign up with an email and pick the name your crew will see.'],
+              ['Start or join a crew', 'Start one and share its invite link, or join with a code from your leader.'],
+              ['Bring your characters', 'Install the addon, play, then sync. Your crew sees your toons; only you can change them.'],
+            ].map(([t, d], i) => (
+              <li key={t} className="flex gap-4">
+                <span className="font-stat text-4xl leading-none font-semibold text-blood-light">{i + 1}</span>
+                <div>
+                  <h3 className="font-semibold text-parchment">{t}</h3>
+                  <p className="mt-1 text-ash">{d}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-8 text-sm text-ash">
+            Each crew only ever sees its own members' characters, bags and orders.
+          </p>
+        </section>
+      </main>
+
+      <footer className="border-t border-rim bg-ink">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-6 text-sm text-ash">
+          <span className="flex items-center gap-2">
+            <BloodboundMark className="h-6 w-6" />
+            The Bloodbound. One crew. No one left behind.
+          </span>
+          <span>A community project for WoW: Forever players. Not affiliated with or endorsed by Blizzard Entertainment.</span>
+        </div>
+      </footer>
     </div>
   )
 }
