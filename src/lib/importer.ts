@@ -2,7 +2,7 @@
 // "Import from game" button and the sync function the launcher uses, so both behave exactly the same.
 // (Only type imports here, so Node can run this file directly for the companion.)
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { CharacterSnapshot } from './savedVariables'
+import type { CharacterSnapshot, GameAction } from './savedVariables'
 
 export interface ImportResult {
   error: string | null
@@ -235,6 +235,26 @@ export async function importSnapshots(
   if (events.length > 0) await db.from('events').insert(events)
 
   return { error: null, summary }
+}
+
+// Objectives ticked off (or reopened) in the game's War Room window.
+// partyIds: the parties the player is in. Objectives from any other party are ignored.
+// A change made on the website after the tick in game wins: we only apply it if the objective
+// hasn't been touched since. Returns how many were applied.
+export async function applyActions(db: SupabaseClient, actions: GameAction[], partyIds: string[]): Promise<number> {
+  if (partyIds.length === 0) return 0
+  let applied = 0
+  for (const a of actions) {
+    const { data, error } = await db
+      .from('objectives')
+      .update({ status: a.status })
+      .eq('id', a.objectiveId)
+      .in('party_id', partyIds)
+      .lt('updated_at', a.at.toISOString())
+      .select('id')
+    if (!error && data && data.length > 0) applied++
+  }
+  return applied
 }
 
 // Posts an import summary to Discord through the live site's Netlify Function.

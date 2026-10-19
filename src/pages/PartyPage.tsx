@@ -1,5 +1,6 @@
 // War party: who's in it, the invite code, Discord, and switching / joining / starting / leaving parties.
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { downloadGameData } from '../lib/download'
 import { inviteLink } from '../lib/invite'
 import type { WarRoom } from '../state/useWarRoom'
 
@@ -138,6 +139,8 @@ export function PartyPage({ warRoom }: { warRoom: WarRoom }) {
         <Card title="You">
           <RenameMe warRoom={warRoom} onDone={setMessage} />
         </Card>
+
+        <GameCard warRoom={warRoom} />
       </div>
     </div>
   )
@@ -321,6 +324,123 @@ function DiscordSettings({ warRoom }: { warRoom: WarRoom }) {
           {status && <span className="text-gold">{status}</span>}
         </div>
       </form>
+    </Card>
+  )
+}
+
+// The War Room in game: the addon, the in-game data file, and sync keys for the launcher.
+function GameCard({ warRoom }: { warRoom: WarRoom }) {
+  type Key = Awaited<ReturnType<WarRoom['listSyncKeys']>>[number]
+  const [keys, setKeys] = useState<Key[]>([])
+  const [fresh, setFresh] = useState('')
+  const [label, setLabel] = useState('')
+  const [status, setStatus] = useState('')
+
+  async function refresh() {
+    setKeys(await warRoom.listSyncKeys())
+  }
+  useEffect(() => {
+    refresh()
+    // Only once, when the page opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    <Card title="In game">
+      <ol className="list-decimal space-y-2 pl-5 text-sm text-ash">
+        <li>
+          Install the addon: <a href="/downloads/HordeWarRoom.zip" className="text-gold underline">HordeWarRoom.zip</a>. Unzip it
+          into the <code className="text-parchment">Interface\AddOns</code> folder inside your WoW: Forever game folder (next to <code className="text-parchment">WTF</code>).
+        </li>
+        <li>
+          In game, type <code className="text-parchment">/hwr</code> to open the War Room window.
+        </li>
+        <li>
+          To keep it up to date, either use the launcher (below), or after each import here click{' '}
+          <button type="button" className="text-gold underline" onClick={() => downloadGameData(warRoom.gameDataFile())}>
+            Download in-game data
+          </button>{' '}
+          and put <code className="text-parchment">WarRoomData.lua</code> in the addon's folder.
+        </li>
+      </ol>
+
+      <h4 className="mt-5 font-display font-semibold text-parchment">Launcher (optional)</h4>
+      <p className="mt-1 text-sm text-ash">
+        Start WoW with the launcher instead of the usual shortcut and everything syncs by itself: each /reload or logout sends
+        your toons and in-game tick-offs here, and brings the party's latest back. It only runs while you play, installs
+        nothing, and you can read every line of it first.{' '}
+        <a href="/downloads/WarRoomLauncher.zip" className="text-gold underline">
+          Download the launcher
+        </a>
+        .
+      </p>
+      <p className="mt-2 text-sm text-ash">It needs a sync key. Treat it like a password: it can update your toons.</p>
+
+      {fresh ? (
+        <div className="mt-3 rounded border border-gold/40 bg-ink p-3">
+          <p className="text-sm text-gold">Your new key. Copy it now: it won't be shown again.</p>
+          <p className="mt-2 font-mono text-xs break-all text-parchment">{fresh}</p>
+          <div className="mt-2 flex gap-3">
+            <CopyButton text={fresh} label="Copy key" />
+            <button type="button" className={quiet} onClick={() => setFresh('')}>
+              Done
+            </button>
+          </div>
+        </div>
+      ) : (
+        <form
+          className="mt-3 flex gap-2"
+          onSubmit={async (e) => {
+            e.preventDefault()
+            const { key, error } = await warRoom.newSyncKey(label || 'Launcher')
+            if (error) return setStatus(error)
+            setFresh(key ?? '')
+            setLabel('')
+            setStatus('')
+            refresh()
+          }}
+        >
+          <label htmlFor="key-label" className="sr-only">
+            Key name
+          </label>
+          <input
+            id="key-label"
+            value={label}
+            maxLength={40}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder="Name it, e.g. Gaming PC"
+            className={`${input} min-w-0 flex-1`}
+          />
+          <button type="submit" className={button}>
+            Make a sync key
+          </button>
+        </form>
+      )}
+      {status && <p className="mt-2 text-sm text-blood-light">{status}</p>}
+
+      {keys.length > 0 && (
+        <ul className="mt-3 divide-y divide-leather-light text-sm">
+          {keys.map((k) => (
+            <li key={k.id} className="flex flex-wrap items-center gap-x-3 py-1.5">
+              <span className="text-parchment">{k.label}</span>
+              <span className="text-ash">
+                {k.lastUsedAt ? `last used ${new Date(k.lastUsedAt).toLocaleString()}` : 'not used yet'}
+              </span>
+              <button
+                type="button"
+                className={`ml-auto ${quiet}`}
+                onClick={async () => {
+                  if (!window.confirm(`Delete the key "${k.label}"? Anything using it stops syncing.`)) return
+                  setStatus((await warRoom.deleteSyncKey(k.id)) ?? '')
+                  refresh()
+                }}
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </Card>
   )
 }

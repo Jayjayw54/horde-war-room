@@ -371,3 +371,39 @@ begin
     end if;
   end loop;
 end $$;
+
+-- ============================================================
+-- 8. Sync keys: let the launcher (or anything you trust) send your addon file without your password
+-- ============================================================
+-- Each key belongs to one player and only ever updates that player's toons. We store a fingerprint
+-- (sha256) of the key, never the key itself, so even someone reading the database can't use it.
+
+create table if not exists sync_keys (
+  id uuid primary key default gen_random_uuid(),
+  player_id text not null references players (id) on delete cascade,
+  key_hash text not null unique,
+  label text not null default 'Launcher',
+  created_at timestamptz not null default now(),
+  last_used_at timestamptz
+);
+alter table sync_keys enable row level security;
+drop policy if exists "see my sync keys" on sync_keys;
+drop policy if exists "remove my sync keys" on sync_keys;
+create policy "see my sync keys" on sync_keys
+  for select to authenticated using (player_id = my_player_id());
+create policy "remove my sync keys" on sync_keys
+  for delete to authenticated using (player_id = my_player_id());
+
+-- Makes a new key and returns it. This is the only time the key is ever shown.
+create or replace function new_sync_key(p_label text) returns text
+language plpgsql security definer set search_path = public
+as $$
+declare
+  me text := my_player_id();
+  key text := 'hwr_' || replace(gen_random_uuid()::text, '-', '') || replace(gen_random_uuid()::text, '-', '');
+begin
+  if me is null then raise exception 'Set your name first'; end if;
+  insert into sync_keys (player_id, key_hash, label)
+  values (me, encode(sha256(convert_to(key, 'UTF8')), 'hex'), coalesce(nullif(btrim(p_label), ''), 'Launcher'));
+  return key;
+end $$;

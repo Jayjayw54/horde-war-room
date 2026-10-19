@@ -211,7 +211,34 @@ function items(v: LuaValue | undefined): SnapshotItem[] | null {
 
 // Turns the file's text into a list of characters, or throws an Error with a readable message.
 export function readSnapshotFile(text: string): CharacterSnapshot[] {
+  return readSavedVariables(text).snapshots
+}
+
+// Something done in the game's War Room window, waiting to reach the website (addon v0.7.0+).
+// Today that's ticking off (or un-ticking) an objective.
+export interface GameAction {
+  objectiveId: string
+  status: 'todo' | 'doing' | 'done'
+  at: Date // when it was done in game, so a newer change on the website wins
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// Reads the whole file once: the characters, and anything done in the War Room window.
+export function readSavedVariables(text: string): { snapshots: CharacterSnapshot[]; actions: GameAction[] } {
   const db = asTable(parseLua(text))
+  const actions: GameAction[] = []
+  for (const [id, value] of Object.entries(asTable(db.actions))) {
+    const a = asTable(value)
+    const status = a.status
+    if (!UUID.test(id) || typeof a.at !== 'number') continue
+    if (status !== 'todo' && status !== 'doing' && status !== 'done') continue
+    actions.push({ objectiveId: id, status, at: new Date(a.at * 1000) })
+  }
+  return { snapshots: readCharacters(db), actions }
+}
+
+function readCharacters(db: LuaTable): CharacterSnapshot[] {
   const characters = asTable(db.characters)
   return Object.values(characters)
     .map(asTable)

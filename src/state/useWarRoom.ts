@@ -7,8 +7,10 @@
 // party you've picked, so every page shows one party at a time.
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { importSnapshots as runImport, notifyDiscord } from '../lib/importer'
-import type { CharacterSnapshot } from '../lib/savedVariables'
+import { buildGameData } from '../lib/gameData'
+import { applyActions, importSnapshots as runImport, notifyDiscord } from '../lib/importer'
+import { selectAll, toCharacter, toHistory, toItem, toObjective, toPlayer, toRecipe } from '../lib/rows'
+import type { CharacterSnapshot, GameAction } from '../lib/savedVariables'
 import type {
   BisItem,
   Character,
@@ -25,33 +27,7 @@ import type {
 export type NewObjective = Omit<Objective, 'id' | 'createdAt' | 'partyId'>
 
 // The database uses snake_case column names (created_at); the app uses camelCase (createdAt).
-// These helpers translate between the two.
-interface ObjectiveRow {
-  id: string
-  party_id: string
-  title: string
-  description: string | null
-  assignee: Objective['assignee']
-  category: Objective['category']
-  status: Status
-  tonight: boolean
-  created_at: string
-}
-
-function toObjective(row: ObjectiveRow): Objective {
-  return {
-    id: row.id,
-    partyId: row.party_id,
-    title: row.title,
-    description: row.description ?? undefined,
-    assignee: row.assignee,
-    category: row.category,
-    status: row.status,
-    tonight: row.tonight,
-    createdAt: row.created_at,
-  }
-}
-
+// lib/rows.ts translates rows coming in; this translates objective changes going out.
 function toObjectiveRow(o: Partial<Objective>) {
   const row: Record<string, unknown> = {}
   if (o.title !== undefined) row.title = o.title
@@ -94,39 +70,20 @@ export function useWarRoom(userId: string) {
       supabase.from('players').select('id, display_name, user_id').order('display_name'),
       supabase.from('parties').select('id, name, invite_code').order('created_at'),
       supabase.from('party_members').select('party_id, player_id, role, joined_at').order('joined_at'),
-      supabase.from('characters').select('*, professions(*)').order('name'),
-      supabase.from('objectives').select('*').order('created_at', { ascending: false }),
-      supabase.from('items').select('*').order('name'),
+      selectAll(supabase, 'characters', '*, professions(*)', (q) => q.order('name')),
+      selectAll(supabase, 'objectives', '*', (q) => q.order('created_at', { ascending: false })),
+      selectAll(supabase, 'items', '*', (q) => q.order('name').order('id')),
     ])
 
-    // History is optional: if its table isn't set up yet, the rest of the app still works.
-    const historyRes = await supabase.from('character_history').select('*').order('recorded_at')
-    setAllHistory(
-      (historyRes.data ?? []).map((h) => ({
-        characterId: h.character_id,
-        recordedAt: h.recorded_at,
-        level: h.level,
-        xp: h.xp,
-        xpMax: h.xp_max,
-        gold: h.gold === null ? null : Number(h.gold),
-      })),
-    )
-
-    const recipesRes = await supabase.from('recipes').select('*').order('name')
-    setAllRecipes(
-      (recipesRes.data ?? []).map((r) => ({
-        id: r.id,
-        characterId: r.character_id,
-        profession: r.profession,
-        recipeId: r.recipe_id,
-        name: r.name,
-        itemId: r.item_id,
-        makes: r.makes,
-        reagents: r.reagents ?? [],
-      })),
-    )
-
-    const bisRes = await supabase.from('bis_items').select('*').order('slot')
+    // These are optional: if a table isn't set up yet, the rest of the app still works.
+    const [historyRes, recipesRes, bisRes, eventsRes] = await Promise.all([
+      selectAll(supabase, 'character_history', '*', (q) => q.order('recorded_at').order('id')),
+      selectAll(supabase, 'recipes', '*', (q) => q.order('name').order('id')),
+      supabase.from('bis_items').select('*').order('slot'),
+      supabase.from('events').select('*').order('created_at', { ascending: false }).limit(300),
+    ])
+    setAllHistory(historyRes.data.map(toHistory))
+    setAllRecipes(recipesRes.data.map(toRecipe))
     setAllBis(
       (bisRes.data ?? []).map((b) => ({
         id: b.id,
@@ -137,8 +94,6 @@ export function useWarRoom(userId: string) {
         note: b.note,
       })),
     )
-
-    const eventsRes = await supabase.from('events').select('*').order('created_at', { ascending: false }).limit(200)
     setAllEvents(
       (eventsRes.data ?? []).map((e) => ({
         id: e.id,
@@ -150,19 +105,24 @@ export function useWarRoom(userId: string) {
     )
 
     const failed =
-      playersRes.error ?? partiesRes.error ?? membersRes.error ?? charactersRes.error ?? objectivesRes.error ?? itemsRes.error
+      playersRes.error?.message ??
+      partiesRes.error?.message ??
+      membersRes.error?.message ??
+      charactersRes.error ??
+      objectivesRes.error ??
+      itemsRes.error
     if (failed) {
       // The most likely cause right after an update: the database step (supabase/009-war-parties.sql) hasn't been run.
       setError(
-        /party|parties/.test(failed.message)
-          ? `The database needs updating for war parties (${failed.message}). Run supabase/009-war-parties.sql in Supabase.`
-          : failed.message,
+        /part(y|ies)/.test(failed)
+          ? `The database needs updating for war parties (${failed}). Run supabase/009-war-parties.sql in Supabase.`
+          : failed,
       )
       setLoading(false)
       return
     }
 
-    setAllPlayers((playersRes.data ?? []).map((p) => ({ id: p.id, displayName: p.display_name, userId: p.user_id })))
+    setAllPlayers((playersRes.data ?? []).map(toPlayer))
     const members = membersRes.data ?? []
     setParties(
       (partiesRes.data ?? []).map((p) => ({
@@ -174,52 +134,9 @@ export function useWarRoom(userId: string) {
           .map((m) => ({ playerId: m.player_id, role: m.role, joinedAt: m.joined_at })),
       })),
     )
-    setAllCharacters(
-      (charactersRes.data ?? []).map((c) => ({
-        id: c.id,
-        playerId: c.player_id,
-        name: c.name,
-        race: c.race,
-        className: c.class,
-        level: c.level,
-        notes: c.notes ?? undefined,
-        gold: Number(c.gold ?? 0),
-        xp: c.xp,
-        xpMax: c.xp_max,
-        restedXp: c.rested_xp ?? 0,
-        lastPlayed: c.last_played,
-        bankSeenAt: c.bank_seen_at,
-        stats: c.stats ?? null,
-        gear: c.gear ?? null,
-        weaponSkills: c.weapon_skills ?? null,
-        isMain: c.is_main ?? false,
-        raceFile: c.race_file ?? null,
-        sex: c.sex ?? null,
-        professions: (c.professions ?? []).map((p: { id: string; name: string; skill_level: number; max_skill: number }) => ({
-          id: p.id,
-          name: p.name,
-          skillLevel: p.skill_level,
-          maxSkill: p.max_skill,
-        })),
-      })),
-    )
-    setAllObjectives(((objectivesRes.data ?? []) as ObjectiveRow[]).map(toObjective))
-    setAllItems(
-      (itemsRes.data ?? []).map((i) => ({
-        id: i.id,
-        characterId: i.character_id,
-        location: i.location,
-        itemId: i.item_id,
-        name: i.name,
-        quantity: i.quantity,
-        quality: i.quality ?? null,
-        ilvl: i.ilvl ?? null,
-        minLevel: i.min_level ?? null,
-        equipLoc: i.equip_loc ?? null,
-        itemType: i.item_type ?? null,
-        subType: i.sub_type ?? null,
-      })),
-    )
+    setAllCharacters(charactersRes.data.map(toCharacter))
+    setAllObjectives(objectivesRes.data.map(toObjective))
+    setAllItems(itemsRes.data.map(toItem))
     setError('')
     setLoading(false)
   }, [])
@@ -297,7 +214,7 @@ export function useWarRoom(userId: string) {
       .select()
       .single()
     if (error) return handleSaveError(error.message)
-    setAllObjectives((prev) => [toObjective(data as ObjectiveRow), ...prev])
+    setAllObjectives((prev) => [toObjective(data), ...prev])
   }
 
   async function updateObjective(id: string, changes: Partial<Objective>) {
@@ -319,9 +236,11 @@ export function useWarRoom(userId: string) {
 
   // Import characters from the addon's file (the real work lives in lib/importer.ts, shared with the
   // website's sync function). Toons always belong to whoever is logged in.
-  async function importSnapshots(snapshots: CharacterSnapshot[]) {
+  // Also applies anything ticked off in the game's War Room window.
+  async function importSnapshots(snapshots: CharacterSnapshot[], actions: GameAction[] = []) {
     if (!me) return 'Set up your name first.'
     const result = await runImport(supabase, snapshots, me.id, allPlayers.map((p) => p.id))
+    if (!result.error && actions.length > 0) await applyActions(supabase, actions, parties.map((p) => p.id))
     await load()
     if (result.error) return result.error
     const { data } = await supabase.auth.getSession()
@@ -429,9 +348,46 @@ export function useWarRoom(userId: string) {
     return error ? error.message : null
   }
 
+  // ---- Sync keys (for the launcher) ----
+  async function listSyncKeys() {
+    const { data } = await supabase.from('sync_keys').select('id, label, created_at, last_used_at').order('created_at')
+    return (data ?? []).map((k) => ({
+      id: k.id as string,
+      label: k.label as string,
+      createdAt: k.created_at as string,
+      lastUsedAt: (k.last_used_at as string | null) ?? null,
+    }))
+  }
+
+  // Returns the new key (shown once, never again), or an error message.
+  async function newSyncKey(label: string) {
+    const { data, error } = await supabase.rpc('new_sync_key', { p_label: label })
+    if (error) return { key: null, error: error.message }
+    return { key: data as string, error: null }
+  }
+
+  async function deleteSyncKey(id: string) {
+    const { error } = await supabase.from('sync_keys').delete().eq('id', id)
+    return error ? error.message : null
+  }
+
+  // The file the addon reads for its in-game War Room window (every party you're in).
+  function gameDataFile() {
+    if (!me) return ''
+    return buildGameData({
+      meId: me.id,
+      players: allPlayers,
+      parties,
+      characters: allCharacters,
+      items: allItems,
+      objectives: allObjectives,
+    })
+  }
+
   return {
     me,
     party,
+    gameDataFile,
     parties,
     myRole,
     switchParty,
@@ -457,6 +413,9 @@ export function useWarRoom(userId: string) {
     renameParty,
     getDiscordSettings,
     saveDiscordSettings,
+    listSyncKeys,
+    newSyncKey,
+    deleteSyncKey,
     reload: load,
   }
 }

@@ -9,10 +9,10 @@
 -- 0. Clear out anything from earlier attempts
 -- ============================================================
 
-drop table if exists party_secrets, party_members, parties, events, bis_items, recipes, character_history, items, objectives, professions, characters, players cascade;
+drop table if exists sync_keys, party_secrets, party_members, parties, events, bis_items, recipes, character_history, items, objectives, professions, characters, players cascade;
 drop function if exists is_player(), my_player_id(), is_party_member(uuid), is_party_leader(uuid), shares_party(text),
   can_see_character(uuid), owns_character(uuid), new_invite_code(), ensure_player(text), create_party(text), join_party(text),
-  leave_party(uuid), remove_party_member(uuid, text), make_party_leader(uuid, text), reset_invite_code(uuid), touch_updated_at() cascade;
+  leave_party(uuid), remove_party_member(uuid, text), make_party_leader(uuid, text), reset_invite_code(uuid), new_sync_key(text), touch_updated_at() cascade;
 
 -- ============================================================
 -- 1. Tables
@@ -411,3 +411,39 @@ end $$;
 -- 5. Live updates
 -- ============================================================
 alter publication supabase_realtime add table characters, professions, items, objectives, recipes, bis_items, character_history, events, parties, party_members;
+
+-- ============================================================
+-- 6. Sync keys: let the launcher (or anything you trust) send your addon file without your password
+-- ============================================================
+-- Each key belongs to one player and only ever updates that player's toons. We store a fingerprint
+-- (sha256) of the key, never the key itself, so even someone reading the database can't use it.
+
+create table if not exists sync_keys (
+  id uuid primary key default gen_random_uuid(),
+  player_id text not null references players (id) on delete cascade,
+  key_hash text not null unique,
+  label text not null default 'Launcher',
+  created_at timestamptz not null default now(),
+  last_used_at timestamptz
+);
+alter table sync_keys enable row level security;
+drop policy if exists "see my sync keys" on sync_keys;
+drop policy if exists "remove my sync keys" on sync_keys;
+create policy "see my sync keys" on sync_keys
+  for select to authenticated using (player_id = my_player_id());
+create policy "remove my sync keys" on sync_keys
+  for delete to authenticated using (player_id = my_player_id());
+
+-- Makes a new key and returns it. This is the only time the key is ever shown.
+create or replace function new_sync_key(p_label text) returns text
+language plpgsql security definer set search_path = public
+as $$
+declare
+  me text := my_player_id();
+  key text := 'hwr_' || replace(gen_random_uuid()::text, '-', '') || replace(gen_random_uuid()::text, '-', '');
+begin
+  if me is null then raise exception 'Set your name first'; end if;
+  insert into sync_keys (player_id, key_hash, label)
+  values (me, encode(sha256(convert_to(key, 'UTF8')), 'hex'), coalesce(nullif(btrim(p_label), ''), 'Launcher'));
+  return key;
+end $$;
