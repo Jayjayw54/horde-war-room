@@ -1,4 +1,5 @@
 import { assigneeLabel, categoryLabels, statusLabels } from '../../lib/labels'
+import { orderProgress } from '../../lib/orders'
 import type { Objective, Status } from '../../types'
 import type { WarRoom } from '../../state/useWarRoom'
 
@@ -12,6 +13,7 @@ const statuses: Status[] = ['todo', 'doing', 'done']
 
 export function ObjectiveItem({ objective, warRoom, compact = false }: Props) {
   const done = objective.status === 'done'
+  const prog = orderProgress(objective.title, warRoom.items)
   return (
     <li className="flex flex-wrap items-start gap-x-3 gap-y-2 border-b border-rim py-3 last:border-b-0">
       <input
@@ -22,11 +24,27 @@ export function ObjectiveItem({ objective, warRoom, compact = false }: Props) {
         className="mt-1 h-5 w-5 shrink-0 accent-blood"
       />
       <div className="min-w-0 flex-1">
-        <p className={done ? 'text-ash line-through' : ''}>{objective.title}</p>
+        <p className={done ? 'text-ash line-through' : 'text-parchment'}>
+          {objective.title}
+          {prog && !done && (
+            <span className={`stat ml-2 ${prog.have >= prog.want ? 'text-success' : 'text-ash'}`}>
+              {prog.have}/{prog.want}
+            </span>
+          )}
+        </p>
+        {prog && !done && !compact && (
+          <div className="mt-1.5 h-1.5 max-w-xs overflow-hidden rounded-full bg-ink" aria-hidden>
+            <div
+              className={`h-full rounded-full ${prog.have >= prog.want ? 'bg-success' : 'bg-gold-dim'}`}
+              style={{ width: `${Math.round((prog.have / prog.want) * 100)}%` }}
+            />
+          </div>
+        )}
         {objective.description && !compact && <p className="text-sm text-ash">{objective.description}</p>}
-        <p className="mt-0.5 text-sm text-ash">
-          {categoryLabels[objective.category]}
-          {!compact && <> for {assigneeLabel(objective.assignee, warRoom.players)}</>}
+        <p className="mt-1 text-sm text-ash">
+          <span className="mr-1.5 rounded border border-rim px-1.5 py-px text-xs">{categoryLabels[objective.category]}</span>
+          {objective.tonight && <span className="mr-1.5 rounded border border-gold/40 px-1.5 py-px text-xs text-gold">Tonight</span>}
+          {!compact && <>for {assigneeLabel(objective.assignee, warRoom.players)}</>}
           {objective.status === 'doing' && <span className="text-gold">, in progress</span>}
         </p>
       </div>

@@ -18,35 +18,41 @@ import { supabase } from '../lib/supabase'
 
 type Mode = 'signin' | 'signup' | 'join'
 
-const FEATURES: { icon: ReactNode; title: string; text: string }[] = [
+const FEATURES: { icon: ReactNode; title: string; short: string; text: string }[] = [
   {
     icon: <RosterIcon />,
     title: 'Roster',
+    short: 'Crew roster',
     text: "Every member's characters in one place: level, class, professions, gold, gear and stats, straight from the game.",
   },
   {
     icon: <OrdersIcon />,
     title: 'Orders',
+    short: 'Crew orders',
     text: "A shared to-do list for the crew. Assign tasks, flag tonight's plan, and tick things off on the site or in game.",
   },
   {
     icon: <StoresIcon />,
     title: 'Shared stores',
+    short: 'Shared stores',
     text: 'Search everyone’s bags and banks at once. Find out who has the Copper Ore before anyone farms more.',
   },
   {
     icon: <PlannerIcon />,
     title: 'Profession planner',
+    short: 'Professions',
     text: 'Pick a craft and see the materials, what the crew already holds, what is missing, and who should make it.',
   },
   {
     icon: <WishlistIcon />,
     title: 'Best-in-slot lists',
+    short: 'Gear wishlists',
     text: 'A gear wishlist for each character that ticks itself off when the item turns up in bags, bank or gear.',
   },
   {
     icon: <ProgressIcon />,
     title: 'Progress',
+    short: 'Progression',
     text: 'The levelling race and the crew’s gold over time, charted from every sync.',
   },
 ]
@@ -108,9 +114,40 @@ export function LoginPage() {
     <div className="relative isolate min-h-screen">
       <Backdrop />
 
-      {/* ---- Hero: name, oath, and the way in ---- */}
-      <header className="mx-auto grid max-w-6xl items-center gap-10 px-5 pt-12 pb-16 sm:pt-16 lg:grid-cols-[1fr_24rem] lg:gap-16 lg:pt-24 lg:pb-24">
+      {/* ---- Top bar ---- */}
+      <div className="absolute inset-x-0 top-0 z-20">
+        <div className="mx-auto flex max-w-6xl items-center gap-6 px-5 py-4">
+          <a href="#top" className="flex items-center gap-3" aria-label="The Bloodbound">
+            <BloodboundMark className="h-10 w-10" />
+            <Wordmark className="hidden items-start! text-lg text-parchment sm:inline-flex" />
+          </a>
+          <nav aria-label="Sections" className="ml-4 hidden gap-6 text-sm text-parchment/80 md:flex">
+            <a href="#features" className="hover:text-parchment">Features</a>
+            <a href="#how" className="hover:text-parchment">How it works</a>
+            <a href="#ingame" className="hover:text-parchment">Addon</a>
+          </nav>
+          <div className="ml-auto flex gap-2">
+            <button type="button" onClick={() => open('signin')} className="rounded-md border border-parchment/30 px-3.5 py-2 text-sm font-semibold text-parchment hover:border-parchment/60">
+              Sign in
+            </button>
+            <button type="button" onClick={() => open('signup')} className="rounded-md bg-blood px-3.5 py-2 text-sm font-semibold text-parchment hover:bg-blood-light">
+              Get started
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ---- Hero: the fortress at dusk, name, oath, and the way in ---- */}
+      <div id="top" className="relative overflow-hidden">
+        <picture>
+          <source media="(min-width: 768px)" srcSet="/art/hero.jpg" />
+          <img src="/art/hero-small.jpg" alt="" className="absolute inset-0 h-full w-full object-cover object-[70%_center]" />
+        </picture>
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(12,13,15,0.94)_0%,rgba(12,13,15,0.75)_40%,rgba(12,13,15,0.25)_75%,rgba(12,13,15,0.35)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,transparent,#111315)]" />
+      <header className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pt-28 pb-16 sm:pt-32 lg:grid-cols-[1fr_24rem] lg:gap-16 lg:pt-36 lg:pb-24">
         <div>
+          <p className="mb-5 text-sm font-semibold text-gold">A companion for World of Warcraft: Forever crews</p>
           <div className="flex items-center gap-4 sm:gap-5">
             <BloodboundMark className="h-16 w-16 shrink-0 drop-shadow-[0_6px_14px_rgba(0,0,0,0.6)] sm:h-24 sm:w-24" />
             <Wordmark className="items-start! text-[2rem] text-parchment [text-shadow:0_2px_12px_rgba(0,0,0,0.6)] sm:text-6xl" />
@@ -136,7 +173,17 @@ export function LoginPage() {
               Join with an invite code
             </button>
           </div>
-          <p className="mt-4 text-sm text-ash">Free. One crew or several: a duo of mates or a whole guild.</p>
+          <p className="mt-4 text-sm text-parchment/70">Free. One crew or several: a duo of mates or a whole guild.</p>
+
+          {/* What's inside, at a glance */}
+          <ul className="mt-10 grid max-w-2xl grid-cols-3 gap-y-5 border-t border-parchment/15 pt-6 sm:grid-cols-6">
+            {FEATURES.map((f) => (
+              <li key={f.title} className="flex flex-col items-center gap-1.5 px-1 text-center">
+                <span className="text-gold">{f.icon}</span>
+                <span className="text-xs font-semibold text-parchment/90">{f.short}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* ---- The gate: sign in / create account / invite code ---- */}
@@ -236,11 +283,12 @@ export function LoginPage() {
           </div>
         </div>
       </header>
+      </div>
 
       <main className="relative bg-[linear-gradient(180deg,rgba(17,19,21,0)_0%,#111315_6rem)]">
         {/* ---- What the crew gets ---- */}
-        <section className="mx-auto max-w-6xl px-5 pt-10 pb-16" aria-labelledby="features">
-          <h2 id="features" className="font-display text-2xl font-semibold text-parchment sm:text-3xl">
+        <section id="features" className="mx-auto max-w-6xl scroll-mt-6 px-5 pt-10 pb-16" aria-labelledby="features-title">
+          <h2 id="features-title" className="font-display text-2xl font-semibold text-parchment sm:text-3xl">
             One stronghold for the whole crew
           </h2>
           <p className="mt-2 max-w-2xl text-ash">
@@ -258,10 +306,10 @@ export function LoginPage() {
         </section>
 
         {/* ---- The game side ---- */}
-        <section className="mx-auto max-w-6xl px-5 pb-16" aria-labelledby="ingame">
+        <section id="ingame" className="mx-auto max-w-6xl scroll-mt-6 px-5 pb-16" aria-labelledby="ingame-title">
           <div className="grid gap-6 rounded-lg border border-rim bg-[linear-gradient(135deg,#1f1a1c,#1c2022_55%)] p-6 sm:p-8 lg:grid-cols-2 lg:gap-10">
             <div>
-              <h2 id="ingame" className="font-display text-2xl font-semibold text-parchment">In the game, too</h2>
+              <h2 id="ingame-title" className="font-display text-2xl font-semibold text-parchment">In the game, too</h2>
               <p className="mt-2 leading-relaxed text-ash">
                 The Bloodbound addon records your characters as you play. Type <span className="font-stat text-lg text-parchment">/bloodbound</span>{' '}
                 in game for the crew window: tonight's orders, who has an item, what's still needed, and everyone's toons.
@@ -287,8 +335,8 @@ export function LoginPage() {
         </section>
 
         {/* ---- How a crew comes together (a real sequence, so it's numbered) ---- */}
-        <section className="mx-auto max-w-6xl px-5 pb-20" aria-labelledby="how">
-          <h2 id="how" className="font-display text-2xl font-semibold text-parchment">How a crew comes together</h2>
+        <section id="how" className="mx-auto max-w-6xl scroll-mt-6 px-5 pb-20" aria-labelledby="how-title">
+          <h2 id="how-title" className="font-display text-2xl font-semibold text-parchment">How a crew comes together</h2>
           <ol className="mt-6 grid gap-6 sm:grid-cols-3">
             {[
               ['Make an account', 'Sign up with an email and pick the name your crew will see.'],

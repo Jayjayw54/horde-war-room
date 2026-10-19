@@ -8,6 +8,7 @@ import type { Page } from '../components/layout/Header'
 import { timeAgo } from '../lib/format'
 import { assigneeLabel, classColors } from '../lib/labels'
 import { SLOT_NAMES } from '../lib/slots'
+import { orderProgress } from '../lib/orders'
 import { findUpgrades } from '../lib/upgrades'
 import type { WarRoom } from '../state/useWarRoom'
 import { EVERYONE, type Character } from '../types'
@@ -93,14 +94,7 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
 
   // Next up: open orders, tonight's first. "Get 20 Copper Ore" orders show how close the crew is.
   const nextUp = [...openOrders].sort((a, b) => Number(b.tonight) - Number(a.tonight)).slice(0, 6)
-  const progressOf = (title: string) => {
-    const m = /^Get (\d+) (.+)$/.exec(title)
-    if (!m) return null
-    const want = Number(m[1])
-    const name = m[2].toLowerCase()
-    const have = items.filter((i) => i.name.toLowerCase() === name).reduce((sum, i) => sum + i.quantity, 0)
-    return { have: Math.min(have, want), want }
-  }
+  const progressOf = (title: string) => orderProgress(title, items)
   const toonById = (id: string | null) => characters.find((c) => c.id === id)
 
   return (
