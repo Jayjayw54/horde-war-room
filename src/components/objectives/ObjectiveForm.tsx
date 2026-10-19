@@ -23,7 +23,7 @@ export function ObjectiveForm({ warRoom }: { warRoom: WarRoom }) {
   return (
     <div className="panel p-4">
       <label htmlFor="new-objective" className="font-display text-sm font-semibold text-gold">
-        New objective
+        New order
       </label>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row">
         <input
@@ -68,7 +68,7 @@ export function ObjectiveForm({ warRoom }: { warRoom: WarRoom }) {
           disabled={!title.trim()}
           className="rounded bg-blood px-4 py-2 font-semibold hover:bg-blood-light disabled:opacity-40"
         >
-          Add objective
+          Add order
         </button>
       </div>
     </div>

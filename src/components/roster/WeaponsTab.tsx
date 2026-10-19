@@ -23,7 +23,7 @@ export function WeaponsTab({ skills }: { skills: WeaponSkill[] | null }) {
               </span>
             </div>
             <div className="mt-1 h-2 overflow-hidden rounded-full bg-ink" role="progressbar" aria-label={`${s.name} skill`} aria-valuenow={s.skill} aria-valuemin={0} aria-valuemax={s.max}>
-              <div className={`h-full rounded-full ${s.skill >= s.max ? 'bg-[#1eff00]/70' : 'bg-gold'}`} style={{ width: `${percent}%` }} />
+              <div className={`h-full rounded-full ${s.skill >= s.max ? 'bg-success' : 'bg-gold'}`} style={{ width: `${percent}%` }} />
             </div>
           </div>
         )

@@ -20,7 +20,7 @@ export function TonightView({ warRoom }: { warRoom: WarRoom }) {
     <section>
       <p className="text-ash">
         {tonight.length === 0
-          ? 'Nothing planned yet. Flag objectives with "Add to tonight" to build the session plan.'
+          ? 'Nothing planned yet. Flag orders with "Add to tonight" to build the session plan.'
           : remaining === 0
             ? 'Every order complete. Victory!'
             : `${remaining} of ${tonight.length} still to do.`}

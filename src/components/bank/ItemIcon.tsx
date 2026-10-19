@@ -2,7 +2,7 @@ import { useItemIcon } from '../../lib/itemIcons'
 
 // WoW item rarity colours: poor, common, uncommon, rare, epic, legendary.
 export const qualityColors = ['#9d9d9d', '#ffffff', '#1eff00', '#0070dd', '#a335ee', '#ff8000']
-export const qualityColor = (q: number | null) => (q !== null && qualityColors[q]) || '#eadcb8'
+export const qualityColor = (q: number | null) => (q !== null && qualityColors[q]) || '#e7e2d8'
 
 export function ItemIcon({ itemId, name, quality, size }: { itemId: number; name: string; quality: number | null; size: number }) {
   const url = useItemIcon(itemId)

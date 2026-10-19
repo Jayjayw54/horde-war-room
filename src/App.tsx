@@ -87,7 +87,7 @@ function PendingInvite({ warRoom, onJoined }: { warRoom: WarRoomData; onJoined: 
   return (
     <div className="panel mb-6 flex flex-wrap items-center gap-3 p-4">
       <p className="flex-1">
-        You've been invited to a crew (code <span className="font-mono text-gold">{code}</span>). Join it? You'll stay in
+        You've been invited to a crew (code <span className="font-stat text-lg tracking-widest text-gold">{code}</span>). Join it? You'll stay in
         your current one too.
       </p>
       <button

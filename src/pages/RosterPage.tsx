@@ -13,10 +13,10 @@ export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
     <section>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="font-display text-2xl font-semibold text-gold">Roster</h2>
+          <h2 className="font-display text-2xl font-semibold text-gold sm:text-3xl">Roster</h2>
           <p className="mt-1 text-ash">Every character your crew plays, mains and alts, straight from the game.</p>
           <p className="mt-1 text-sm text-ash">
-            War chest: <Money copper={totalGold} className="font-semibold text-parchment" />
+            Crew gold: <Money copper={totalGold} className="font-semibold text-parchment" />
           </p>
         </div>
         {!importing && (
@@ -49,7 +49,7 @@ export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
             <div key={player.id}>
               {/* Player banner */}
               <header className="flex items-center justify-between gap-3">
-                <h3 className="ribbon flex-1 py-1.5 pr-10 pl-4 font-display text-2xl font-extrabold tracking-wide text-gold [text-shadow:0_1px_0_#3a0d08]">
+                <h3 className="ribbon flex-1 py-1.5 pr-10 pl-4 font-display text-2xl font-extrabold tracking-wide text-gold [text-shadow:0_1px_0_rgba(0,0,0,0.5)]">
                   {player.displayName}
                 </h3>
                 <p className="shrink-0 text-right text-sm text-ash">

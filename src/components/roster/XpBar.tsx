@@ -9,7 +9,7 @@ export function XpBar({ xp, xpMax, rested }: { xp: number; xpMax: number; rested
           XP <span className="tabular-nums">{Math.round(earned)}%</span>
         </span>
         {rested > 0 && (
-          <span className="text-[#4f8fd8]">
+          <span className="text-info">
             Rested <span className="tabular-nums">{Math.round((rested / xpMax) * 100)}%</span>
           </span>
         )}
@@ -23,7 +23,7 @@ export function XpBar({ xp, xpMax, rested }: { xp: number; xpMax: number; rested
         aria-valuemax={xpMax}
       >
         <div className="h-full bg-[#9a4fd8]" style={{ width: `${earned}%` }} />
-        <div className="h-full bg-[#4f8fd8]/70" style={{ width: `${restedPart}%` }} />
+        <div className="h-full bg-info/70" style={{ width: `${restedPart}%` }} />
       </div>
     </div>
   )

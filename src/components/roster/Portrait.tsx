@@ -28,7 +28,7 @@ export function Portrait({ character, color }: { character: Character; color: st
     <div className="relative h-16 w-16 shrink-0">
       <div
         className="h-16 w-16 overflow-hidden rounded-full border-[3px] border-gold bg-ink"
-        style={{ boxShadow: `0 0 0 2px #17110e, 0 0 14px -4px ${color}` }}
+        style={{ boxShadow: `0 0 0 2px #111315, 0 0 14px -4px ${color}` }}
       >
         {src ? (
           <img

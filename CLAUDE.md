@@ -1,9 +1,11 @@
-# Warcall (formerly Horde War Room)
+# The Bloodbound (formerly Warcall, and before that Horde War Room)
 
-A shared dashboard for war parties playing World of Warcraft: Forever, for Horde and Alliance alike. Started by Josh and his mate Cel;
-now anyone can sign up, start a war party (a duo, a guild...) or join one with an invite code.
-It tracks characters, professions, the shared bank and objectives, on the website and in game (/warcall).
-Renamed from Horde War Room in Oct 2026 (that name was taken, and the site is cross-faction). Internal code names (useWarRoom, the `hwr_` sync-key prefix, `hwr-` browser storage keys, the repo and Netlify site name) were left as they are.
+A shared stronghold for crews playing World of Warcraft: Forever, for Horde and Alliance alike. Started by Josh and his mate Cel;
+now anyone can sign up, start a crew (a duo, a guild...) or join one with an invite code.
+It tracks characters, professions, the shared bank and objectives, on the website and in game (/bloodbound).
+Renamed Horde War Room → Warcall → The Bloodbound in Oct 2026 (cross-faction). User-facing words: crew (not war party), Orders (not objectives), Stronghold (home), Chronicle (activity). Internal code names (useWarRoom, parties tables, the `hwr_` sync-key prefix, `hwr-` browser storage keys, the repo and Netlify site name) were deliberately left as they are.
+
+Design system (src/index.css): obsidian #111315, blackened iron #1C2022, raised iron #25292B, forged border #383638, blood crimson #76282E (brand, primary actions, active nav), deep blood #4B1D22, antique gold #C39A53 (headings, achievements), weathered gold #9F7A42, old parchment #D8C9A8 (notes), text #E7E2D8 / #A3A6A5. Fonts: Cinzel (titles), Barlow Condensed (`.stat`, numbers), Source Sans 3 (everything else). Logo and icons: src/components/brand/ (Logo.tsx, Icons.tsx), public/favicon.svg. No emoji as icons.
 
 ## Who you're working with
 
@@ -50,7 +52,7 @@ Database changes after the first setup are in numbered files in `supabase/` (e.g
 - players are made by `ensure_player()` when someone picks their name after signing up. Character names are unique per player.
 
 Who can do what (row-level security, see `supabase/009-war-parties.sql`):
-- You see everything belonging to people who share a war party with you, and nothing else.
+- You see everything belonging to people who share a crew with you, and nothing else.
 - You can only change your own toons (and their professions, items, recipes, history, BiS lists).
 - Anyone in a party can add, edit and tick off that party's objectives.
 - Leaders can rename the party, remove members, hand over leadership, reset the invite code and set Discord.
@@ -58,7 +60,7 @@ Who can do what (row-level security, see `supabase/009-war-parties.sql`):
 
 ## Milestones
 
-Status: Milestones 1–4 are done. Live at https://euphonious-fox-f272a5.netlify.app (Netlify, auto-deploys on every push to main). Josh and Cel are both linked to their players. The addon (now addon/Warcall) and the Roster "Import from game" button are built and tested against the Forever beta. The planner, progress, BiS, Discord bot and war table are live.
+Status: Milestones 1–4 are done. Live at https://euphonious-fox-f272a5.netlify.app (Netlify, auto-deploys on every push to main). Josh and Cel are both linked to their players. The addon (now addon/Bloodbound) and the Roster "Import from game" button are built and tested against the Forever beta. The planner, progress, BiS, Discord bot and war table are live.
 
 Milestone 5 (war parties + the in-game window) went live on 19 Oct 2026 (database update 009 run, main deployed), then the rename to Warcall. Not yet tested for real: the launcher (needs Windows) and the in-game window (needs the game).
 
@@ -74,8 +76,8 @@ Milestone 5 (war parties + the in-game window) went live on 19 Oct 2026 (databas
 
 ## How data moves between the game and the website
 
-- Game → website: the addon writes `WarcallDB` to SavedVariables on /reload or logout (toons, plus `actions`: orders ticked off in the /warcall window). It reaches the website by the Roster's "Import from game" upload, or the launcher POSTing it to `/api/sync`.
-- Website → game: `src/lib/gameData.ts` builds `WarcallData.lua` (`WarcallData = {...}`), which lives in the addon's own folder and is read at login or /reload. The launcher GETs it from `/api/sync`; without the launcher, "Download in-game data" gives the same file.
+- Game → website: the addon writes `BloodboundDB` to SavedVariables on /reload or logout (toons, plus `actions`: orders ticked off in the /bloodbound window). It reaches the website by the Roster's "Import from game" upload, or the launcher POSTing it to `/api/sync`.
+- Website → game: `src/lib/gameData.ts` builds `BloodboundData.lua` (`BloodboundData = {...}`), which lives in the addon's own folder and is read at login or /reload. The launcher GETs it from `/api/sync`; without the launcher, "Download in-game data" gives the same file.
 - A tick-off from the game is only applied if the objective hasn't been changed on the website since (objectives.updated_at). The addon forgets a tick-off once it has data made after it.
 
 ## Later (do not build yet, but don't design against it)
@@ -90,7 +92,7 @@ Milestone 5 (war parties + the in-game window) went live on 19 Oct 2026 (databas
 - Discord is paused (Oct 2026): `DISCORD_ENABLED = false` in `src/pages/PartyPage.tsx` hides the settings, and `PAUSED` in `discord-bot.mjs` makes the bot reply that it's off. With no party webhooks saved, nothing posts.
 - Environment variables: VITE_SUPABASE_URL, VITE_SUPABASE_KEY, DISCORD_PUBLIC_KEY, SUPABASE_SERVICE_ROLE_KEY (secret: used by sync, discord and discord-bot). DISCORD_WEBHOOK_URL is no longer used (webhooks are per party now).
 - Import logic lives in `src/lib/importer.ts` (writes characters, items, recipes, history and the events feed; `applyActions` handles tick-offs from the game). It only ever reads or writes the uploader's own toons, so it is safe to run with the service role key.
-- `npm run build` first runs `scripts/package-downloads.mjs`, which zips the addon and the launcher into `public/downloads/` (not committed). The website links to them on the War party page.
+- `npm run build` first runs `scripts/package-downloads.mjs`, which zips the addon and the launcher into `public/downloads/` (not committed). The website links to them on the Crew page.
 
 ## WoW: Forever facts (found by testing in the beta, Oct 2026)
 
@@ -98,9 +100,9 @@ Milestone 5 (war parties + the in-game window) went live on 19 Oct 2026 (databas
 - No realms. Characters have a first name and surname. `UnitName("player")` returns (firstName, surname); `GetUnitName("player", true)` returns "First Surname". The full name is the unique key we match on.
 - Professions use the modern API: `GetProfessions()` returns slot indexes (some nil), `GetProfessionInfo(slot)` returns name, icon, skill, max. `GetNumSkillLines` does not exist.
 - Horde races: Orc, Undead, Tauren, Troll, Skyborne. Level cap 60.
-- SavedVariables file: `WTF\Account\<account>\SavedVariables\Warcall.lua` (the old addon wrote `HordeWarRoom.lua`; the website imports either). Example in `addon/example-SavedVariables.lua`.
-- Addon (`addon/Warcall/`): `Warcall.toc`, `WarcallData.lua` (data from the website, `WarcallData = {...}`; ships empty), `Warcall.lua` (recording into `WarcallDB`, slash commands /warcall and /wcall), `UI.lua` (the window). Files share a table through `local _, ns = ...`.
-- When the addon changes, bump `## Version` in `Warcall.toc` (and `VERSION` in `Warcall.lua`). The website reads the .toc at build time and shows that version on the download link.
+- SavedVariables file: `WTF\Account\<account>\SavedVariables\Bloodbound.lua` (older addons wrote `Warcall.lua` / `HordeWarRoom.lua`; the website imports any of them). Example in `addon/example-SavedVariables.lua`.
+- Addon (`addon/Bloodbound/`): `Bloodbound.toc`, `BloodboundData.lua` (data from the website, `BloodboundData = {...}`; ships empty), `Bloodbound.lua` (recording into `BloodboundDB`, slash commands /bloodbound and /bbound, plus old /warcall, /wcall, /hwr), `UI.lua` (the crew window). Files share a table through `local _, ns = ...`.
+- When the addon changes, bump `## Version` in `Bloodbound.toc` (and `VERSION` in `Bloodbound.lua`). The website reads the .toc at build time and shows that version on the download link.
 - Write addon Lua for Lua 5.1 (no goto, no //). Stick to plain characters in UI text: WoW's font may not draw symbols like … • ›.
 - The addon's UI can be tested outside the game with a pretend WoW API (texlua works as a Lua interpreter).
 
@@ -121,14 +123,14 @@ src/
   lib/rows.ts           Database rows to app shapes, and paged fetching (shared with the server)
   lib/importer.ts       Saves the addon's file to the database (shared with the server)
   lib/savedVariables.ts Reads the addon's file
-  lib/gameData.ts       Writes WarcallData.lua for the in-game window
+  lib/gameData.ts       Writes BloodboundData.lua for the in-game window
   lib/invite.ts         Invite links (?join=CODE)
   components/layout/    Header and navigation
   components/roster/    Character cards and profession bars
   components/objectives/ Objective list items, add form, filters
-  pages/                War table, Roster, Progress, Bank, Planner, BiS, Objectives, War party, Welcome, Login
+  pages/                Stronghold (HomePage), Roster, Progress, Bank, Planner, BiS, Orders (ObjectivesPage), Crew (PartyPage), Welcome, Login (the landing page)
 netlify/functions/      Server functions (see Netlify above)
-addon/Warcall/          The WoW addon
+addon/Bloodbound/       The WoW addon
 launcher/               The optional Windows launcher (PowerShell 5.1, nothing to install)
 supabase/               schema.sql (full setup) and numbered updates
 ```

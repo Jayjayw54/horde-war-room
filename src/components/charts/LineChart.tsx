@@ -99,7 +99,7 @@ export function LineChart({ title, series, format, step = false, height = 260 }:
           {/* recessive grid + axes */}
           {yTicks.map((v) => (
             <g key={v}>
-              <line x1={PAD.left} x2={width - PAD.right} y1={y(v)} y2={y(v)} stroke="#3a2b23" strokeWidth={1} />
+              <line x1={PAD.left} x2={width - PAD.right} y1={y(v)} y2={y(v)} stroke="#2a2c2e" strokeWidth={1} />
               <text x={PAD.left - 8} y={y(v)} dy="0.32em" textAnchor="end" className="fill-ash text-[11px] tabular-nums">
                 {format(v)}
               </text>
@@ -118,9 +118,9 @@ export function LineChart({ title, series, format, step = false, height = 260 }:
           ))}
           {hoverT !== null && (
             <g>
-              <line x1={x(hoverT)} x2={x(hoverT)} y1={PAD.top} y2={PAD.top + innerH} stroke="#8d8178" strokeWidth={1} />
+              <line x1={x(hoverT)} x2={x(hoverT)} y1={PAD.top} y2={PAD.top + innerH} stroke="#a3a6a5" strokeWidth={1} />
               {hoverRows.map(({ s, v }) => (
-                <circle key={s.id} cx={x(hoverT)} cy={y(v!)} r={4.5} fill={s.color} stroke="#241915" strokeWidth={2} />
+                <circle key={s.id} cx={x(hoverT)} cy={y(v!)} r={4.5} fill={s.color} stroke="#1c2022" strokeWidth={2} />
               ))}
             </g>
           )}

@@ -22,14 +22,14 @@ export function ObjectivesPage({ warRoom }: { warRoom: WarRoom }) {
   return (
     <section className="space-y-5">
       <div>
-        <h2 className="font-display text-2xl font-semibold text-gold">Objectives</h2>
-        <p className="mt-1 text-ash">Everything the crew swore it'd remember.</p>
+        <h2 className="font-display text-2xl font-semibold text-gold sm:text-3xl">Orders</h2>
+        <p className="mt-1 text-ash">The crew's orders: tonight's plan, and everything still to do.</p>
       </div>
 
-      <div className="flex gap-1 border-b border-leather-light" role="tablist" aria-label="Objectives view">
+      <div className="flex gap-1 border-b border-leather-light" role="tablist" aria-label="Orders view">
         {(
           [
-            ['all', 'All objectives'],
+            ['all', 'All orders'],
             ['tonight', "Tonight's orders"],
           ] as const
         ).map(([id, label]) => (
@@ -58,7 +58,7 @@ export function ObjectivesPage({ warRoom }: { warRoom: WarRoom }) {
           <ObjectiveForm warRoom={warRoom} />
           <Filters value={filters} onChange={setFilters} players={warRoom.players} />
           {visible.length === 0 ? (
-            <p className="text-ash">No objectives match these filters.</p>
+            <p className="text-ash">No orders match these filters.</p>
           ) : (
             <ul className="panel px-4">
               {visible.map((o) => (

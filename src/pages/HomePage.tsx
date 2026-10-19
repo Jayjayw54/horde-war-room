@@ -1,7 +1,10 @@
-// The war table: what's worth doing tonight, worked out from everything your crew has synced,
-// plus who's been on and what's happened lately.
+// The Stronghold: the crew's home base. Who's here, what's worth doing tonight (worked out from
+// everything the crew has synced), and the Chronicle of what's happened lately.
 import type { ReactNode } from 'react'
 import { ItemIcon, qualityColor } from '../components/bank/ItemIcon'
+import { ChronicleIcon, OrdersIcon, PlannerIcon, ProgressIcon, RosterIcon, ScrollIcon, WishlistIcon } from '../components/brand/Icons'
+import { Money } from '../components/Money'
+import { PageHeader } from '../components/layout/PageHeader'
 import type { Page } from '../components/layout/Header'
 import { timeAgo } from '../lib/format'
 import { assigneeLabel, classColors } from '../lib/labels'
@@ -12,9 +15,20 @@ import { EVERYONE, type Character } from '../types'
 
 const MAX_LEVEL = 60
 
-// Event text uses **bold** for names; turn that into real bold text.
+// Event text uses **bold** for names; turn that into real bold text. The importer starts each line
+// with an emoji (for Discord); here each kind of event gets a proper icon instead.
 function richText(text: string): ReactNode[] {
-  return text.split(/\*\*(.+?)\*\*/g).map((part, i) => (i % 2 ? <strong key={i} className="text-parchment">{part}</strong> : part))
+  const clean = text.replace(/^[^\p{L}\p{N}*]+/u, '')
+  return clean.split(/\*\*(.+?)\*\*/g).map((part, i) => (i % 2 ? <strong key={i} className="font-semibold text-parchment">{part}</strong> : part))
+}
+
+function EventIcon({ kind }: { kind: string }) {
+  const cls = 'h-4 w-4'
+  if (kind === 'ding' || kind === 'milestone') return <ProgressIcon className={cls} />
+  if (kind === 'skill' || kind === 'profession' || kind === 'recipe') return <PlannerIcon className={cls} />
+  if (kind === 'epic') return <WishlistIcon className={cls} />
+  if (kind === 'new') return <RosterIcon className={cls} />
+  return <ChronicleIcon className={cls} />
 }
 
 function Toon({ c }: { c: Character }) {
@@ -25,15 +39,28 @@ function Toon({ c }: { c: Character }) {
   )
 }
 
-function Section({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
+function Section({ title, icon, children, action }: { title: string; icon?: ReactNode; children: ReactNode; action?: ReactNode }) {
   return (
-    <section className="panel p-4">
-      <div className="flex items-baseline justify-between gap-3">
-        <h3 className="font-display text-lg font-semibold text-gold">{title}</h3>
+    <section className="panel p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-parchment">
+          {icon && <span className="text-gold">{icon}</span>}
+          {title}
+        </h3>
         {action}
       </div>
-      <div className="mt-2">{children}</div>
+      <div className="mt-3">{children}</div>
     </section>
+  )
+}
+
+// A number with a small label, for the crew overview.
+function Stat({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-sm text-ash">{label}</dt>
+      <dd className="stat mt-0.5 text-3xl leading-none font-semibold text-parchment">{children}</dd>
+    </div>
   )
 }
 
@@ -79,41 +106,80 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
   const nothingToSuggest =
     closeToDing.length + rested.length + tonight.length + craftable.length + capped.length === 0
 
-  const link = 'text-sm text-gold/90 underline decoration-gold/40 underline-offset-2 hover:text-parchment'
+  const link = 'text-sm text-gold underline-offset-4 hover:underline'
+  const openOrders = objectives.filter((o) => o.status !== 'done').length
+  const crewGold = characters.reduce((sum, c) => sum + c.gold, 0)
 
   return (
     <div>
-      <h2 className="font-display text-2xl font-semibold text-gold">War table</h2>
-      <p className="mt-1 text-ash">What's worth doing tonight, from everything your crew has synced.</p>
+      <PageHeader title="Stronghold" subtitle={warRoom.party ? `${warRoom.party.name}: what's worth doing tonight.` : undefined} />
 
-      {/* Who's been on */}
-      <div className="mt-4 flex flex-wrap gap-x-8 gap-y-1 text-sm">
-        {lastOn.map(({ player, toon }) => (
-          <p key={player.id}>
-            <span className="font-display font-semibold text-parchment">{player.displayName}</span>{' '}
-            <span className="text-ash">
-              {toon ? (
-                <>
-                  last on <Toon c={toon} /> {timeAgo(toon.lastPlayed)}
-                </>
-              ) : (
-                'hasn’t imported yet'
-              )}
-            </span>
+      {/* Crew overview: who's here and the state of things */}
+      <section aria-label="Crew overview" className="panel mt-5 p-4 sm:p-5">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+          <Stat label="Members">{players.length}</Stat>
+          <Stat label="Characters">{characters.length}</Stat>
+          <Stat label="Open orders">{openOrders}</Stat>
+          <Stat label="Crew gold">
+            <Money copper={crewGold} className="text-2xl" />
+          </Stat>
+        </dl>
+        <ul className="mt-4 flex flex-wrap gap-x-6 gap-y-1.5 border-t border-rim pt-3 text-sm">
+          {lastOn.map(({ player, toon }) => (
+            <li key={player.id}>
+              <span className="font-semibold text-parchment">{player.displayName}</span>{' '}
+              <span className="text-ash">
+                {toon ? (
+                  <>
+                    last on <Toon c={toon} /> {timeAgo(toon.lastPlayed)}
+                  </>
+                ) : (
+                  'hasn’t synced yet'
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {characters.length === 0 && (
+        <section className="mt-4 rounded-lg border border-gold/30 bg-gold/[0.06] p-5">
+          <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-parchment">
+            <ScrollIcon className="h-5 w-5 text-gold" /> Your stronghold is empty
+          </h3>
+          <p className="mt-2 max-w-2xl text-ash">
+            Characters arrive from the game. Install the addon (Crew page), log in on each character, type /reload, then use
+            Import from game on the Roster. Everyone in the crew sees them once they're in.
           </p>
-        ))}
-      </div>
+          <div className="mt-3 flex flex-wrap gap-4">
+            <button type="button" onClick={() => onNavigate('party')} className={link}>
+              Get the addon
+            </button>
+            <button type="button" onClick={() => onNavigate('roster')} className={link}>
+              Go to the Roster
+            </button>
+          </div>
+        </section>
+      )}
 
       <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_22rem]">
         <div className="space-y-4">
-          {nothingToSuggest && (
+          {nothingToSuggest && characters.length > 0 && (
             <Section title="Nothing urgent">
               <p className="text-sm text-ash">No near-dings, upgrades or ready crafts right now. Go cause trouble in Ashenvale.</p>
             </Section>
           )}
 
           {tonight.length > 0 && (
-            <Section title="Tonight's orders" action={<button type="button" onClick={() => onNavigate('objectives')} className={link}>Open objectives</button>}>
+            <Section
+              title="Tonight's orders"
+              icon={<OrdersIcon className="h-5 w-5" />}
+              action={
+                <button type="button" onClick={() => onNavigate('objectives')} className={link}>
+                  All orders
+                </button>
+              }
+            >
               <ul className="space-y-1 text-sm">
                 {tonight.slice(0, 6).map((o) => (
                   <li key={o.id}>
@@ -124,7 +190,7 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
             </Section>
           )}
 
-          <Section title="Gear upgrades waiting">
+          <Section title="Gear upgrades waiting" icon={<WishlistIcon className="h-5 w-5" />}>
             {upgrades.length === 0 ? (
               <p className="text-sm text-ash">
                 {items.some((i) => i.ilvl)
@@ -140,7 +206,7 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
                       <p>
                         <Toon c={u.toon} /> could wear{' '}
                         <span style={{ color: qualityColor(u.item.quality) }}>{u.item.name}</span>{' '}
-                        <span className="text-[#1eff00]">+{u.gain} item level</span>
+                        <span className="text-success">+{u.gain} item level</span>
                       </p>
                       <p className="text-xs text-ash">
                         {SLOT_NAMES[u.slotNumber]}, replacing {u.current ?? 'nothing'} ·{' '}
@@ -157,7 +223,7 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
           </Section>
 
           {(closeToDing.length > 0 || rested.length > 0) && (
-            <Section title="Worth playing">
+            <Section title="Worth playing" icon={<ProgressIcon className="h-5 w-5" />}>
               <ul className="space-y-1 text-sm">
                 {closeToDing.map((c) => (
                   <li key={`d-${c.id}`}>
@@ -168,7 +234,7 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
                   .filter((c) => !closeToDing.includes(c))
                   .map((c) => (
                     <li key={`r-${c.id}`}>
-                      <Toon c={c} /> has <span className="text-[#4f8fd8]">{Math.round((c.restedXp / (c.xpMax ?? 1)) * 100)}% rested</span>, so XP is doubled for a while.
+                      <Toon c={c} /> has <span className="text-info">{Math.round((c.restedXp / (c.xpMax ?? 1)) * 100)}% rested</span>, so XP is doubled for a while.
                     </li>
                   ))}
               </ul>
@@ -176,7 +242,15 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
           )}
 
           {craftable.length > 0 && (
-            <Section title="Ready to craft" action={<button type="button" onClick={() => onNavigate('planner')} className={link}>Open planner</button>}>
+            <Section
+              title="Ready to craft"
+              icon={<PlannerIcon className="h-5 w-5" />}
+              action={
+                <button type="button" onClick={() => onNavigate('planner')} className={link}>
+                  Open planner
+                </button>
+              }
+            >
               <ul className="space-y-1 text-sm">
                 {craftable.map(({ recipe, times }) => {
                   const crafter = characters.find((c) => c.id === recipe.characterId)
@@ -209,18 +283,26 @@ export function HomePage({ warRoom, onNavigate }: { warRoom: WarRoom; onNavigate
           )}
         </div>
 
-        {/* Activity feed */}
-        <Section title="Recent activity">
+        {/* The Chronicle: what's happened lately */}
+        <Section title="Chronicle" icon={<ChronicleIcon className="h-5 w-5" />}>
           {events.length === 0 ? (
-            <p className="text-sm text-ash">Dings, skill-ups, epics and milestones show up here after each import.</p>
+            <p className="text-sm text-ash">Dings, skill-ups, epics and milestones are written here after each sync.</p>
           ) : (
-            <ul className="space-y-2 text-sm">
-              {events.slice(0, 25).map((e) => (
-                <li key={e.id} className={e.kind === 'milestone' || e.kind === 'epic' ? 'text-gold' : 'text-ash'}>
-                  <span>{richText(e.text)}</span>
-                  <span className="ml-1 text-xs text-ash/70">{timeAgo(e.createdAt)}</span>
-                </li>
-              ))}
+            <ul className="divide-y divide-rim/70 text-sm">
+              {events.slice(0, 25).map((e) => {
+                const big = e.kind === 'milestone' || e.kind === 'epic'
+                return (
+                  <li key={e.id} className="flex gap-2.5 py-2 first:pt-0">
+                    <span className={`mt-0.5 shrink-0 ${big ? 'text-gold' : 'text-ash/80'}`}>
+                      <EventIcon kind={e.kind} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className={big ? 'text-vellum' : 'text-ash'}>{richText(e.text)}</span>
+                      <span className="mt-0.5 block text-xs text-ash/70">{timeAgo(e.createdAt)}</span>
+                    </span>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </Section>

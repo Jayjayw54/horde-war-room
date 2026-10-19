@@ -54,7 +54,7 @@ export function PatchNotesPage({ warRoom }: { warRoom: WarRoom }) {
 
   return (
     <section>
-      <h2 className="font-display text-2xl font-semibold text-gold">Beta notes</h2>
+      <h2 className="font-display text-2xl font-semibold text-gold sm:text-3xl">Beta notes</h2>
       <p className="mt-1 text-ash">
         Class changes from Blizzard's WoW: Forever beta development notes, newest first.
       </p>

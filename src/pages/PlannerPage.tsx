@@ -80,7 +80,7 @@ export function PlannerPage({ warRoom }: { warRoom: WarRoom }) {
 
   return (
     <section>
-      <h2 className="font-display text-2xl font-semibold text-gold">Profession planner</h2>
+      <h2 className="font-display text-2xl font-semibold text-gold sm:text-3xl">Profession planner</h2>
       <p className="mt-1 text-ash">Pick something to craft. See the materials, what you already have between you, and who should make it.</p>
 
       {known.length === 0 ? (
@@ -209,7 +209,7 @@ export function PlannerPage({ warRoom }: { warRoom: WarRoom }) {
                         </td>
                         <td className="py-1.5 text-right tabular-nums">{g.need}</td>
                         <td className="py-1.5 text-right tabular-nums">{g.have.total}</td>
-                        <td className={`py-1.5 text-right font-semibold tabular-nums ${g.missing > 0 ? 'text-error' : 'text-[#1eff00]'}`}>
+                        <td className={`py-1.5 text-right font-semibold tabular-nums ${g.missing > 0 ? 'text-error' : 'text-success'}`}>
                           {g.missing > 0 ? g.missing : '✓'}
                         </td>
                       </tr>
@@ -246,16 +246,16 @@ export function PlannerPage({ warRoom }: { warRoom: WarRoom }) {
                     }}
                     className="rounded bg-blood px-4 py-1.5 text-sm font-semibold hover:bg-blood-light"
                   >
-                    Add to objectives
+                    Add to orders
                   </button>
                   <p className="text-xs text-ash">
                     {added === picked.key
-                      ? 'Added. Find them on the Objectives tab.'
-                      : `Creates ${plan.filter((g) => g.missing > 0).length} gathering objective(s) for what's missing, plus one to craft it.`}
+                      ? 'Added. Find them on the Orders tab.'
+                      : `Creates ${plan.filter((g) => g.missing > 0).length} gathering order(s) for what's missing, plus one to craft it.`}
                   </p>
                 </div>
                 {plan.length > 0 && plan.every((g) => g.missing === 0) && (
-                  <p className="mt-3 font-semibold text-[#1eff00]">You've got everything between you. Get crafting.</p>
+                  <p className="mt-3 font-semibold text-success">You've got everything between you. Get crafting.</p>
                 )}
               </>
             )}

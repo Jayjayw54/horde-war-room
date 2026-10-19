@@ -19,7 +19,7 @@ export function BisPage({ warRoom }: { warRoom: WarRoom }) {
 
   return (
     <section>
-      <h2 className="font-display text-2xl font-semibold text-gold">Best in slot</h2>
+      <h2 className="font-display text-2xl font-semibold text-gold sm:text-3xl">Best in slot</h2>
       <p className="mt-1 text-ash">
         What each toon is chasing. Items tick off by themselves once they show up in the toon's gear, bags or bank.
       </p>
@@ -104,7 +104,7 @@ function Wishlist({ toon, warRoom }: { toon: Character; warRoom: WarRoom }) {
                     </div>
                     <span
                       className={`shrink-0 text-xs font-semibold ${
-                        st.tone === 'done' ? 'text-[#1eff00]' : st.tone === 'close' ? 'text-gold' : 'text-ash'
+                        st.tone === 'done' ? 'text-success' : st.tone === 'close' ? 'text-gold' : 'text-ash'
                       }`}
                     >
                       {st.tone === 'done' ? '✓ ' : ''}

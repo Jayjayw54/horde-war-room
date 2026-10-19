@@ -23,21 +23,27 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 export function PartyPage({ warRoom }: { warRoom: WarRoom }) {
   const { party, me, myRole, players } = warRoom
   const leader = myRole === 'leader'
-  const [message, setMessage] = useState('')
+  const [message, setMessageState] = useState({ text: '', ok: true })
+  const setMessage = (text: string, ok = true) => setMessageState({ text, ok })
 
   // Shows the result of any action: an error, or a short "done" note.
   async function act(action: () => Promise<string | null>, done = '') {
     const problem = await action()
-    setMessage(problem ?? done)
+    if (problem) setMessage(problem, false)
+    else setMessage(done)
   }
 
   if (!party || !me) return null
 
   return (
     <div>
-      <h2 className="font-display text-2xl font-semibold text-gold">Crew</h2>
+      <h2 className="font-display text-2xl font-semibold text-gold sm:text-3xl">Crew</h2>
       <p className="mt-1 text-ash">Everyone in a crew shares one stronghold: toons, bank, orders and the chronicle.</p>
-      {message && <p className="mt-3 text-gold">{message}</p>}
+      {message.text && (
+        <p role={message.ok ? 'status' : 'alert'} className={`mt-3 ${message.ok ? 'text-success' : 'text-error'}`}>
+          {message.text}
+        </p>
+      )}
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card title={party.name}>
@@ -86,7 +92,7 @@ export function PartyPage({ warRoom }: { warRoom: WarRoom }) {
             onClick={() => {
               const last = party.members.length === 1
               const warning = last
-                ? `You're the last one in ${party.name}. Leaving deletes the party and its objectives (your toons stay yours). Leave?`
+                ? `You're the last one in ${party.name}. Leaving disbands the crew and deletes its orders (your toons stay yours). Leave?`
                 : `Leave ${party.name}? You can rejoin with the invite code.`
               if (window.confirm(warning)) act(() => warRoom.leaveParty(party.id))
             }}
@@ -97,9 +103,9 @@ export function PartyPage({ warRoom }: { warRoom: WarRoom }) {
 
         <Card title="Invite people">
           <p className="text-sm text-ash">
-            Send this link (or just the code). New people sign up, pick a name, and land straight in the party.
+            Send this link (or just the code). New people sign up, pick a name, and land straight in the crew.
           </p>
-          <p className="mt-3 font-mono text-3xl tracking-[0.3em] text-parchment">{party.inviteCode}</p>
+          <p className="mt-3 font-stat text-4xl font-semibold tracking-[0.3em] text-parchment">{party.inviteCode}</p>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <CopyButton text={inviteLink(party.inviteCode)} label="Copy invite link" />
             {leader && (
@@ -174,7 +180,7 @@ function RenameParty({ warRoom, onDone }: { warRoom: WarRoom; onDone: (m: string
   const [name, setName] = useState(warRoom.party?.name ?? '')
   async function save(e: FormEvent) {
     e.preventDefault()
-    onDone((await warRoom.renameParty(name)) ?? 'Party renamed.')
+    onDone((await warRoom.renameParty(name)) ?? 'Crew renamed.')
   }
   return (
     <form onSubmit={save} className="flex gap-2">
@@ -230,7 +236,7 @@ function JoinOrStart({ warRoom, onDone }: { warRoom: WarRoom; onDone: (m: string
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           placeholder="Invite code"
-          className={`${input} min-w-0 flex-1 font-mono uppercase`}
+          className={`${input} min-w-0 flex-1 font-stat text-lg tracking-widest uppercase`}
         />
         <button type="submit" className={button} disabled={!code.trim()}>
           Join another
@@ -253,7 +259,7 @@ function JoinOrStart({ warRoom, onDone }: { warRoom: WarRoom; onDone: (m: string
           value={name}
           maxLength={60}
           onChange={(e) => setName(e.target.value)}
-          placeholder="New party name"
+          placeholder="New crew name"
           className={`${input} min-w-0 flex-1`}
         />
         <button type="submit" className={button} disabled={!name.trim()}>

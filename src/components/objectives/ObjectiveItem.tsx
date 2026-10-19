@@ -13,7 +13,7 @@ const statuses: Status[] = ['todo', 'doing', 'done']
 export function ObjectiveItem({ objective, warRoom, compact = false }: Props) {
   const done = objective.status === 'done'
   return (
-    <li className="flex items-start gap-3 border-b border-leather-light py-3 last:border-b-0">
+    <li className="flex flex-wrap items-start gap-x-3 gap-y-2 border-b border-rim py-3 last:border-b-0">
       <input
         type="checkbox"
         checked={done}
@@ -31,7 +31,7 @@ export function ObjectiveItem({ objective, warRoom, compact = false }: Props) {
         </p>
       </div>
       {!compact && (
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 pl-8 sm:w-auto sm:shrink-0 sm:justify-end sm:pl-0">
           <select
             value={objective.status}
             onChange={(e) => warRoom.setStatus(objective.id, e.target.value as Status)}

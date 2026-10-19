@@ -26,7 +26,7 @@ export function ProgressPage({ warRoom }: { warRoom: WarRoom }) {
   // With more toons than colours, colours go to whichever toons are picked, in the order picked.
   const colorOf = (id: string) => {
     const idx = characters.length <= MAX_LINES ? characters.findIndex((c) => c.id === id) : selected.indexOf(id)
-    return PALETTE[idx] ?? '#8d8178'
+    return PALETTE[idx] ?? '#a3a6a5'
   }
 
   const toggle = (id: string) =>
@@ -54,13 +54,13 @@ export function ProgressPage({ warRoom }: { warRoom: WarRoom }) {
       latest.set(h.characterId, h.gold!)
       return { t: new Date(h.recordedAt).getTime(), v: [...latest.values()].reduce((a, b) => a + b, 0) / 10000 }
     })
-    return { id: p.id, label: p.displayName, color: PALETTE[i] ?? '#8d8178', points }
+    return { id: p.id, label: p.displayName, color: PALETTE[i] ?? '#a3a6a5', points }
   })
 
   return (
     <section>
-      <h2 className="font-display text-2xl font-semibold text-gold">Progress</h2>
-      <p className="mt-1 text-ash">The levelling race and the war chest over time. A new point is added every time you import.</p>
+      <h2 className="font-display text-2xl font-semibold text-gold sm:text-3xl">Progress</h2>
+      <p className="mt-1 text-ash">The levelling race and the crew's gold over time. A new point is added every time you sync.</p>
 
       <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label="Toons on the chart">
         {characters.map((c) => {

@@ -10,6 +10,22 @@ export interface Release {
 
 export const changelog: Release[] = [
   {
+    version: '5.0',
+    date: '2026-10-20',
+    title: 'We are The Bloodbound',
+    changes: [
+      'New name: The Bloodbound. Bound by blood. United by battle. It works for Horde and Alliance crews alike.',
+      'A new look throughout: obsidian and blackened iron, blood-crimson banners, antique gold, and a stronghold on the ridge at dusk.',
+      'New crest: a crimson banner on an iron crest, with a blood drop bound in a ring. It is the icon too, if you installed the site on your phone.',
+      'A proper front page for new people: what The Bloodbound is, Start a crew, or Join with an invite code.',
+      'The home page is now the Stronghold: a crew overview (members, characters, open orders, crew gold) and the Chronicle of dings, skill-ups and epics.',
+      'War parties are now crews, and Objectives are now Orders.',
+      'Addon v0.9.0 is called Bloodbound: delete the old Warcall folder from Interface\\AddOns, then install Bloodbound from the Crew page. In game, /bloodbound (or /bbound). /warcall, /wcall and /hwr still work.',
+      'The launcher is now "Play Bloodbound.cmd". If you set up the old one, run the new one once to set it up again.',
+      'On phones, orders no longer squash their titles to make room for the buttons.',
+    ],
+  },
+  {
     version: '4.1',
     date: '2026-10-19',
     title: 'Horde War Room is now Warcall',

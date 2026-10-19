@@ -1,6 +1,7 @@
 // First visit after signing up: pick the name your crew will see, then start a crew
 // or join one with an invite code. Invite links (…/?join=K7Q2MX) fill the code in for you.
 import { useState, type FormEvent } from 'react'
+import { BloodboundMark } from '../components/brand/Logo'
 import { Backdrop } from '../components/layout/Backdrop'
 import { readInviteCode, clearInviteCode } from '../lib/invite'
 import { supabase } from '../lib/supabase'
@@ -44,14 +45,15 @@ export function WelcomePage({ warRoom }: { warRoom: WarRoom }) {
   return (
     <div className="relative isolate flex min-h-screen items-center justify-center px-5 py-10">
       <Backdrop />
-      <div className="w-full max-w-lg rounded-lg border-t-4 border-blood bg-leather p-8 shadow-xl">
-        <h1 className="font-display text-3xl font-extrabold tracking-wide text-gold">Welcome to The Bloodbound</h1>
+      <div className="panel w-full max-w-lg border-t-2 border-t-blood p-6 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.9)] sm:p-8">
+        <BloodboundMark className="h-14 w-14" />
+        <h1 className="mt-3 font-display text-2xl font-bold text-gold sm:text-3xl">Welcome to The Bloodbound</h1>
 
         {!warRoom.me ? (
           <>
             <p className="mt-2 text-ash">First, what should your crew call you? Your main's first name works well.</p>
             <form onSubmit={saveName} className="mt-5 flex flex-col gap-3">
-              <label htmlFor="display-name" className="font-display text-sm font-semibold text-parchment">
+              <label htmlFor="display-name" className="text-sm font-semibold text-parchment">
                 Your name
               </label>
               <input
@@ -87,7 +89,7 @@ export function WelcomePage({ warRoom }: { warRoom: WarRoom }) {
                   value={code}
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   placeholder="e.g. K7Q2MX"
-                  className={`${input} min-w-0 flex-1 font-mono tracking-widest uppercase`}
+                  className={`${input} min-w-0 flex-1 font-stat text-lg tracking-widest uppercase`}
                 />
                 <button type="submit" disabled={busy || !code.trim()} className={button}>
                   Join
@@ -122,7 +124,13 @@ export function WelcomePage({ warRoom }: { warRoom: WarRoom }) {
           </>
         )}
 
-        {error && <p className="mt-4 text-error">{error}</p>}
+        {warRoom.me && (
+          <p className="mt-6 border-t border-rim pt-4 text-sm text-ash">
+            Your crew sees your characters, their professions, bags and bank, and the crew's orders. Only you can change your
+            characters. Other crews never see any of it.
+          </p>
+        )}
+        {error && <p role="alert" className="mt-4 text-error">{error}</p>}
 
         <button type="button" onClick={() => supabase.auth.signOut()} className="mt-8 text-sm text-ash underline hover:text-parchment">
           Sign out

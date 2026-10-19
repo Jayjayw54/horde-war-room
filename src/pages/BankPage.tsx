@@ -124,7 +124,7 @@ export function BankPage({ warRoom }: { warRoom: WarRoom }) {
 
   return (
     <section>
-      <h2 className="font-display text-2xl font-semibold text-gold">Bank</h2>
+      <h2 className="font-display text-2xl font-semibold text-gold sm:text-3xl">Bank</h2>
       <p className="mt-1 text-ash">Everything in the crew's bags and banks. Who has what?</p>
 
       <label htmlFor="bank-search" className="sr-only">
