@@ -8,6 +8,9 @@ const input = 'rounded bg-ink px-3 py-1.5 text-parchment placeholder:text-ash/70
 const button = 'rounded bg-blood px-3 py-1.5 text-sm font-semibold hover:bg-blood-light disabled:opacity-40'
 const quiet = 'text-sm text-ash underline hover:text-parchment'
 
+// Discord is paused for now. Set this to true to bring back the leader's Discord settings.
+const DISCORD_ENABLED = false
+
 function Card({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="panel p-5">
@@ -115,7 +118,7 @@ export function PartyPage({ warRoom }: { warRoom: WarRoom }) {
           </div>
         </Card>
 
-        {leader && <DiscordSettings warRoom={warRoom} />}
+        {leader && DISCORD_ENABLED && <DiscordSettings warRoom={warRoom} />}
 
         <Card title="Your war parties">
           {warRoom.parties.length > 1 && (

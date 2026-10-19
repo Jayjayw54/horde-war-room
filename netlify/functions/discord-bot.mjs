@@ -135,6 +135,9 @@ export default async (req) => {
     const handler = COMMANDS[interaction.data.name]
     let content
     try {
+      // Paused for now: answer politely and show nothing. Remove these two lines to switch it back on.
+      const PAUSED = true
+      if (PAUSED) return Response.json({ type: 4, data: { content: 'The War Room bot is switched off for now.', flags: 64 } })
       const party = await partyForServer(interaction.guild_id)
       if (!handler) content = 'Unknown command.'
       else if (!party)

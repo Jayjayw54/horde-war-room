@@ -16,8 +16,8 @@ export const changelog: Release[] = [
     changes: [
       'Anyone can join now. Sign up, pick a name, then start a war party or join one with an invite code or link. Each party only sees its own toons, bank and orders.',
       "You can be in more than one party (say, your duo and your guild). Switch between them at the top right.",
-      'New War party page: members, invite code and link, leader tools, and Discord settings.',
-      "Discord is per party now: the leader pastes the channel's webhook and the server ID, and the bot answers with that party's data.",
+      'New War party page: members, invite code and link, and leader tools.',
+      'Discord messages and the bot are switched off for now.',
       'Objectives can be for any member, or for everyone.',
       'You can only change your own toons and wishlists. Everyone in the party can still see them, and anyone can tick off objectives.',
       'Addon v0.7.0: type /hwr in game for the War Room window. Orders (tick them off right there), Who has, Needs and Party. /hwr status shows the old check.',
