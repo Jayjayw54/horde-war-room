@@ -10,6 +10,22 @@ export interface Release {
 
 export const changelog: Release[] = [
   {
+    version: '4.0',
+    date: '2026-10-19',
+    title: 'War parties, and the War Room in game',
+    changes: [
+      'Anyone can join now. Sign up, pick a name, then start a war party or join one with an invite code or link. Each party only sees its own toons, bank and orders.',
+      "You can be in more than one party (say, your duo and your guild). Switch between them at the top right.",
+      'New War party page: members, invite code and link, leader tools, and Discord settings.',
+      "Discord is per party now: the leader pastes the channel's webhook and the server ID, and the bot answers with that party's data.",
+      'Objectives can be for any member, or for everyone.',
+      'You can only change your own toons and wishlists. Everyone in the party can still see them, and anyone can tick off objectives.',
+      'Addon v0.7.0: type /hwr in game for the War Room window. Orders (tick them off right there), Who has, Needs and Party. /hwr status shows the old check.',
+      'Optional launcher: start WoW with it and everything syncs both ways on every /reload or logout. It only runs while you play. Get it, and your sync key, on the War party page.',
+      'No launcher? After an import, "Download in-game data" gives you the file for the addon by hand.',
+    ],
+  },
+  {
     version: '3.1',
     date: '2026-10-15',
     title: 'Backups',

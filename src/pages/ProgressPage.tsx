@@ -17,7 +17,8 @@ export function ProgressPage({ warRoom }: { warRoom: WarRoom }) {
   const [selected, setSelected] = useState<string[]>(() =>
     players
       .map((p) => [...characters].filter((c) => c.playerId === p.id).sort((a, b) => b.level - a.level)[0]?.id)
-      .filter((id): id is string => !!id),
+      .filter((id): id is string => !!id)
+      .slice(0, MAX_LINES),
   )
   const [showTable, setShowTable] = useState(false)
 

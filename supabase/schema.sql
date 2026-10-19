@@ -326,6 +326,8 @@ begin
     return me;
   end if;
   base := coalesce(nullif(lower(regexp_replace(clean, '[^A-Za-z0-9]', '', 'g')), ''), 'player');
+  -- These words mean something else in the app ("Everyone" on an objective, "All" in filters).
+  if base in ('everyone', 'both', 'all', 'none') then base := base || '-player'; end if;
   me := base;
   while exists (select 1 from players where id = me) loop
     me := base || '-' || substr(md5(random()::text), 1, 4);

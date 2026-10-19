@@ -48,6 +48,9 @@ export function BisPage({ warRoom }: { warRoom: WarRoom }) {
 
 function Wishlist({ toon, warRoom }: { toon: Character; warRoom: WarRoom }) {
   const wishes = warRoom.bis.filter((b) => b.characterId === toon.id)
+  // Only a toon's owner can change its wishlist (everyone in the party can see it).
+  const mine = toon.playerId === warRoom.me?.id
+  const ownerName = warRoom.players.find((p) => p.id === toon.playerId)?.displayName ?? 'its owner'
   const guides = SPEC_GUIDES[toon.className] ?? []
 
   function statusOf(b: BisItem): Status {
@@ -107,21 +110,27 @@ function Wishlist({ toon, warRoom }: { toon: Character; warRoom: WarRoom }) {
                       {st.tone === 'done' ? '✓ ' : ''}
                       {st.label}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => warRoom.removeBis(b.id)}
-                      aria-label={`Remove ${b.itemName}`}
-                      className="shrink-0 px-1 text-ash hover:text-blood-light"
-                    >
-                      ✕
-                    </button>
+                    {mine && (
+                      <button
+                        type="button"
+                        onClick={() => warRoom.removeBis(b.id)}
+                        aria-label={`Remove ${b.itemName}`}
+                        className="shrink-0 px-1 text-ash hover:text-blood-light"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </li>
                 )
               })}
           </ul>
         )}
 
-        <AddBis toon={toon} warRoom={warRoom} />
+        {mine ? (
+          <AddBis toon={toon} warRoom={warRoom} />
+        ) : (
+          <p className="mt-4 text-sm text-ash">Only {ownerName} can change this list.</p>
+        )}
       </div>
 
       <aside className="panel p-4">

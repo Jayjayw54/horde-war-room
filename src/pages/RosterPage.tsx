@@ -65,7 +65,7 @@ export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
                     key={c.id}
                     character={c}
                     owner={player.displayName}
-                    onToggleMain={() => warRoom.setMain(c.id, !c.isMain)}
+                    onToggleMain={player.id === warRoom.me?.id ? () => warRoom.setMain(c.id, !c.isMain) : undefined}
                   />
                 ))}
               </div>

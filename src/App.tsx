@@ -51,7 +51,8 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
         partyId={warRoom.party?.id ?? null}
         onSwitchParty={warRoom.switchParty}
       />
-      <main className="mx-auto max-w-7xl px-5 py-8">
+      {/* key: switching war party starts each page fresh (filters, picked toons...). */}
+      <main key={warRoom.party?.id ?? 'none'} className="mx-auto max-w-7xl px-5 py-8">
         {warRoom.error && (
           <p role="alert" className="mb-6 rounded-md border border-blood bg-leather px-4 py-3 text-blood-light">
             {warRoom.error}
