@@ -71,7 +71,9 @@ export function Header({ page, onNavigate, email, live, partyName, parties, part
 
   return (
     <>
-      <header className="relative z-40 mx-auto flex max-w-7xl items-start justify-between gap-4 px-5">
+      {/* The header overlaps the top of the tab rail (so the banner can hang over it). Its empty space
+          lets clicks through to the tabs; only the banner and the links on the right catch them. */}
+      <header className="pointer-events-none relative z-40 mx-auto flex max-w-7xl items-start justify-between gap-4 px-5 *:pointer-events-auto">
         {/* The banner hangs from the top edge of the page */}
         <button
           type="button"
