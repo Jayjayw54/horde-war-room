@@ -1,9 +1,11 @@
 // Netlify Function: /api/sync — how the launcher (or anything you give your sync key to) talks to the War Room.
 //
 //   POST /api/sync   body: the addon's file (HordeWarRoom.lua from WTF\…\SavedVariables)
-//                    → imports your toons, applies anything ticked off in game, and sends back the
-//                      fresh in-game data (WarRoomData.lua) in the same answer.
-//   GET  /api/sync   → just the fresh in-game data (the launcher asks for this before the game starts).
+//                    → imports your toons and applies anything ticked off in game. Answers with a
+//                      short summary (JSON).
+//   GET  /api/sync   → the fresh in-game data: the WarRoomData.lua file itself, as plain text.
+//                      (Plain text rather than JSON, because older Windows PowerShell struggles
+//                      with very big JSON answers, and a guild's bank gets big.)
 //
 // Either way, send your personal sync key:  Authorization: Bearer hwr_…
 // Make one on the War party page. The key only ever touches its owner's toons, and the party's objectives.
@@ -98,9 +100,15 @@ export default async (req: Request) => {
   const player = await playerForKey(db, key)
   if (!player) return Response.json({ error: 'That sync key is not valid. Make a new one on the War party page.' }, { status: 401 })
 
-  // GET: just the in-game data.
+  // GET: the in-game data file.
   if (req.method === 'GET') {
-    return Response.json({ player: player.name, gameData: await gameDataFor(db, player.id) })
+    return new Response(await gameDataFor(db, player.id), {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-War-Room-Player': encodeURIComponent(player.name),
+      },
+    })
   }
 
   // POST: import the addon's file first.
@@ -126,13 +134,11 @@ export default async (req: Request) => {
     )
   }
 
-  const gameData = await gameDataFor(db, player.id)
   return Response.json({
     player: player.name,
     imported: parsed.snapshots.length,
     ordersUpdated: applied,
     summary: result.summary,
-    gameData,
   })
 }
 

@@ -207,7 +207,7 @@ local function whoHasTab(party)
       if total > 0 then
         found = found + 1
         if found > 60 then
-          addLine(color(ASH, "…and more. Try a longer search."))
+          addLine(color(ASH, "...and more. Try a longer search."))
           return
         end
         addLine(color(QUALITY[item.quality or 1] or "ffffff", item.name) .. color(GOLD, "  ×" .. total))
@@ -283,8 +283,8 @@ local function refresh()
     addLine("This window shows your war party: orders, who has what, and everyone's toons.")
     addLine(" ")
     addLine("To fill it in, either:")
-    addLine("• start WoW with the War Room launcher, or", nil, 1)
-    addLine("• on the website, open War party › Download in-game data, put WarRoomData.lua", nil, 1)
+    addLine("- start WoW with the War Room launcher, or", nil, 1)
+    addLine("- on the website, open War party > Download in-game data, put WarRoomData.lua", nil, 1)
     addLine("  in Interface\\AddOns\\HordeWarRoom, then type /reload.", nil, 1)
   elseif not party then
     title:SetText("Horde War Room")
