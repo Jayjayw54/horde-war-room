@@ -1,12 +1,16 @@
 // The front gate: sign in with email and password, or create an account the first time.
 import { useState, type FormEvent } from 'react'
 import { Backdrop } from '../components/layout/Backdrop'
+import { readInviteCode } from '../lib/invite'
 import { supabase } from '../lib/supabase'
 
 type Mode = 'signin' | 'signup'
 
 export function LoginPage() {
-  const [mode, setMode] = useState<Mode>('signin')
+  // Arriving from an invite link usually means you're new, so start on "Create account".
+  const invited = readInviteCode() !== ''
+  const [mode, setMode] = useState<Mode>(invited ? 'signup' : 'signin')
+  const [notice, setNotice] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -16,12 +20,17 @@ export function LoginPage() {
     event.preventDefault()
     setBusy(true)
     setError('')
-    const { error } =
-      mode === 'signin'
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password })
+    setNotice('')
+    if (mode === 'signin') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) setError(error.message)
+    } else {
+      const { data, error } = await supabase.auth.signUp({ email, password })
+      if (error) setError(error.message)
+      // If Supabase is set to confirm emails, there's no login yet: say so instead of doing nothing.
+      else if (!data.session) setNotice('Check your email for a link to confirm your account, then sign in here.')
+    }
     // On success, useSession notices the new login and the war room opens by itself.
-    if (error) setError(error.message)
     setBusy(false)
   }
 
@@ -33,7 +42,9 @@ export function LoginPage() {
       <Backdrop />
       <div className="w-full max-w-md rounded-lg border-t-4 border-blood bg-leather p-8 shadow-xl">
         <h1 className="font-display text-3xl font-extrabold tracking-wide text-gold">Horde War Room</h1>
-        <p className="mt-1 text-ash">Members only. State your name, grunt.</p>
+        <p className="mt-1 text-ash">
+          {invited ? "You've been summoned to a war party. Make an account to answer the call." : 'Members only. State your name, grunt.'}
+        </p>
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-3">
           <label htmlFor="email" className={labelClass}>
@@ -69,6 +80,7 @@ export function LoginPage() {
             {busy ? 'One moment…' : mode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
           {error && <p className="text-blood-light">{error}</p>}
+          {notice && <p className="text-gold">{notice}</p>}
         </form>
 
         <p className="mt-6 text-sm text-ash">

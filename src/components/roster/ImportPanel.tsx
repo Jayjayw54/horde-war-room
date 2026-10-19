@@ -2,11 +2,9 @@
 import { useState, type ChangeEvent } from 'react'
 import { readSnapshotFile, type CharacterSnapshot } from '../../lib/savedVariables'
 import type { WarRoom } from '../../state/useWarRoom'
-import type { PlayerId } from '../../types'
 
 export function ImportPanel({ warRoom, onClose }: { warRoom: WarRoom; onClose: () => void }) {
   const [snapshots, setSnapshots] = useState<CharacterSnapshot[] | null>(null)
-  const [ownerId, setOwnerId] = useState<PlayerId>(warRoom.me?.id ?? warRoom.players[0]?.id ?? 'josh')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
@@ -29,14 +27,15 @@ export function ImportPanel({ warRoom, onClose }: { warRoom: WarRoom; onClose: (
   async function handleImport() {
     if (!snapshots) return
     setBusy(true)
-    const problem = await warRoom.importSnapshots(snapshots, ownerId)
+    const problem = await warRoom.importSnapshots(snapshots)
     setBusy(false)
     if (problem) setError(problem)
     else setDone(true)
   }
 
-  const isNew = (name: string) => !warRoom.characters.some((c) => c.name.toLowerCase() === name.toLowerCase())
-  const anyNew = snapshots?.some((s) => isNew(s.name)) ?? false
+  // Toons always belong to whoever is logged in, so only compare against your own.
+  const mine = warRoom.characters.filter((c) => c.playerId === warRoom.me?.id)
+  const isNew = (name: string) => !mine.some((c) => c.name.toLowerCase() === name.toLowerCase())
 
   return (
     <div className="panel p-5">
@@ -64,18 +63,7 @@ export function ImportPanel({ warRoom, onClose }: { warRoom: WarRoom; onClose: (
               </li>
             ))}
           </ul>
-          {anyNew && (
-            <label className="mt-3 flex items-center gap-2 text-sm">
-              New toons belong to
-              <select value={ownerId} onChange={(e) => setOwnerId(e.target.value as PlayerId)} className="rounded bg-ink px-2 py-1">
-                {warRoom.players.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.displayName}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+          <p className="mt-3 text-sm text-ash">They'll be saved as your toons and shown to everyone in your war parties.</p>
           <button
             type="button"
             onClick={handleImport}

@@ -1,4 +1,4 @@
-// The shared bank: everything in both players' bags and banks. Grid (like bags) or list, searchable.
+// The shared bank: everything in the war party's bags and banks. Grid (like bags) or list, searchable.
 import { useMemo, useState } from 'react'
 import { ItemIcon, qualityColor } from '../components/bank/ItemIcon'
 import { timeAgo } from '../lib/format'
@@ -125,7 +125,7 @@ export function BankPage({ warRoom }: { warRoom: WarRoom }) {
   return (
     <section>
       <h2 className="font-display text-2xl font-semibold text-gold">Bank</h2>
-      <p className="mt-1 text-ash">Everything in both your bags and banks. Who has what?</p>
+      <p className="mt-1 text-ash">Everything in the war party's bags and banks. Who has what?</p>
 
       <label htmlFor="bank-search" className="sr-only">
         Search items
@@ -141,7 +141,7 @@ export function BankPage({ warRoom }: { warRoom: WarRoom }) {
 
       {/* Filters and view switch */}
       <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
-        <div className="flex gap-1" role="group" aria-label="Whose items">
+        <div className="flex flex-wrap gap-1" role="group" aria-label="Whose items">
           <Chip on={who === 'all'} onClick={() => setWho('all')}>
             Everyone
           </Chip>

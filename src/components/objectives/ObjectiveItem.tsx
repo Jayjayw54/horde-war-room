@@ -1,4 +1,4 @@
-import { assigneeLabels, categoryLabels, statusLabels } from '../../lib/labels'
+import { assigneeLabel, categoryLabels, statusLabels } from '../../lib/labels'
 import type { Objective, Status } from '../../types'
 import type { WarRoom } from '../../state/useWarRoom'
 
@@ -26,7 +26,7 @@ export function ObjectiveItem({ objective, warRoom, compact = false }: Props) {
         {objective.description && !compact && <p className="text-sm text-ash">{objective.description}</p>}
         <p className="mt-0.5 text-sm text-ash">
           {categoryLabels[objective.category]}
-          {!compact && <> for {assigneeLabels[objective.assignee]}</>}
+          {!compact && <> for {assigneeLabel(objective.assignee, warRoom.players)}</>}
           {objective.status === 'doing' && <span className="text-gold">, in progress</span>}
         </p>
       </div>

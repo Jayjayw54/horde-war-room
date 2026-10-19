@@ -14,7 +14,7 @@ export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl font-semibold text-gold">Roster</h2>
-          <p className="mt-1 text-ash">Every character you both play, mains and alts, straight from the game.</p>
+          <p className="mt-1 text-ash">Every character your war party plays, mains and alts, straight from the game.</p>
           <p className="mt-1 text-sm text-ash">
             War chest: <Money copper={totalGold} className="font-semibold text-parchment" />
           </p>
@@ -36,8 +36,8 @@ export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
         </div>
       )}
 
-      {/* One column per player: Josh on the left, Cel on the right. */}
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
+      {/* One column per player: you on the left, then everyone else. Bigger parties wrap onto more rows. */}
+      <div className={`mt-6 grid gap-6 md:grid-cols-2 ${warRoom.players.length > 2 ? 'xl:grid-cols-3' : ''}`}>
         {warRoom.players.map((player) => {
           // Starred mains first, then highest level (and furthest into that level), then A–Z.
           const progress = (c: (typeof warRoom.characters)[number]) => c.level + (c.xp && c.xpMax ? c.xp / c.xpMax : 0)

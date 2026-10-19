@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { ItemIcon } from '../components/bank/ItemIcon'
 import { classColors } from '../lib/labels'
 import type { WarRoom } from '../state/useWarRoom'
-import type { Character, Recipe } from '../types'
+import { EVERYONE, type Character, type Recipe } from '../types'
 
 interface KnownRecipe {
   key: string // profession + name
@@ -228,7 +228,7 @@ export function PlannerPage({ warRoom }: { warRoom: WarRoom }) {
                         await warRoom.addObjective({
                           title: `Get ${g.missing} ${g.name}`,
                           description: `For ${goal}.`,
-                          assignee: 'both',
+                          assignee: EVERYONE,
                           category: 'farming',
                           status: 'todo',
                           tonight: false,
@@ -237,7 +237,7 @@ export function PlannerPage({ warRoom }: { warRoom: WarRoom }) {
                       await warRoom.addObjective({
                         title: `Craft ${goal}`,
                         description: suggested ? `${suggested.name} can craft it.` : undefined,
-                        assignee: suggested?.playerId ?? 'both',
+                        assignee: suggested?.playerId ?? EVERYONE,
                         category: 'profession',
                         status: 'todo',
                         tonight: false,

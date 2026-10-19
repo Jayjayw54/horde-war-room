@@ -1,14 +1,14 @@
 import { useState } from 'react'
-import { assigneeLabels, categoryLabels } from '../../lib/labels'
-import type { Assignee, Category } from '../../types'
+import { assigneeOptions, categoryLabels } from '../../lib/labels'
+import { EVERYONE, type Assignee, type Category } from '../../types'
 import type { WarRoom } from '../../state/useWarRoom'
 
-const assignees: Assignee[] = ['josh', 'cel', 'both']
 const categories = Object.keys(categoryLabels) as Category[]
 
 export function ObjectiveForm({ warRoom }: { warRoom: WarRoom }) {
   const [title, setTitle] = useState('')
-  const [assignee, setAssignee] = useState<Assignee>('both')
+  const [assignee, setAssignee] = useState<Assignee>(EVERYONE)
+  const who = assigneeOptions(warRoom.players)
   const [category, setCategory] = useState<Category>('other')
   const [tonight, setTonight] = useState(false)
 
@@ -40,9 +40,9 @@ export function ObjectiveForm({ warRoom }: { warRoom: WarRoom }) {
           aria-label="Who"
           className="rounded bg-ink px-2 py-2"
         >
-          {assignees.map((a) => (
-            <option key={a} value={a}>
-              {assigneeLabels[a]}
+          {Object.entries(who).map(([id, label]) => (
+            <option key={id} value={id}>
+              {label}
             </option>
           ))}
         </select>

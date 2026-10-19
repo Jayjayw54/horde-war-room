@@ -1,5 +1,5 @@
-import { assigneeLabels, categoryLabels, statusLabels } from '../../lib/labels'
-import type { Assignee, Category, Status } from '../../types'
+import { assigneeOptions, categoryLabels, statusLabels } from '../../lib/labels'
+import type { Assignee, Category, Player, Status } from '../../types'
 
 export interface FilterState {
   assignee: Assignee | 'all'
@@ -10,6 +10,7 @@ export interface FilterState {
 interface Props {
   value: FilterState
   onChange: (value: FilterState) => void
+  players: Player[]
 }
 
 function Select<T extends string>({
@@ -38,10 +39,10 @@ function Select<T extends string>({
   )
 }
 
-export function Filters({ value, onChange }: Props) {
+export function Filters({ value, onChange, players }: Props) {
   return (
     <div className="flex flex-wrap gap-4">
-      <Select label="Who" value={value.assignee} options={assigneeLabels} onChange={(assignee) => onChange({ ...value, assignee })} />
+      <Select label="Who" value={value.assignee} options={assigneeOptions(players)} onChange={(assignee) => onChange({ ...value, assignee })} />
       <Select label="Category" value={value.category} options={categoryLabels} onChange={(category) => onChange({ ...value, category })} />
       <Select label="Status" value={value.status} options={statusLabels} onChange={(status) => onChange({ ...value, status })} />
     </div>

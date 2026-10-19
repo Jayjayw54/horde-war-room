@@ -1,7 +1,10 @@
 // Shapes of the data the war room tracks. These match the Supabase tables planned in CLAUDE.md.
 
-export type PlayerId = 'josh' | 'cel'
-export type Assignee = PlayerId | 'both'
+// A player's id is a short name made at sign-up, e.g. 'josh' or 'thrall-3f2a'.
+export type PlayerId = string
+// Who an objective is for: one player's id, or 'everyone' in the party.
+export type Assignee = PlayerId | 'everyone'
+export const EVERYONE = 'everyone'
 
 export type Category = 'profession' | 'farming' | 'dungeon' | 'gear' | 'gold' | 'other'
 export type Status = 'todo' | 'doing' | 'done'
@@ -10,6 +13,20 @@ export interface Player {
   id: PlayerId
   displayName: string
   userId?: string | null
+}
+
+// A war party: a group of players who share one war room (a duo, a guild...).
+export interface PartyMember {
+  playerId: PlayerId
+  role: 'leader' | 'member'
+  joinedAt: string
+}
+
+export interface Party {
+  id: string
+  name: string
+  inviteCode: string
+  members: PartyMember[]
 }
 
 export interface Profession {
@@ -104,6 +121,7 @@ export interface Item {
 
 export interface Objective {
   id: string
+  partyId: string
   title: string
   description?: string
   assignee: Assignee
