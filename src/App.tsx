@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Backdrop } from './components/layout/Backdrop'
-import { Header, type Page } from './components/layout/Header'
+import { AppShell, type Page } from './components/layout/AppShell'
 import { captureInviteCode, clearInviteCode, readInviteCode } from './lib/invite'
 import { BankPage } from './pages/BankPage'
 import { BisPage } from './pages/BisPage'
@@ -31,7 +31,19 @@ export default function App() {
 
 function WarRoom({ email, userId }: { email: string; userId: string }) {
   const [page, setPage] = useState<Page>('home')
+  const [search, setSearch] = useState('')
   const warRoom = useWarRoom(userId)
+
+  // Top-bar search: a character's name opens the Roster, anything else searches the Stores.
+  function runSearch(query: string) {
+    const q = query.toLowerCase()
+    setSearch(query)
+    setPage(warRoom.characters.some((c) => c.name.toLowerCase().includes(q)) ? 'roster' : 'bank')
+  }
+  function navigate(next: Page) {
+    setSearch('')
+    setPage(next)
+  }
 
   // New here: pick a name, then join or start a crew.
   if (!warRoom.loading && !warRoom.error && (!warRoom.me || warRoom.parties.length === 0)) {
@@ -41,29 +53,32 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
   return (
     <div className="relative isolate min-h-screen">
       <Backdrop />
-      <Header
+      <AppShell
         page={page}
-        onNavigate={setPage}
+        onNavigate={navigate}
         email={email}
         live={warRoom.live}
         partyName={warRoom.party?.name ?? ''}
+        memberCount={warRoom.players.length}
+        characterCount={warRoom.characters.length}
         parties={warRoom.parties}
         partyId={warRoom.party?.id ?? null}
         onSwitchParty={warRoom.switchParty}
-      />
-      {/* key: switching crew starts each page fresh (filters, picked toons...). */}
-      <main key={warRoom.party?.id ?? 'none'} className="mx-auto max-w-7xl px-5 py-8">
+        onSearch={runSearch}
+      >
+      {/* key: switching crew (or searching) starts the page fresh (filters, picked toons...). */}
+      <main key={`${warRoom.party?.id ?? 'none'}-${search}`} className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         {warRoom.error && (
           <p role="alert" className="mb-6 rounded-md border border-blood bg-leather px-4 py-3 text-error">
             {warRoom.error}
           </p>
         )}
-        {!warRoom.loading && <PendingInvite warRoom={warRoom} onJoined={() => setPage('party')} />}
+        {!warRoom.loading && <PendingInvite warRoom={warRoom} onJoined={() => navigate('party')} />}
         {warRoom.loading && <p className="text-ash">Unrolling the maps…</p>}
-        {!warRoom.loading && page === 'home' && <HomePage warRoom={warRoom} onNavigate={setPage} />}
-        {!warRoom.loading && page === 'roster' && <RosterPage warRoom={warRoom} />}
+        {!warRoom.loading && page === 'home' && <HomePage warRoom={warRoom} onNavigate={navigate} />}
+        {!warRoom.loading && page === 'roster' && <RosterPage warRoom={warRoom} initialQuery={search} />}
         {!warRoom.loading && page === 'progress' && <ProgressPage warRoom={warRoom} />}
-        {!warRoom.loading && page === 'bank' && <BankPage warRoom={warRoom} />}
+        {!warRoom.loading && page === 'bank' && <BankPage warRoom={warRoom} initialQuery={search} />}
         {!warRoom.loading && page === 'planner' && <PlannerPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'bis' && <BisPage warRoom={warRoom} />}
         {!warRoom.loading && page === 'objectives' && <ObjectivesPage warRoom={warRoom} />}
@@ -71,6 +86,7 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
         {page === 'changelog' && <ChangelogPage />}
         {!warRoom.loading && page === 'notes' && <PatchNotesPage warRoom={warRoom} />}
       </main>
+      </AppShell>
     </div>
   )
 }

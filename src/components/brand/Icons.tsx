@@ -103,3 +103,57 @@ export const ChronicleIcon = ({ className }: P) => (
     <path d="M19.5 4.5c0 6-4 10-10 11.5M10 11.5l4 .5" />
   </Icon>
 )
+
+// A keep with a gate: the Stronghold.
+export const StrongholdIcon = ({ className }: P) => (
+  <Icon className={className}>
+    <path d="M4 20V9h2V6h2v3h2V6h4v3h2V6h2v3h2v11z" />
+    <path d="M10 20v-4a2 2 0 0 1 4 0v4" />
+  </Icon>
+)
+
+// A pennant on a pole: the crew.
+export const BannerIcon = ({ className }: P) => (
+  <Icon className={className}>
+    <path d="M6 21V3" />
+    <path d="M6 4h12l-3 4 3 4H6" />
+  </Icon>
+)
+
+// A cog: settings.
+export const SettingsIcon = ({ className }: P) => (
+  <Icon className={className}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" />
+  </Icon>
+)
+
+// A magnifying glass: search.
+export const SearchIcon = ({ className }: P) => (
+  <Icon className={className}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="M16 16l4.5 4.5" />
+  </Icon>
+)
+
+// Three lines: open the menu.
+export const MenuIcon = ({ className }: P) => (
+  <Icon className={className}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </Icon>
+)
+
+// A cross: close.
+export const CloseIcon = ({ className }: P) => (
+  <Icon className={className}>
+    <path d="M6 6l12 12M18 6L6 18" />
+  </Icon>
+)
+
+// An open book: notes and patch notes.
+export const BookIcon = ({ className }: P) => (
+  <Icon className={className}>
+    <path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5z" />
+    <path d="M12 6.5v13" />
+  </Icon>
+)

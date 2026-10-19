@@ -48,8 +48,8 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
   )
 }
 
-export function BankPage({ warRoom }: { warRoom: WarRoom }) {
-  const [query, setQuery] = useState('')
+export function BankPage({ warRoom, initialQuery = '' }: { warRoom: WarRoom; initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery)
   const [view, setViewState] = useState<View>(savedView)
   const [who, setWho] = useState<PlayerId | 'all'>('all')
   const [where, setWhere] = useState<Where>('all')

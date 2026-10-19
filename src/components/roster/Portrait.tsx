@@ -6,7 +6,7 @@ import type { Character } from '../../types'
 const ICONS = 'https://wow.zamimg.com/images/wow/icons/large/'
 
 // The game's internal race name -> Wowhead's icon name (Undead are "Scourge" inside the game).
-function raceIcon(c: Character): string | null {
+export function raceIcon(c: Character): string | null {
   const key = (c.raceFile ?? c.race).toLowerCase().replace(/\s+/g, '')
   const known: Record<string, string> = { orc: 'orc', scourge: 'scourge', undead: 'scourge', troll: 'troll', tauren: 'tauren' }
   const race = known[key]
@@ -14,7 +14,7 @@ function raceIcon(c: Character): string | null {
   return `${ICONS}race_${race}_${c.sex === 3 ? 'female' : 'male'}.jpg`
 }
 
-const classIcon = (c: Character) => `${ICONS}classicon_${c.className.toLowerCase()}.jpg`
+export const classIcon = (c: Character) => `${ICONS}classicon_${c.className.toLowerCase()}.jpg`
 
 export function Portrait({ character, color }: { character: Character; color: string }) {
   const face = raceIcon(character)
@@ -57,5 +57,26 @@ export function Portrait({ character, color }: { character: Character; color: st
         />
       )}
     </div>
+  )
+}
+
+// A small round face for tables and lists: race face, then class crest, then the first letter.
+export function Avatar({ character, color, size = 32 }: { character: Character; color: string; size?: number }) {
+  const [failed, setFailed] = useState<string[]>([])
+  const options = [raceIcon(character), classIcon(character)].filter((u): u is string => !!u && !failed.includes(u))
+  const src = options[0]
+  return (
+    <span
+      className="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-gold-dim bg-ink"
+      style={{ width: size, height: size, boxShadow: `0 0 0 1px #111315, 0 0 8px -3px ${color}` }}
+    >
+      {src ? (
+        <img src={src} alt="" className="h-full w-full scale-110 object-cover" onError={() => setFailed((f) => [...f, src])} />
+      ) : (
+        <span className="font-display text-sm font-bold" style={{ color }}>
+          {character.name.charAt(0)}
+        </span>
+      )}
+    </span>
   )
 }
