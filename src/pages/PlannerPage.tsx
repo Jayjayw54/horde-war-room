@@ -209,7 +209,7 @@ export function PlannerPage({ warRoom }: { warRoom: WarRoom }) {
                         </td>
                         <td className="py-1.5 text-right tabular-nums">{g.need}</td>
                         <td className="py-1.5 text-right tabular-nums">{g.have.total}</td>
-                        <td className={`py-1.5 text-right font-semibold tabular-nums ${g.missing > 0 ? 'text-blood-light' : 'text-[#1eff00]'}`}>
+                        <td className={`py-1.5 text-right font-semibold tabular-nums ${g.missing > 0 ? 'text-error' : 'text-[#1eff00]'}`}>
                           {g.missing > 0 ? g.missing : '✓'}
                         </td>
                       </tr>

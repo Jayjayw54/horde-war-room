@@ -99,7 +99,7 @@ export function ImportPanel({ warRoom, onClose }: { warRoom: WarRoom; onClose: (
           </button>
         </div>
       )}
-      {error && <p className="mt-3 text-blood-light">{error}</p>}
+      {error && <p className="mt-3 text-error">{error}</p>}
       <button type="button" onClick={onClose} className="mt-4 block text-sm text-ash underline hover:text-parchment">
         Close
       </button>

@@ -17,7 +17,7 @@ export function ChangelogPage() {
                 {new Date(r.date).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
               </time>
             </header>
-            <ul className="mt-3 ml-5 list-disc space-y-1 marker:text-blood-light">
+            <ul className="mt-3 ml-5 list-disc space-y-1 marker:text-error">
               {r.changes.map((c) => (
                 <li key={c}>{c}</li>
               ))}

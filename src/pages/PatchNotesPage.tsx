@@ -87,7 +87,7 @@ export function PatchNotesPage({ warRoom }: { warRoom: WarRoom }) {
       </div>
       <p className="mt-2 text-xs text-ash">● = a class one of you plays</p>
 
-      {error && <p className="mt-6 text-blood-light">{error}</p>}
+      {error && <p className="mt-6 text-error">{error}</p>}
       {!updates && !error && <p className="mt-6 text-ash">Reading the dispatches…</p>}
 
       <div className="mt-6 space-y-6">

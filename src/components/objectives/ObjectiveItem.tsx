@@ -57,7 +57,7 @@ export function ObjectiveItem({ objective, warRoom, compact = false }: Props) {
           <button
             type="button"
             onClick={() => warRoom.deleteObjective(objective.id)}
-            className="rounded px-2 py-1 text-sm text-ash hover:text-blood-light"
+            className="rounded px-2 py-1 text-sm text-ash hover:text-error"
           >
             Delete
           </button>

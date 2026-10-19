@@ -54,7 +54,7 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
       {/* key: switching war party starts each page fresh (filters, picked toons...). */}
       <main key={warRoom.party?.id ?? 'none'} className="mx-auto max-w-7xl px-5 py-8">
         {warRoom.error && (
-          <p role="alert" className="mb-6 rounded-md border border-blood bg-leather px-4 py-3 text-blood-light">
+          <p role="alert" className="mb-6 rounded-md border border-blood bg-leather px-4 py-3 text-error">
             {warRoom.error}
           </p>
         )}
@@ -105,7 +105,7 @@ function PendingInvite({ warRoom, onJoined }: { warRoom: WarRoomData; onJoined: 
       <button type="button" className="text-sm text-ash underline hover:text-parchment" onClick={dismiss}>
         No thanks
       </button>
-      {error && <p className="w-full text-blood-light">{error}</p>}
+      {error && <p className="w-full text-error">{error}</p>}
     </div>
   )
 }

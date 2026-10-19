@@ -3,18 +3,19 @@ import { downloadBackup } from '../../lib/backup'
 import { supabase } from '../../lib/supabase'
 import { SetPassword } from './SetPassword'
 import { latestVersion } from '../../data/changelog'
+import { HornGlyph, Wordmark } from '../brand/Logo'
 
 export type Page = 'home' | 'roster' | 'progress' | 'bank' | 'planner' | 'objectives' | 'notes' | 'bis' | 'changelog' | 'party'
 
 // Tabs shown on the tab rail ("What's new" is opened from the link in the top corner instead).
 const tabs: { id: Page; label: string }[] = [
-  { id: 'home', label: 'War table' },
+  { id: 'home', label: 'Command' },
   { id: 'roster', label: 'Roster' },
   { id: 'progress', label: 'Progress' },
   { id: 'bank', label: 'Bank' },
   { id: 'planner', label: 'Planner' },
   { id: 'bis', label: 'BiS' },
-  { id: 'objectives', label: 'Objectives' },
+  { id: 'objectives', label: 'Orders' },
   { id: 'notes', label: 'Beta notes' },
   { id: 'party', label: 'War party' },
 ]
@@ -67,7 +68,7 @@ export function Header({ page, onNavigate, email, live, partyName, parties, part
     }
   }
 
-  const link = 'text-gold/90 underline decoration-gold/40 underline-offset-2 hover:text-parchment'
+  const link = 'text-ash underline decoration-rim underline-offset-4 transition-colors hover:text-parchment hover:decoration-ash'
 
   return (
     <>
@@ -78,25 +79,24 @@ export function Header({ page, onNavigate, email, live, partyName, parties, part
         <button
           type="button"
           onClick={() => onNavigate('home')}
-          className="war-banner w-60 shrink-0 px-6 pt-6 pb-12 text-center"
-          aria-label="Warcall, go to the war table"
+          className="war-banner flex w-40 shrink-0 flex-col items-center px-4 pt-4 pb-9 text-center sm:w-52 sm:px-5 sm:pt-5 sm:pb-11"
+          aria-label="Warcall, go to Command"
         >
-          <span className="block font-display text-3xl leading-none font-extrabold tracking-wide text-gold [text-shadow:0_2px_0_#3a0d08] sm:text-4xl">
-            Warcall
-          </span>
-          <span className="mt-2 block text-sm text-parchment/80">{partyName || 'Answer the call.'}</span>
+          <HornGlyph className="h-9 w-11 drop-shadow-[0_2px_0_rgba(0,0,0,0.35)] sm:h-11 sm:w-14" />
+          <Wordmark className="mt-1.5 text-xl leading-none text-parchment [text-shadow:0_2px_0_rgba(0,0,0,0.4)] sm:text-2xl" />
+          <span className="mt-2 line-clamp-2 block text-xs leading-snug text-vellum/80 sm:text-sm">{partyName || 'Answer the call.'}</span>
         </button>
 
-        <div className="pt-5 text-right text-sm text-ash">
+        <div className="min-w-0 pt-4 text-right text-sm text-ash">
           <p>
             <span
-              className={`mr-2 inline-flex items-center gap-1 text-xs ${live ? 'text-[#1eff00]/80' : 'text-ash/60'}`}
+              className={`mr-2 inline-flex items-center gap-1.5 text-xs ${live ? 'text-success' : 'text-ash/70'}`}
               title={live ? 'Changes from your war party appear by themselves' : 'Not connected for live updates'}
             >
-              <span className={`inline-block h-1.5 w-1.5 rounded-full ${live ? 'bg-[#1eff00]' : 'bg-ash/60'}`} />
+              <span className={`inline-block h-1.5 w-1.5 rounded-full ${live ? 'bg-success' : 'bg-ash/60'}`} />
               {live ? 'Live' : 'Offline'}
             </span>
-            {email}
+            <span className="hidden sm:inline">{email}</span>
           </p>
           {parties.length > 1 && (
             <label className="mt-1 flex items-center justify-end gap-2 text-xs">
@@ -104,7 +104,7 @@ export function Header({ page, onNavigate, email, live, partyName, parties, part
               <select
                 value={partyId ?? ''}
                 onChange={(e) => onSwitchParty(e.target.value)}
-                className="rounded bg-ink px-2 py-0.5 text-sm text-parchment"
+                className="rounded border border-rim bg-leather px-2 py-0.5 text-sm text-parchment"
               >
                 {parties.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -114,10 +114,10 @@ export function Header({ page, onNavigate, email, live, partyName, parties, part
               </select>
             </label>
           )}
-          <p className="mt-1 flex flex-wrap justify-end gap-x-3">
+          <p className="mt-1 flex flex-wrap justify-end gap-x-4 gap-y-1">
             <button type="button" onClick={openChangelog} className={link}>
               What's new v{latestVersion}
-              {hasNew && <span className="ml-1 inline-block h-2 w-2 rounded-full bg-blood-light align-middle" aria-label="(new)" />}
+              {hasNew && <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-gold align-middle" aria-label="(new)" />}
             </button>
             <button type="button" onClick={backup} className={link}>
               Export backup
@@ -138,13 +138,13 @@ export function Header({ page, onNavigate, email, live, partyName, parties, part
         </div>
       </header>
 
-      {/* Tab rail: an iron bar the tabs hang on. Stays in view while you scroll. */}
+      {/* Tab rail: a forged-iron bar the tabs sit on. Stays in view while you scroll. */}
       <nav
         aria-label="Main"
-        className="sticky top-0 z-30 border-y sm:-mt-6 border-gold/25 bg-[linear-gradient(180deg,#201612,#170f0c)] shadow-[0_6px_16px_-8px_rgba(0,0,0,0.8)]"
+        className="sticky top-0 z-30 border-y border-rim bg-[linear-gradient(180deg,#1f2326,#181b1d)] shadow-[0_8px_18px_-10px_rgba(0,0,0,0.9)] sm:-mt-6"
       >
         {/* On wider screens the tabs start to the right of the banner, so it never covers them. */}
-        <ul className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-5 [scrollbar-width:none] sm:pl-[17.5rem]">
+        <ul className="mx-auto flex max-w-7xl gap-0.5 overflow-x-auto px-3 [scrollbar-width:none] sm:pl-[15rem]">
           {tabs.map((tab) => {
             const active = tab.id === page
             return (
@@ -153,17 +153,15 @@ export function Header({ page, onNavigate, email, live, partyName, parties, part
                   type="button"
                   onClick={() => onNavigate(tab.id)}
                   aria-current={active ? 'page' : undefined}
-                  className={`relative px-4 py-3 font-display text-sm font-semibold tracking-wide transition-colors ${
-                    active
-                      ? 'bg-[linear-gradient(180deg,rgba(155,35,24,0.45),rgba(155,35,24,0.1))] text-gold'
-                      : 'text-ash hover:text-parchment'
+                  className={`relative px-3.5 py-3 text-[15px] font-semibold transition-colors sm:px-4 ${
+                    active ? 'bg-blood/20 text-parchment' : 'text-ash hover:bg-white/[0.03] hover:text-parchment'
                   }`}
                 >
                   {tab.label}
-                  {/* gold bar under the active tab */}
+                  {/* crimson bar under the active tab */}
                   <span
                     aria-hidden
-                    className={`absolute inset-x-2 bottom-0 h-0.5 bg-gold transition-opacity ${active ? 'opacity-100' : 'opacity-0'}`}
+                    className={`absolute inset-x-2 bottom-0 h-[3px] rounded-t-sm bg-blood-light transition-opacity ${active ? 'opacity-100' : 'opacity-0'}`}
                   />
                 </button>
               </li>

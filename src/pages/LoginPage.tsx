@@ -79,7 +79,7 @@ export function LoginPage() {
           >
             {busy ? 'One moment…' : mode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
-          {error && <p className="text-blood-light">{error}</p>}
+          {error && <p className="text-error">{error}</p>}
           {notice && <p className="text-gold">{notice}</p>}
         </form>
 

@@ -122,7 +122,7 @@ export function WelcomePage({ warRoom }: { warRoom: WarRoom }) {
           </>
         )}
 
-        {error && <p className="mt-4 text-blood-light">{error}</p>}
+        {error && <p className="mt-4 text-error">{error}</p>}
 
         <button type="button" onClick={() => supabase.auth.signOut()} className="mt-8 text-sm text-ash underline hover:text-parchment">
           Sign out

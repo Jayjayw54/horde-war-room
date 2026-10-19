@@ -11,7 +11,7 @@ function Row({ label, value, bonus }: { label: string; value: string | number | 
       <dd className="tabular-nums">
         {value}
         {bonus ? (
-          <span className={bonus > 0 ? 'text-[#1eff00]' : 'text-blood-light'}>
+          <span className={bonus > 0 ? 'text-[#1eff00]' : 'text-error'}>
             {' '}
             ({bonus > 0 ? '+' : ''}
             {bonus})

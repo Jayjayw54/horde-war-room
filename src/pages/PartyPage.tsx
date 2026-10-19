@@ -423,7 +423,7 @@ function GameCard({ warRoom }: { warRoom: WarRoom }) {
           </button>
         </form>
       )}
-      {status && <p className="mt-2 text-sm text-blood-light">{status}</p>}
+      {status && <p className="mt-2 text-sm text-error">{status}</p>}
 
       {keys.length > 0 && (
         <ul className="mt-3 divide-y divide-leather-light text-sm">

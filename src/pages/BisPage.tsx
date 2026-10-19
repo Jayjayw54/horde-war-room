@@ -115,7 +115,7 @@ function Wishlist({ toon, warRoom }: { toon: Character; warRoom: WarRoom }) {
                         type="button"
                         onClick={() => warRoom.removeBis(b.id)}
                         aria-label={`Remove ${b.itemName}`}
-                        className="shrink-0 px-1 text-ash hover:text-blood-light"
+                        className="shrink-0 px-1 text-ash hover:text-error"
                       >
                         ✕
                       </button>
@@ -207,7 +207,7 @@ function AddBis({ toon, warRoom }: { toon: Character; warRoom: WarRoom }) {
       <button type="submit" className="rounded bg-blood px-4 py-1.5 font-semibold hover:bg-blood-light">
         Add
       </button>
-      {error && <p className="w-full text-sm text-blood-light">{error}</p>}
+      {error && <p className="w-full text-sm text-error">{error}</p>}
     </form>
   )
 }

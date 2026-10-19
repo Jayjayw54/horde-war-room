@@ -1,18 +1,33 @@
 @import "tailwindcss";
 
-/* Design tokens: a WoW command table — iron, leather, blood red, aged gold, parchment. */
+/* Design tokens: WARCALL. A frontier stronghold: obsidian and forged iron, war crimson cloth,
+   antique gold for the things worth noticing. Crimson is for actions and the brand; gold is rare. */
 @theme {
-  --color-ink: #17110e;
-  --color-leather: #241915;
-  --color-leather-light: #2f221c;
-  --color-blood: #9b2318;
-  --color-blood-light: #c03a2b;
-  --color-gold: #c8a04f;
-  --color-parchment: #eadcb8;
-  --color-ash: #8d8178;
+  /* Surfaces (the old names are kept so every page picks up the new look) */
+  --color-ink: #111315;          /* obsidian: the page */
+  --color-leather: #1c2022;      /* forged iron: panels */
+  --color-leather-light: #25292b;/* raised panels, inputs */
+  --color-rim: #383c3d;          /* muted borders */
+
+  /* Brand */
+  --color-blood: #762f32;        /* war crimson: primary actions, active nav */
+  --color-blood-light: #963f43;  /* crimson hover */
+  --color-gold: #c39a53;         /* antique gold: headings, highlights, achievements */
+  --color-vellum: #d8c9a8;       /* parchment: notes, documents */
+
+  /* Text */
+  --color-parchment: #e7e2d8;    /* primary text */
+  --color-ash: #a3a6a5;          /* secondary text */
+
+  /* States */
+  --color-success: #6f9a7e;      /* brief: #567F65, lifted for text on dark */
+  --color-info: #6b95b5;         /* brief: #527B9A, lifted for text on dark */
+  --color-warning: #c49a53;
+  --color-error: #d46a6a;        /* brief: #B94D4D, lifted for small text on dark */
 
   --font-display: "Cinzel", Georgia, serif;
-  --font-body: "Alegreya Sans", system-ui, sans-serif;
+  --font-stat: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: "Source Sans 3", system-ui, sans-serif;
 }
 
 body {
@@ -20,8 +35,9 @@ body {
   background: var(--color-ink);
   color: var(--color-parchment);
   font-family: var(--font-body);
-  font-size: 17px;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
 
 :focus-visible {
@@ -56,34 +72,49 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.9 0 0 0 0 0.75 0 0 0 0 0.6 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* The hanging war banner: blood-red cloth, gold trim, swallowtail bottom. */
+/* The hanging war banner: weathered crimson cloth, antique-gold trim, swallowtail bottom. */
 .war-banner {
   position: relative;
   background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.35), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.35)),
-    linear-gradient(180deg, #7d1a12 0%, #9b2318 45%, #861d14 100%);
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
-  box-shadow: inset 4px 0 0 var(--color-gold), inset -4px 0 0 var(--color-gold);
+    linear-gradient(90deg, rgba(0, 0, 0, 0.4), transparent 20%, transparent 80%, rgba(0, 0, 0, 0.4)),
+    linear-gradient(180deg, #5e2427 0%, #762f32 40%, #6a2a2d 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
+  box-shadow: inset 3px 0 0 var(--color-gold), inset -3px 0 0 var(--color-gold);
 }
 .war-banner::before {
   /* stitched hem just inside the gold edges */
   content: "";
   position: absolute;
-  inset: 0 12px;
-  border-left: 1px dashed rgba(234, 220, 184, 0.25);
-  border-right: 1px dashed rgba(234, 220, 184, 0.25);
+  inset: 0 11px;
+  border-left: 1px dashed rgba(216, 201, 168, 0.22);
+  border-right: 1px dashed rgba(216, 201, 168, 0.22);
   pointer-events: none;
 }
 
 /* Section ribbons, e.g. the player names heading each Roster column. */
 .ribbon {
-  background: linear-gradient(90deg, #8a1f15, #9b2318 60%, rgba(155, 35, 24, 0));
+  background: linear-gradient(90deg, #6a2a2d, #762f32 55%, rgba(118, 47, 50, 0));
   clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%);
 }
 
-/* Panels: leather lit from above, with a hairline of gold. */
+/* Panels: forged iron, lit faintly from above, with a muted rim. */
 .panel {
-  background: linear-gradient(180deg, #2c1f19 0%, #221813 100%);
-  border: 1px solid rgba(200, 160, 79, 0.12);
+  background: linear-gradient(180deg, #202427 0%, #1c2022 100%);
+  border: 1px solid var(--color-rim);
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Parchment: for notes and documents that should read like paper on the table. */
+.vellum {
+  background: linear-gradient(180deg, #ddd0b0, #cdbd98);
+  color: #2a2421;
+}
+
+/* Numbers and counters. */
+.stat {
+  font-family: var(--font-stat);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 }
