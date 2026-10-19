@@ -10,6 +10,21 @@ export interface Release {
 
 export const changelog: Release[] = [
   {
+    version: '5.1',
+    date: '2026-10-20',
+    title: 'The new stronghold',
+    changes: [
+      'A sidebar for getting around on desktop (tap the menu button on phones), and a search bar up top: type a toon or an item and it takes you straight there.',
+      'The Stronghold has painted banner art, quick counts, Recent activity, and Next up: the orders to do next, tick them off right there.',
+      'Roster has a table view: level and XP, class, professions, gold and when each toon was last played. Cards are still one tap away.',
+      'Orders are split into Active, Tonight and Completed. Gathering orders like "Get 20 Copper Ore" show how many the crew already has, with a progress bar.',
+      'Stores (the shared bank) has a table showing who holds each item and what open orders still need, plus a list of what nobody has yet.',
+      'Professions now opens with everyone\'s skill bars, with a nudge when someone needs to train the next rank. The crafting planner is underneath.',
+      'Progress shows where everyone stands on the way to 60, and which professions the crew covers (and which nobody has yet).',
+      'A new front page with the fortress art for anyone you invite.',
+    ],
+  },
+  {
     version: '5.0',
     date: '2026-10-20',
     title: 'We are The Bloodbound',

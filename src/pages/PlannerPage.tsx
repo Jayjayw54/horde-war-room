@@ -2,6 +2,8 @@
 // what's missing, and who should craft it.
 import { useMemo, useState } from 'react'
 import { ItemIcon } from '../components/bank/ItemIcon'
+import { PageHeader } from '../components/layout/PageHeader'
+import { SkillBars } from '../components/professions/SkillBars'
 import { classColors } from '../lib/labels'
 import type { WarRoom } from '../state/useWarRoom'
 import { EVERYONE, type Character, type Recipe } from '../types'
@@ -80,8 +82,14 @@ export function PlannerPage({ warRoom }: { warRoom: WarRoom }) {
 
   return (
     <section>
-      <h2 className="font-display text-2xl font-semibold text-gold sm:text-3xl">Profession planner</h2>
-      <p className="mt-1 text-ash">Pick something to craft. See the materials, what you already have between you, and who should make it.</p>
+      <PageHeader title="Professions" subtitle="Where everyone's skills are at, and a planner for anything the crew can craft." />
+
+      <div className="mt-4">
+        <SkillBars characters={warRoom.characters} players={warRoom.players} />
+      </div>
+
+      <h3 className="mt-8 font-display text-xl font-semibold text-gold">Crafting planner</h3>
+      <p className="mt-1 text-sm text-ash">Pick something to craft. See the materials, what you already have between you, and who should make it.</p>
 
       {known.length === 0 ? (
         <p className="mt-6 text-ash">

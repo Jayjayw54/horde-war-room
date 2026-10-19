@@ -2,12 +2,21 @@
 import { useState } from 'react'
 import { LineChart, type Series } from '../components/charts/LineChart'
 import { Money } from '../components/Money'
+import { PageHeader } from '../components/layout/PageHeader'
+import { classColors } from '../lib/labels'
 import { timeAgo } from '../lib/format'
 import type { WarRoom } from '../state/useWarRoom'
 
 // Categorical colours checked for colour-blind separation and contrast on our dark background.
 const PALETTE = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767']
 const MAX_LINES = PALETTE.length
+const LEVEL_CAP = 60
+
+const PROFESSION_GROUPS: [string, string[]][] = [
+  ['Gathering', ['Herbalism', 'Mining', 'Skinning']],
+  ['Production', ['Alchemy', 'Blacksmithing', 'Enchanting', 'Engineering', 'Leatherworking', 'Tailoring']],
+  ['Secondary', ['Cooking', 'First Aid', 'Fishing']],
+]
 
 export function ProgressPage({ warRoom }: { warRoom: WarRoom }) {
   const { characters, players, history } = warRoom
@@ -59,8 +68,87 @@ export function ProgressPage({ warRoom }: { warRoom: WarRoom }) {
 
   return (
     <section>
-      <h2 className="font-display text-2xl font-semibold text-gold sm:text-3xl">Progress</h2>
-      <p className="mt-1 text-ash">The levelling race and the crew's gold over time. A new point is added every time you sync.</p>
+      <PageHeader title="Progress" subtitle="Where everyone stands, what the crew can cover, and how it's changed over time." />
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="panel p-4">
+          <h3 className="font-display text-lg font-semibold text-parchment">Where everyone stands</h3>
+          <p className="text-xs text-ash">Level out of {LEVEL_CAP}, including progress into the current level.</p>
+          {characters.length === 0 ? (
+            <p className="mt-3 text-sm text-ash">No toons synced yet.</p>
+          ) : (
+            <ul className="mt-3 space-y-2">
+              {[...characters]
+                .sort((a, b) => b.level - a.level || (b.xp ?? 0) - (a.xp ?? 0))
+                .map((c) => {
+                  const into = c.xp && c.xpMax ? c.xp / c.xpMax : 0
+                  const pct = Math.min(100, ((c.level + (c.level < LEVEL_CAP ? into : 0)) / LEVEL_CAP) * 100)
+                  return (
+                    <li key={c.id} className="grid grid-cols-[7rem_1fr_2.5rem] items-center gap-2 text-sm">
+                      <span className="truncate" style={{ color: classColors[c.className] }} title={`${c.name} (${owner(c.playerId)})`}>
+                        {c.name}
+                      </span>
+                      <div className="h-3 overflow-hidden rounded-sm bg-ink" aria-hidden>
+                        <div className="h-full rounded-sm" style={{ width: `${pct}%`, background: classColors[c.className] ?? '#a3a6a5', opacity: 0.85 }} />
+                      </div>
+                      <span className="stat text-right text-base text-parchment">{c.level}</span>
+                    </li>
+                  )
+                })}
+            </ul>
+          )}
+        </div>
+
+        <div className="panel p-4">
+          <h3 className="font-display text-lg font-semibold text-parchment">Profession coverage</h3>
+          <p className="text-xs text-ash">Who in the crew has each profession, and the best skill between you.</p>
+          <div className="mt-3 space-y-3">
+            {PROFESSION_GROUPS.map(([group, names]) => {
+              const covered = names.filter((n) => characters.some((c) => c.professions.some((p) => p.name === n))).length
+              return (
+                <div key={group}>
+                  <p className="flex justify-between text-xs tracking-wide text-ash uppercase">
+                    <span>{group}</span>
+                    <span className="stat">
+                      {covered}/{names.length} covered
+                    </span>
+                  </p>
+                  <ul className="mt-1 grid gap-1 sm:grid-cols-2">
+                    {names.map((n) => {
+                      const who = characters
+                        .map((c) => ({ c, p: c.professions.find((p) => p.name === n) }))
+                        .filter((x) => x.p)
+                        .sort((a, b) => b.p!.skillLevel - a.p!.skillLevel)
+                      return (
+                        <li
+                          key={n}
+                          className={`flex items-center justify-between gap-2 rounded border px-2 py-1 text-sm ${
+                            who.length ? 'border-rim bg-leather-light/40' : 'border-dashed border-rim/70 text-ash'
+                          }`}
+                        >
+                          <span className={who.length ? 'text-parchment' : ''}>{n}</span>
+                          {who.length ? (
+                            <span className="truncate text-xs text-ash" title={who.map((x) => `${x.c.name} ${x.p!.skillLevel}`).join(', ')}>
+                              <span style={{ color: classColors[who[0].c.className] }}>{who[0].c.name}</span>{' '}
+                              <span className="stat">{who[0].p!.skillLevel}</span>
+                              {who.length > 1 && ` +${who.length - 1}`}
+                            </span>
+                          ) : (
+                            <span className="text-xs">Nobody yet</span>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      <h3 className="mt-8 font-display text-xl font-semibold text-gold">Over time</h3>
+      <p className="mt-1 text-sm text-ash">The levelling race and the crew's gold. A new point is added every time you sync.</p>
 
       <div className="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label="Toons on the chart">
         {characters.map((c) => {
