@@ -352,7 +352,11 @@ function GameCard({ warRoom }: { warRoom: WarRoom }) {
     <Card title="In game">
       <ol className="list-decimal space-y-2 pl-5 text-sm text-ash">
         <li>
-          Install the addon: <a href="/downloads/HordeWarRoom.zip" className="text-gold underline">HordeWarRoom.zip</a>. Unzip it
+          Install the addon:{' '}
+          <a href="/downloads/HordeWarRoom.zip" download={`HordeWarRoom-v${__ADDON_VERSION__}.zip`} className="text-gold underline">
+            HordeWarRoom v{__ADDON_VERSION__}.zip
+          </a>
+          . Unzip it
           into the <code className="text-parchment">Interface\AddOns</code> folder inside your WoW: Forever game folder (next to <code className="text-parchment">WTF</code>).
         </li>
         <li>

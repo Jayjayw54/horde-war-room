@@ -99,6 +99,7 @@ Milestone 5 (war parties + the War Room in game) is built on the `dev` branch bu
 - Horde races: Orc, Undead, Tauren, Troll, Skyborne. Level cap 60.
 - SavedVariables file: `WTF\Account\<account>\SavedVariables\HordeWarRoom.lua`. Example in `addon/example-SavedVariables.lua`.
 - Addon files: `HordeWarRoom.toc`, `WarRoomData.lua` (data from the website; ships empty), `HordeWarRoom.lua` (recording, slash commands), `UI.lua` (the /hwr window). Files share a table through `local _, ns = ...`.
+- When the addon changes, bump `## Version` in `HordeWarRoom.toc` (and `VERSION` in `HordeWarRoom.lua`). The website reads the .toc at build time and shows that version on the download link.
 - Write addon Lua for Lua 5.1 (no goto, no //). Stick to plain characters in UI text: WoW's font may not draw symbols like … • ›.
 - The addon's UI can be tested outside the game with a pretend WoW API (texlua works as a Lua interpreter).
 

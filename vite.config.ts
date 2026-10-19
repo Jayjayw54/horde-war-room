@@ -1,9 +1,15 @@
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
+
+// The addon's version, read from its .toc file, so the website always shows the one it offers.
+const toc = readFileSync(new URL('./addon/HordeWarRoom/HordeWarRoom.toc', import.meta.url), 'utf8')
+const addonVersion = /^## Version:\s*(.+)$/m.exec(toc)?.[1].trim() ?? '?'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: { __ADDON_VERSION__: JSON.stringify(addonVersion) },
   server: {
     // On your PC, `npm run dev` doesn't run Netlify Functions, so pretend to be one:
     // /api/patch-notes is forwarded straight to the Blizzard forum thread.
