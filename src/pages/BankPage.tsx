@@ -1,7 +1,9 @@
 // The shared bank: everything in the crew's bags and banks. Grid (like bags) or list, searchable.
 import { useMemo, useState } from 'react'
 import { ItemIcon, qualityColor } from '../components/bank/ItemIcon'
+import { PageHeader } from '../components/layout/PageHeader'
 import { timeAgo } from '../lib/format'
+import { orderProgress } from '../lib/orders'
 import { classColors } from '../lib/labels'
 import type { WarRoom } from '../state/useWarRoom'
 import type { PlayerId } from '../types'
@@ -20,16 +22,16 @@ interface Stack {
   holders: Holder[]
 }
 
-type View = 'grid' | 'list'
+type View = 'grid' | 'table'
 type Where = 'all' | 'bags' | 'bank'
 type Sort = 'name' | 'most' | 'rarity'
 
 const VIEW_KEY = 'hwr-bank-view'
 function savedView(): View {
   try {
-    return localStorage.getItem(VIEW_KEY) === 'list' ? 'list' : 'grid'
+    return localStorage.getItem(VIEW_KEY) === 'grid' ? 'grid' : 'table'
   } catch {
-    return 'grid'
+    return 'table'
   }
 }
 
@@ -98,6 +100,19 @@ export function BankPage({ warRoom, initialQuery = '' }: { warRoom: WarRoom; ini
   const picked = shown.find((s) => s.itemId === selected) ?? null
   const neverBanked = warRoom.characters.filter((c) => !c.bankSeenAt)
 
+  // What open "Get N X" orders still want, by item name, so the table can show shortfalls.
+  const needed = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const o of warRoom.objectives) {
+      if (o.status === 'done') continue
+      const p = orderProgress(o.title, [])
+      if (p) m.set(p.item.toLowerCase(), (m.get(p.item.toLowerCase()) ?? 0) + p.want)
+    }
+    return m
+  }, [warRoom.objectives])
+  const crewTotal = (name: string) =>
+    warRoom.items.filter((i) => i.name.toLowerCase() === name).reduce((sum, i) => sum + i.quantity, 0)
+
   function HolderList({ stack }: { stack: Stack }) {
     return (
       <ul className="flex flex-wrap gap-x-4 gap-y-0.5 text-sm">
@@ -124,8 +139,7 @@ export function BankPage({ warRoom, initialQuery = '' }: { warRoom: WarRoom; ini
 
   return (
     <section>
-      <h2 className="font-display text-2xl font-semibold text-gold sm:text-3xl">Bank</h2>
-      <p className="mt-1 text-ash">Everything in the crew's bags and banks. Who has what?</p>
+      <PageHeader title="Shared stores" subtitle="Everything in the crew's bags and banks: who has what, and what orders still need." />
 
       <label htmlFor="bank-search" className="sr-only">
         Search items
@@ -171,11 +185,11 @@ export function BankPage({ warRoom, initialQuery = '' }: { warRoom: WarRoom; ini
           </select>
         </label>
         <div className="ml-auto flex gap-1" role="group" aria-label="View">
-          <Chip on={view === 'grid'} onClick={() => setView('grid')}>
-            ▦ Grid
+          <Chip on={view === 'table'} onClick={() => setView('table')}>
+            Table
           </Chip>
-          <Chip on={view === 'list'} onClick={() => setView('list')}>
-            ☰ List
+          <Chip on={view === 'grid'} onClick={() => setView('grid')}>
+            Grid
           </Chip>
         </div>
       </div>
@@ -184,6 +198,34 @@ export function BankPage({ warRoom, initialQuery = '' }: { warRoom: WarRoom; ini
         {shown.length} items. Bags update as you play; banks update when you open the bank in game.
         {neverBanked.length > 0 && <> Bank not seen yet for: {neverBanked.map((c) => c.name).join(', ')}.</>}
       </p>
+
+      {(() => {
+        const missing = [...needed.entries()].filter(([name, want]) => crewTotal(name) < want)
+        if (missing.length === 0) return null
+        return (
+          <div className="mt-3 panel px-4 py-3 text-sm">
+            <p className="font-semibold text-parchment">Orders still need</p>
+            <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+              {missing.map(([name, want]) => {
+                const have = crewTotal(name)
+                const label = [...warRoom.objectives]
+                  .map((o) => orderProgress(o.title, []))
+                  .find((p) => p?.item.toLowerCase() === name)?.item ?? name
+                return (
+                  <li key={name}>
+                    <button type="button" onClick={() => setQuery(label)} className="text-gold hover:underline">
+                      {label}
+                    </button>{' '}
+                    <span className="stat text-ash">
+                      {have}/{want}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        )
+      })()}
 
       {warRoom.items.length === 0 ? (
         <p className="mt-6 text-ash">Nothing here yet. Update the addon, play a toon, then use Import from game on the Roster.</p>
@@ -232,22 +274,50 @@ export function BankPage({ warRoom, initialQuery = '' }: { warRoom: WarRoom; ini
           </ul>
         </>
       ) : (
-        <ul className="mt-4 panel divide-y divide-ink">
-          {shown.map((s) => (
-            <li key={s.itemId} className="flex items-start gap-3 px-3 py-2">
-              <ItemIcon itemId={s.itemId} name={s.name} quality={s.quality} size={28} />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="truncate font-semibold" style={{ color: qualityColor(s.quality) }}>
-                    {s.name}
-                  </span>
-                  <span className="font-bold text-gold tabular-nums">{s.total.toLocaleString()}</span>
-                </div>
-                <HolderList stack={s} />
-              </div>
-            </li>
-          ))}
-        </ul>
+        <div className="mt-4 panel overflow-x-auto">
+          <table className="w-full min-w-[36rem] text-left text-sm">
+            <thead className="border-b border-rim text-xs tracking-wide text-ash uppercase">
+              <tr>
+                <th scope="col" className="px-3 py-2.5 font-semibold">Item</th>
+                <th scope="col" className="px-3 py-2.5 text-right font-semibold">Crew has</th>
+                <th scope="col" className="px-3 py-2.5 font-semibold">Held by</th>
+                <th scope="col" className="px-3 py-2.5 text-right font-semibold">Orders need</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-rim/60">
+              {shown.map((s) => {
+                const need = needed.get(s.name.toLowerCase())
+                const have = need ? crewTotal(s.name.toLowerCase()) : 0
+                return (
+                  <tr key={s.itemId} className="align-top hover:bg-leather-light/40">
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-2.5">
+                        <ItemIcon itemId={s.itemId} name={s.name} quality={s.quality} size={28} />
+                        <span className="font-semibold" style={{ color: qualityColor(s.quality) }}>
+                          {s.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="stat px-3 py-2 text-right text-base text-gold">{s.total.toLocaleString()}</td>
+                    <td className="px-3 py-2">
+                      <HolderList stack={s} />
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {need ? (
+                        <span className={`stat text-base ${have >= need ? 'text-success' : 'text-warning'}`}>
+                          {need.toLocaleString()}
+                          {have < need && <span className="ml-1 text-xs text-ash">({need - have} short)</span>}
+                        </span>
+                      ) : (
+                        <span className="text-ash/60">–</span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </section>
   )
