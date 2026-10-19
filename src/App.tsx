@@ -33,7 +33,7 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
   const [page, setPage] = useState<Page>('home')
   const warRoom = useWarRoom(userId)
 
-  // New here: pick a name, then join or start a war party.
+  // New here: pick a name, then join or start a crew.
   if (!warRoom.loading && !warRoom.error && (!warRoom.me || warRoom.parties.length === 0)) {
     return <WelcomePage warRoom={warRoom} />
   }
@@ -51,7 +51,7 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
         partyId={warRoom.party?.id ?? null}
         onSwitchParty={warRoom.switchParty}
       />
-      {/* key: switching war party starts each page fresh (filters, picked toons...). */}
+      {/* key: switching crew starts each page fresh (filters, picked toons...). */}
       <main key={warRoom.party?.id ?? 'none'} className="mx-auto max-w-7xl px-5 py-8">
         {warRoom.error && (
           <p role="alert" className="mb-6 rounded-md border border-blood bg-leather px-4 py-3 text-error">
@@ -75,7 +75,7 @@ function WarRoom({ email, userId }: { email: string; userId: string }) {
   )
 }
 
-// Already in a war party and opened someone's invite link: ask before joining.
+// Already in a crew and opened someone's invite link: ask before joining.
 function PendingInvite({ warRoom, onJoined }: { warRoom: WarRoomData; onJoined: () => void }) {
   const [code, setCode] = useState(readInviteCode)
   const [error, setError] = useState('')
@@ -87,7 +87,7 @@ function PendingInvite({ warRoom, onJoined }: { warRoom: WarRoomData; onJoined: 
   return (
     <div className="panel mb-6 flex flex-wrap items-center gap-3 p-4">
       <p className="flex-1">
-        You've been invited to a war party (code <span className="font-mono text-gold">{code}</span>). Join it? You'll stay in
+        You've been invited to a crew (code <span className="font-mono text-gold">{code}</span>). Join it? You'll stay in
         your current one too.
       </p>
       <button

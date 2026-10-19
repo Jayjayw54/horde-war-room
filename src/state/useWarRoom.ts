@@ -1,8 +1,8 @@
 // All war room data, loaded from and saved to Supabase.
 // The pages only talk to this file, so they didn't need to change when we swapped
-// placeholder data for the real database, or when war parties arrived.
+// placeholder data for the real database, or when crews arrived.
 //
-// War parties: the database only ever hands us what we're allowed to see (our parties and their
+// Crews: the database only ever hands us what we're allowed to see (our parties and their
 // members' toons). If you're in more than one party, this file narrows everything down to the
 // party you've picked, so every page shows one party at a time.
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -115,7 +115,7 @@ export function useWarRoom(userId: string) {
       // The most likely cause right after an update: the database step (supabase/009-war-parties.sql) hasn't been run.
       setError(
         /part(y|ies)/.test(failed)
-          ? `The database needs updating for war parties (${failed}). Run supabase/009-war-parties.sql in Supabase.`
+          ? `The database needs updating for crews (${failed}). Run supabase/009-war-parties.sql in Supabase.`
           : failed,
       )
       setLoading(false)
@@ -236,7 +236,7 @@ export function useWarRoom(userId: string) {
 
   // Import characters from the addon's file (the real work lives in lib/importer.ts, shared with the
   // website's sync function). Toons always belong to whoever is logged in.
-  // Also applies anything ticked off in the game's Warcall window.
+  // Also applies anything ticked off in the game's crew window.
   async function importSnapshots(snapshots: CharacterSnapshot[], actions: GameAction[] = []) {
     if (!me) return 'Set up your name first.'
     const result = await runImport(supabase, snapshots, me.id, allPlayers.map((p) => p.id))
@@ -275,7 +275,7 @@ export function useWarRoom(userId: string) {
     if (error) handleSaveError(error.message)
   }
 
-  // ---- You and your war parties ----
+  // ---- You and your crews ----
   // Each returns an error message to show, or null when it worked.
   async function call(fn: string, args: Record<string, unknown>) {
     const { data, error } = await supabase.rpc(fn, args)
@@ -371,7 +371,7 @@ export function useWarRoom(userId: string) {
     return error ? error.message : null
   }
 
-  // The file the addon reads for its in-game Warcall window (every party you're in).
+  // The file the addon reads for its in-game crew window (every party you're in).
   function gameDataFile() {
     if (!me) return ''
     return buildGameData({

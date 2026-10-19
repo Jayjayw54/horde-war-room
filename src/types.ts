@@ -15,7 +15,7 @@ export interface Player {
   userId?: string | null
 }
 
-// A war party: a group of players who share one war room (a duo, a guild...).
+// A crew: a group of players who share one war room (a duo, a guild...).
 export interface PartyMember {
   playerId: PlayerId
   role: 'leader' | 'member'

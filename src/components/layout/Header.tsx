@@ -3,13 +3,13 @@ import { downloadBackup } from '../../lib/backup'
 import { supabase } from '../../lib/supabase'
 import { SetPassword } from './SetPassword'
 import { latestVersion } from '../../data/changelog'
-import { HornGlyph, Wordmark } from '../brand/Logo'
+import { OathGlyph, Wordmark } from '../brand/Logo'
 
 export type Page = 'home' | 'roster' | 'progress' | 'bank' | 'planner' | 'objectives' | 'notes' | 'bis' | 'changelog' | 'party'
 
 // Tabs shown on the tab rail ("What's new" is opened from the link in the top corner instead).
 const tabs: { id: Page; label: string }[] = [
-  { id: 'home', label: 'Command' },
+  { id: 'home', label: 'Stronghold' },
   { id: 'roster', label: 'Roster' },
   { id: 'progress', label: 'Progress' },
   { id: 'bank', label: 'Bank' },
@@ -17,7 +17,7 @@ const tabs: { id: Page; label: string }[] = [
   { id: 'bis', label: 'BiS' },
   { id: 'objectives', label: 'Orders' },
   { id: 'notes', label: 'Beta notes' },
-  { id: 'party', label: 'War party' },
+  { id: 'party', label: 'Crew' },
 ]
 
 const SEEN_KEY = 'hwr-changelog-seen'
@@ -34,7 +34,7 @@ interface Props {
   onNavigate: (page: Page) => void
   email: string
   live: boolean
-  // The war party on screen, and the others you're in (for the switcher).
+  // The crew on screen, and the others you're in (for the switcher).
   partyName: string
   parties: { id: string; name: string }[]
   partyId: string | null
@@ -80,18 +80,20 @@ export function Header({ page, onNavigate, email, live, partyName, parties, part
           type="button"
           onClick={() => onNavigate('home')}
           className="war-banner flex w-40 shrink-0 flex-col items-center px-4 pt-4 pb-9 text-center sm:w-52 sm:px-5 sm:pt-5 sm:pb-11"
-          aria-label="Warcall, go to Command"
+          aria-label="The Bloodbound, go to the Stronghold"
         >
-          <HornGlyph className="h-9 w-11 drop-shadow-[0_2px_0_rgba(0,0,0,0.35)] sm:h-11 sm:w-14" />
-          <Wordmark className="mt-1.5 text-xl leading-none text-parchment [text-shadow:0_2px_0_rgba(0,0,0,0.4)] sm:text-2xl" />
-          <span className="mt-2 line-clamp-2 block text-xs leading-snug text-vellum/80 sm:text-sm">{partyName || 'Answer the call.'}</span>
+          <OathGlyph className="h-10 w-10 drop-shadow-[0_2px_0_rgba(0,0,0,0.4)] sm:h-12 sm:w-12" />
+          <Wordmark className="mt-2 text-lg text-parchment [text-shadow:0_2px_0_rgba(0,0,0,0.45)] sm:text-[1.35rem]" />
+          <span className="mt-2 line-clamp-2 block text-xs leading-snug text-vellum/80 sm:text-sm">
+            {partyName || 'Bound by blood. United by battle.'}
+          </span>
         </button>
 
         <div className="min-w-0 pt-4 text-right text-sm text-ash">
           <p>
             <span
               className={`mr-2 inline-flex items-center gap-1.5 text-xs ${live ? 'text-success' : 'text-ash/70'}`}
-              title={live ? 'Changes from your war party appear by themselves' : 'Not connected for live updates'}
+              title={live ? 'Changes from your crew appear by themselves' : 'Not connected for live updates'}
             >
               <span className={`inline-block h-1.5 w-1.5 rounded-full ${live ? 'bg-success' : 'bg-ash/60'}`} />
               {live ? 'Live' : 'Offline'}
@@ -100,7 +102,7 @@ export function Header({ page, onNavigate, email, live, partyName, parties, part
           </p>
           {parties.length > 1 && (
             <label className="mt-1 flex items-center justify-end gap-2 text-xs">
-              War party
+              Crew
               <select
                 value={partyId ?? ''}
                 onChange={(e) => onSwitchParty(e.target.value)}

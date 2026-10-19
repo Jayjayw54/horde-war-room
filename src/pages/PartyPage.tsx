@@ -1,4 +1,4 @@
-// War party: who's in it, the invite code, Discord, and switching / joining / starting / leaving parties.
+// Crew: who's in it, the invite code, Discord, and switching / joining / starting / leaving parties.
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { downloadGameData } from '../lib/download'
 import { inviteLink } from '../lib/invite'
@@ -35,8 +35,8 @@ export function PartyPage({ warRoom }: { warRoom: WarRoom }) {
 
   return (
     <div>
-      <h2 className="font-display text-2xl font-semibold text-gold">War party</h2>
-      <p className="mt-1 text-ash">Everyone in a war party shares one war room: toons, bank, objectives and the activity feed.</p>
+      <h2 className="font-display text-2xl font-semibold text-gold">Crew</h2>
+      <p className="mt-1 text-ash">Everyone in a crew shares one stronghold: toons, bank, orders and the chronicle.</p>
       {message && <p className="mt-3 text-gold">{message}</p>}
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
@@ -91,7 +91,7 @@ export function PartyPage({ warRoom }: { warRoom: WarRoom }) {
               if (window.confirm(warning)) act(() => warRoom.leaveParty(party.id))
             }}
           >
-            Leave this war party
+            Leave this crew
           </button>
         </Card>
 
@@ -120,7 +120,7 @@ export function PartyPage({ warRoom }: { warRoom: WarRoom }) {
 
         {leader && DISCORD_ENABLED && <DiscordSettings warRoom={warRoom} />}
 
-        <Card title="Your war parties">
+        <Card title="Your crews">
           {warRoom.parties.length > 1 && (
             <ul className="mb-4 space-y-1">
               {warRoom.parties.map((p) => (
@@ -240,7 +240,7 @@ function JoinOrStart({ warRoom, onDone }: { warRoom: WarRoom; onDone: (m: string
         onSubmit={async (e) => {
           e.preventDefault()
           const problem = await warRoom.createParty(name)
-          onDone(problem ?? 'New war party started. Share its invite code.')
+          onDone(problem ?? 'New crew started. Share its invite code.')
           if (!problem) setName('')
         }}
         className="flex gap-2"
@@ -331,7 +331,7 @@ function DiscordSettings({ warRoom }: { warRoom: WarRoom }) {
   )
 }
 
-// Warcall in game: the addon, the in-game data file, and sync keys for the launcher.
+// The Bloodbound in game: the addon, the in-game data file, and sync keys for the launcher.
 function GameCard({ warRoom }: { warRoom: WarRoom }) {
   type Key = Awaited<ReturnType<WarRoom['listSyncKeys']>>[number]
   const [keys, setKeys] = useState<Key[]>([])
@@ -353,21 +353,21 @@ function GameCard({ warRoom }: { warRoom: WarRoom }) {
       <ol className="list-decimal space-y-2 pl-5 text-sm text-ash">
         <li>
           Install the addon:{' '}
-          <a href="/downloads/Warcall.zip" download={`Warcall-v${__ADDON_VERSION__}.zip`} className="text-gold underline">
-            Warcall v{__ADDON_VERSION__}.zip
+          <a href="/downloads/Bloodbound.zip" download={`Bloodbound-v${__ADDON_VERSION__}.zip`} className="text-gold underline">
+            Bloodbound v{__ADDON_VERSION__}.zip
           </a>
           . Unzip it
           into the <code className="text-parchment">Interface\AddOns</code> folder inside your WoW: Forever game folder (next to <code className="text-parchment">WTF</code>).
         </li>
         <li>
-          In game, type <code className="text-parchment">/warcall</code> to open the Warcall window. Using the old Horde War Room addon? Delete its <code className="text-parchment">HordeWarRoom</code> folder first.
+          In game, type <code className="text-parchment">/bloodbound</code> to open the crew window. Using the old Horde War Room addon? Delete its <code className="text-parchment">HordeWarRoom</code> folder first.
         </li>
         <li>
           To keep it up to date, either use the launcher (below), or after each import here click{' '}
           <button type="button" className="text-gold underline" onClick={() => downloadGameData(warRoom.gameDataFile())}>
             Download in-game data
           </button>{' '}
-          and put <code className="text-parchment">WarcallData.lua</code> in the addon's folder.
+          and put <code className="text-parchment">BloodboundData.lua</code> in the addon's folder.
         </li>
       </ol>
 
@@ -376,7 +376,7 @@ function GameCard({ warRoom }: { warRoom: WarRoom }) {
         Start WoW with the launcher instead of the usual shortcut and everything syncs by itself: each /reload or logout sends
         your toons and in-game tick-offs here, and brings the party's latest back. It only runs while you play, installs
         nothing, and you can read every line of it first.{' '}
-        <a href="/downloads/WarcallLauncher.zip" className="text-gold underline">
+        <a href="/downloads/BloodboundLauncher.zip" className="text-gold underline">
           Download the launcher
         </a>
         .

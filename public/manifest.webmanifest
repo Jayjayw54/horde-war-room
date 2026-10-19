@@ -1,7 +1,7 @@
 {
-  "name": "Warcall",
-  "short_name": "Warcall",
-  "description": "Your WoW: Forever crew's war table: toons, bank, planner and orders.",
+  "name": "The Bloodbound",
+  "short_name": "Bloodbound",
+  "description": "Your WoW: Forever crew's stronghold: toons, bank, planner and orders.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

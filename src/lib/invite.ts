@@ -1,6 +1,6 @@
 // Invite links: https://<the site>/?join=K7Q2MX
 // Someone opening one may need to sign up first, so the code is remembered in the browser until
-// they reach the "Join a war party" step.
+// they reach the "Join a crew" step.
 const KEY = 'hwr-invite'
 
 export function inviteLink(code: string) {

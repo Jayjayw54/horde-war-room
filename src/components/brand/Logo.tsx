@@ -1,58 +1,60 @@
-// The WARCALL logo: a war horn on a weathered crimson banner, inside a forged-iron crest.
-// Drawn in SVG so it stays sharp at any size. public/favicon.svg is the same drawing.
+// THE BLOODBOUND logo: a weathered crimson banner hanging from a blackened iron crest, carrying the
+// oath mark (a blood drop bound inside a ring). Drawn in SVG so it stays sharp at any size.
+// public/favicon.svg is the same drawing as BloodboundMark.
 
-// The war horn on its own (gold), for the hanging banner and other crimson backgrounds.
-export function HornGlyph({ className = '' }: { className?: string }) {
+// The oath mark on its own (antique gold), for crimson backgrounds like the hanging banner.
+export function OathGlyph({ className = '' }: { className?: string }) {
   return (
-    <svg viewBox="16 12 36 30" className={className} aria-hidden>
-      <path
-        d="M50.2 14.6c1.2 2.6.1 5.7-2.4 6.9l-.9.4C41 29.6 32.4 35.9 21.4 39.4c-1.8.6-3.2-1.5-2-2.9l.4-.4C29 32 36.4 25.3 40.6 17.5l.3-.8c1.2-2.6 4.2-3.8 6.8-2.6z"
-        fill="#c39a53"
-      />
-      <ellipse cx="46.6" cy="17" rx="4.4" ry="2.6" transform="rotate(48 46.6 17)" fill="#e0c58a" />
-      <ellipse cx="46.9" cy="16.7" rx="3" ry="1.6" transform="rotate(48 46.9 16.7)" fill="#2a1d14" />
-      <path d="M37.2 23.6l3.8 2.6M30.6 29.7l3 2.4" stroke="#7a5c2c" strokeWidth="2" strokeLinecap="round" />
+    <svg viewBox="21 17 22 22" className={className} aria-hidden>
+      <circle cx="32" cy="28" r="9.5" fill="none" stroke="#c39a53" strokeWidth="2.4" />
+      <path d="M32 20.5c2.8 4 5.2 7 5.2 9.8a5.2 5.2 0 0 1-10.4 0c0-2.8 2.4-5.8 5.2-9.8z" fill="#c39a53" />
+      <path d="M30.2 29.6a2.2 2.2 0 0 0 1.4 2.5" stroke="#e6cf9a" strokeWidth="1.1" fill="none" strokeLinecap="round" />
     </svg>
   )
 }
 
 // The full crest: the standalone symbol (favicon, app icon, small screens).
-export function WarcallMark({ className = '' }: { className?: string }) {
+export function BloodboundMark({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden>
       <path
-        d="M9 4h46v30c0 14-10.5 22.5-23 26C19.5 56.5 9 48 9 34z"
+        d="M8 8h48v26c0 13-10 21-24 26C18 55 8 47 8 34z"
         fill="#1c2022"
-        stroke="#7a8083"
-        strokeWidth="3"
+        stroke="#4a4648"
+        strokeWidth="2.5"
         strokeLinejoin="round"
       />
-      <path d="M17 9h30v36l-15-8-15 8z" fill="#762f32" />
-      <path d="M17 9h30v3.5H17z" fill="#552124" />
-      <path
-        d="M50.2 14.6c1.2 2.6.1 5.7-2.4 6.9l-.9.4C41 29.6 32.4 35.9 21.4 39.4c-1.8.6-3.2-1.5-2-2.9l.4-.4C29 32 36.4 25.3 40.6 17.5l.3-.8c1.2-2.6 4.2-3.8 6.8-2.6z"
-        fill="#c39a53"
-      />
-      <ellipse cx="46.6" cy="17" rx="4.4" ry="2.6" transform="rotate(48 46.6 17)" fill="#e0c58a" />
-      <ellipse cx="46.9" cy="16.7" rx="3" ry="1.6" transform="rotate(48 46.9 16.7)" fill="#2a1d14" />
-      <path d="M37.2 23.6l3.8 2.6M30.6 29.7l3 2.4" stroke="#7a5c2c" strokeWidth="2" strokeLinecap="round" />
+      <rect x="6" y="6" width="52" height="5" rx="1.5" fill="#2e2b2d" stroke="#5a5557" strokeWidth="1" />
+      <circle cx="7.5" cy="8.5" r="2.6" fill="#9f7a42" />
+      <circle cx="56.5" cy="8.5" r="2.6" fill="#9f7a42" />
+      <path d="M17 11h30v37l-15-8-15 8z" fill="#76282e" />
+      <path d="M17 11h30v3H17z" fill="#4b1d22" />
+      <path d="M20 14v31M44 14v31" stroke="#4b1d22" strokeWidth="1" opacity=".8" />
+      <circle cx="32" cy="28" r="9.5" fill="none" stroke="#c39a53" strokeWidth="2.4" />
+      <path d="M32 20.5c2.8 4 5.2 7 5.2 9.8a5.2 5.2 0 0 1-10.4 0c0-2.8 2.4-5.8 5.2-9.8z" fill="#c39a53" />
+      <path d="M30.2 29.6a2.2 2.2 0 0 0 1.4 2.5" stroke="#e6cf9a" strokeWidth="1.1" fill="none" strokeLinecap="round" />
     </svg>
   )
 }
 
-// The wordmark. Cinzel, widely tracked, in parchment so it reads on dark iron and crimson alike.
-export function Wordmark({ className = '' }: { className?: string }) {
-  return <span className={`font-display font-bold tracking-[0.16em] ${className}`}>WARCALL</span>
+// The wordmark: a small gold THE over BLOODBOUND in Cinzel. `compact` drops the THE.
+export function Wordmark({ compact = false, className = '' }: { compact?: boolean; className?: string }) {
+  return (
+    <span className={`inline-flex flex-col items-center leading-none ${className}`}>
+      {!compact && <span className="mb-1 font-display text-[0.42em] font-semibold tracking-[0.42em] text-gold">THE</span>}
+      <span className="font-display font-bold tracking-[0.1em]">BLOODBOUND</span>
+    </span>
+  )
 }
 
-// Horizontal lockup: crest + wordmark, for headers and the login screen.
+// Horizontal lockup: crest + wordmark, for the landing page and sign-in.
 export function LogoLockup({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  const mark = { sm: 'h-8 w-8', md: 'h-10 w-10', lg: 'h-14 w-14' }[size]
-  const word = { sm: 'text-xl', md: 'text-2xl', lg: 'text-4xl' }[size]
+  const mark = { sm: 'h-9 w-9', md: 'h-12 w-12', lg: 'h-16 w-16 sm:h-20 sm:w-20' }[size]
+  const word = { sm: 'text-xl', md: 'text-2xl', lg: 'text-3xl sm:text-5xl' }[size]
   return (
-    <span className="inline-flex items-center gap-3">
-      <WarcallMark className={`${mark} shrink-0`} />
-      <Wordmark className={`${word} text-parchment`} />
+    <span className="inline-flex items-center gap-3 sm:gap-4">
+      <BloodboundMark className={`${mark} shrink-0`} />
+      <Wordmark className={`${word} items-start! text-parchment`} />
     </span>
   )
 }

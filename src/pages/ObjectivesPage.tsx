@@ -23,7 +23,7 @@ export function ObjectivesPage({ warRoom }: { warRoom: WarRoom }) {
     <section className="space-y-5">
       <div>
         <h2 className="font-display text-2xl font-semibold text-gold">Objectives</h2>
-        <p className="mt-1 text-ash">Everything the war party swore it'd remember.</p>
+        <p className="mt-1 text-ash">Everything the crew swore it'd remember.</p>
       </div>
 
       <div className="flex gap-1 border-b border-leather-light" role="tablist" aria-label="Objectives view">

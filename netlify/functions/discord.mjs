@@ -1,5 +1,5 @@
-// Netlify Function: posts an import summary to your war party's Discord channel.
-// Each party leader pastes their channel's webhook on the War party page. Webhooks are secrets
+// Netlify Function: posts an import summary to your crew's Discord channel.
+// Each crew leader pastes their channel's webhook on the Crew page. Webhooks are secrets
 // (anyone with one can post in that channel), so only the server reads them, never the website code.
 // Only logged-in players can trigger it: we check their login token with Supabase first.
 import { playerFromToken, postToPartyDiscords } from '../lib/admin.mjs'

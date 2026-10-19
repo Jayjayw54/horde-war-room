@@ -40,7 +40,7 @@ const crossed = (before: number, after: number, mark: number) => before < mark &
 
 // ownerId: the player whose file this is. Only their toons are ever read or changed, so this is safe
 //   to run with the server's all-access key too (the website's sync function does).
-// partyPlayerIds: everyone in the owner's war parties, for "first of the war party to get there".
+// partyPlayerIds: everyone in the owner's crews, for "first of the crew to get there".
 export async function importSnapshots(
   db: SupabaseClient,
   snapshots: CharacterSnapshot[],
@@ -116,7 +116,7 @@ export async function importSnapshots(
       for (const [mark, text] of Object.entries(LEVEL_MILESTONES)) {
         if (crossed(existing.level, snap.level, Number(mark))) {
           const first = !all.some((c) => c.id !== existing.id && c.level >= Number(mark)) && !otherLevels.some((l) => l >= Number(mark))
-          note('milestone', `🏆 **${snap.name}** ${text}${first ? ' First of the war party to get there.' : ''}`)
+          note('milestone', `🏆 **${snap.name}** ${text}${first ? ' First of the crew to get there.' : ''}`)
         }
       }
       for (const p of snap.professions) {
@@ -237,7 +237,7 @@ export async function importSnapshots(
   return { error: null, summary }
 }
 
-// Objectives ticked off (or reopened) in the game's Warcall window.
+// Objectives ticked off (or reopened) in the game's crew window.
 // partyIds: the parties the player is in. Objectives from any other party are ignored.
 // A change made on the website after the tick in game wins: we only apply it if the objective
 // hasn't been touched since. Returns how many were applied.

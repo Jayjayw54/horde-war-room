@@ -23,7 +23,7 @@ export function ImportPanel({ warRoom, onClose }: { warRoom: WarRoom; onClose: (
       setActions(ticked)
     } catch (e) {
       setSnapshots(null)
-      setError(`Couldn't read that file: ${(e as Error).message}. Make sure it's Warcall.lua (or HordeWarRoom.lua from the old addon) from WTF\\…\\SavedVariables.`)
+      setError(`Couldn't read that file: ${(e as Error).message}. Make sure it's Bloodbound.lua (or HordeWarRoom.lua from the old addon) from WTF\\…\\SavedVariables.`)
     }
   }
 
@@ -44,7 +44,7 @@ export function ImportPanel({ warRoom, onClose }: { warRoom: WarRoom; onClose: (
     <div className="panel p-5">
       <h3 className="font-display text-lg font-semibold text-gold">Import from game</h3>
       <p className="mt-1 text-sm text-ash">
-        Pick <code className="text-parchment">Warcall.lua</code> from your WoW folder:{' '}
+        Pick <code className="text-parchment">Bloodbound.lua</code> from your WoW folder:{' '}
         <code className="text-parchment">WTF\Account\&lt;account&gt;\SavedVariables\</code>. Type /reload in game first so
         it's up to date.
       </p>
@@ -71,7 +71,7 @@ export function ImportPanel({ warRoom, onClose }: { warRoom: WarRoom; onClose: (
               Plus {actions.length} {actions.length === 1 ? 'order' : 'orders'} ticked off in game.
             </p>
           )}
-          <p className="mt-3 text-sm text-ash">They'll be saved as your toons and shown to everyone in your war parties.</p>
+          <p className="mt-3 text-sm text-ash">They'll be saved as your toons and shown to everyone in your crews.</p>
           <button
             type="button"
             onClick={handleImport}
@@ -87,8 +87,8 @@ export function ImportPanel({ warRoom, onClose }: { warRoom: WarRoom; onClose: (
         <div className="mt-4">
           <p className="text-gold">Imported. The roster below is up to date.</p>
           <p className="mt-2 text-sm text-ash">
-            For the in-game window (/warcall): download the in-game data and put it in your addon folder,{' '}
-            <code className="text-parchment">Interface\AddOns\Warcall\</code>, then /reload.
+            For the in-game window (/bloodbound): download the in-game data and put it in your addon folder,{' '}
+            <code className="text-parchment">Interface\AddOns\Bloodbound\</code>, then /reload.
           </p>
           <button
             type="button"

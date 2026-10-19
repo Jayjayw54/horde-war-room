@@ -1,13 +1,13 @@
--- Warcall: the in-game window (/warcall).
+-- The Bloodbound: the in-game crew window (/bloodbound).
 --
--- It shows what the website knows, from WarcallData.lua in this folder. The launcher (or the website's
+-- It shows what the website knows, from BloodboundData.lua in this folder. The launcher (or the website's
 -- "Download in-game data" button) writes that file; the game reads it at login and on /reload.
 --   Orders  : tonight's orders and the rest of the to-do list. Tick them off here.
 --   Who has : search everyone's bags and banks.
 --   Needs   : materials still missing for planned crafts ("Get 20 Copper Ore").
---   Party   : everyone's toons, levels and professions.
+--   Crew    : everyone's toons, levels and professions.
 --
--- Addons can't go online, so ticking an order off is written down in WarcallDB.actions.
+-- Addons can't go online, so ticking an order off is written down in BloodboundDB.actions.
 -- The next sync (on /reload or logout) carries it to the website.
 
 local _, ns = ...
@@ -17,7 +17,7 @@ local WIDTH, HEIGHT = 560, 440
 local ROW = 18
 
 -- Colours (hex without the leading "ff").
-local GOLD, ASH, RED, GREEN = "c8a04f", "9a8f80", "d0412f", "1eff00"
+local GOLD, ASH, RED, GREEN = "c39a53", "a3a6a5", "d46a6a", "6f9a7e"
 local QUALITY = { [0] = "9d9d9d", "ffffff", "1eff00", "0070dd", "a335ee", "ff8000", "e6cc80" }
 local CLASS = {
   Warrior = "c69b6d", Rogue = "fff468", Mage = "3fc7eb", Priest = "ffffff", Warlock = "8788ee",
@@ -37,12 +37,12 @@ local function ago(t)
 end
 
 ---------------------------------------------------------------------------
--- Reading the Warcall data
+-- Reading the crew data
 ---------------------------------------------------------------------------
 
 local state = { tab = "orders", party = 1, search = "" }
 
-local function data() return WarcallData end
+local function data() return BloodboundData end
 
 local function currentParty()
   local d = data()
@@ -79,7 +79,7 @@ end
 
 -- An order's status, counting anything ticked here that hasn't synced yet.
 local function pendingAction(id)
-  return WarcallDB and WarcallDB.actions and WarcallDB.actions[id]
+  return BloodboundDB and BloodboundDB.actions and BloodboundDB.actions[id]
 end
 
 local function statusOf(order)
@@ -88,12 +88,12 @@ local function statusOf(order)
 end
 
 local function setStatus(order, status)
-  WarcallDB = WarcallDB or {}
-  WarcallDB.actions = WarcallDB.actions or {}
+  BloodboundDB = BloodboundDB or {}
+  BloodboundDB.actions = BloodboundDB.actions or {}
   if status == order.status then
-    WarcallDB.actions[order.id] = nil -- back to how the website has it: nothing to send
+    BloodboundDB.actions[order.id] = nil -- back to how the website has it: nothing to send
   else
-    WarcallDB.actions[order.id] = { status = status, at = time() }
+    BloodboundDB.actions[order.id] = { status = status, at = time() }
   end
 end
 
@@ -215,7 +215,7 @@ local function whoHasTab(party)
       end
     end
   end
-  if found == 0 then addLine(color(ASH, "Nobody in " .. (party.name or "the party") .. " has anything matching that.")) end
+  if found == 0 then addLine(color(ASH, "Nobody in " .. (party.name or "the crew") .. " has anything matching that.")) end
 end
 
 -- Orders like "Get 20 Copper Ore" (the website's Planner makes these): how close are we?
@@ -278,19 +278,19 @@ local function refresh()
   local d, party = data(), currentParty()
 
   if not d then
-    title:SetText("Warcall")
-    statusLine:SetText(color(ASH, "No Warcall data yet."))
-    addLine("This window shows your war party: orders, who has what, and everyone's toons.")
+    title:SetText("The Bloodbound")
+    statusLine:SetText(color(ASH, "No crew data yet."))
+    addLine("This window shows your crew: orders, who has what, and everyone's toons.")
     addLine(" ")
     addLine("To fill it in, either:")
-    addLine("- start WoW with the Warcall launcher, or", nil, 1)
-    addLine("- on the website, open War party > Download in-game data, put WarcallData.lua", nil, 1)
-    addLine("  in Interface\\AddOns\\Warcall, then type /reload.", nil, 1)
+    addLine("- start WoW with the Bloodbound launcher, or", nil, 1)
+    addLine("- on the website, open Crew > Download in-game data, put BloodboundData.lua", nil, 1)
+    addLine("  in Interface\\AddOns\\Bloodbound, then type /reload.", nil, 1)
   elseif not party then
-    title:SetText("Warcall")
-    statusLine:SetText(color(ASH, "You're not in a war party yet. Join or start one on the website."))
+    title:SetText("The Bloodbound")
+    statusLine:SetText(color(ASH, "You're not in a crew yet. Join or start one on the website."))
   else
-    title:SetText("Warcall · " .. (party.name or "?"))
+    title:SetText("The Bloodbound · " .. (party.name or "?"))
     statusLine:SetText(color(ASH, "Synced " .. ago(d.generatedAt) .. ". /reload picks up newer data."))
     if state.tab == "orders" then ordersTab(party)
     elseif state.tab == "whohas" then whoHasTab(party)
@@ -331,7 +331,7 @@ local function refresh()
 end
 
 local function build()
-  frame = make("Frame", "WarcallFrame", UIParent, "BasicFrameTemplateWithInset")
+  frame = make("Frame", "BloodboundFrame", UIParent, "BasicFrameTemplateWithInset")
   frame:SetSize(WIDTH, HEIGHT)
   frame:SetPoint("CENTER")
   frame:SetFrameStrata("HIGH")
@@ -342,7 +342,7 @@ local function build()
   frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
   frame:SetClampedToScreen(true)
   -- Escape closes it, like other game windows.
-  if UISpecialFrames then table.insert(UISpecialFrames, "WarcallFrame") end
+  if UISpecialFrames then table.insert(UISpecialFrames, "BloodboundFrame") end
   if not frame.CloseButton then
     local close = make("Button", nil, frame, "UIPanelCloseButton")
     close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -2, -2)
@@ -360,7 +360,7 @@ local function build()
 
   -- Tabs along the top.
   tabs = {}
-  local order = { { "orders", "Orders" }, { "whohas", "Who has" }, { "needs", "Needs" }, { "party", "Party" } }
+  local order = { { "orders", "Orders" }, { "whohas", "Who has" }, { "needs", "Needs" }, { "party", "Crew" } }
   for i, t in ipairs(order) do
     local b = make("Button", nil, frame, "UIPanelButtonTemplate")
     b:SetSize(96, 22)
@@ -374,18 +374,18 @@ local function build()
     tabs[t[1]] = b
   end
 
-  -- Switch between war parties, if you're in more than one.
+  -- Switch between crews, if you're in more than one.
   partyButton = make("Button", nil, frame, "UIPanelButtonTemplate")
   partyButton:SetSize(110, 22)
   partyButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -14, -50)
-  partyButton:SetText("Next party")
+  partyButton:SetText("Next crew")
   partyButton:SetScript("OnClick", function()
     local d = data()
     state.party = (state.party % #d.parties) + 1
     refresh()
   end)
 
-  searchBox = make("EditBox", "WarcallSearch", frame, "InputBoxTemplate")
+  searchBox = make("EditBox", "BloodboundSearch", frame, "InputBoxTemplate")
   searchBox:SetSize(220, 20)
   searchBox:SetPoint("TOPLEFT", frame, "TOPLEFT", 22, -78)
   searchBox:SetAutoFocus(false)
@@ -396,7 +396,7 @@ local function build()
   searchBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
   searchBox:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 
-  scroll = make("ScrollFrame", "WarcallScroll", frame, "UIPanelScrollFrameTemplate")
+  scroll = make("ScrollFrame", "BloodboundScroll", frame, "UIPanelScrollFrameTemplate")
   scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 16, -104)
   scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -34, 14)
   content = CreateFrame("Frame", nil, scroll)
@@ -429,9 +429,9 @@ end
 -- (The data file is made right after each sync, so anything older than it has been handled.)
 function ns.ForgetSyncedActions()
   local d = data()
-  if not (d and d.generatedAt and WarcallDB and WarcallDB.actions) then return end
-  for id, a in pairs(WarcallDB.actions) do
-    if (a.at or 0) <= d.generatedAt then WarcallDB.actions[id] = nil end
+  if not (d and d.generatedAt and BloodboundDB and BloodboundDB.actions) then return end
+  for id, a in pairs(BloodboundDB.actions) do
+    if (a.at or 0) <= d.generatedAt then BloodboundDB.actions[id] = nil end
   end
 end
 

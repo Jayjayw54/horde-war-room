@@ -1,3 +1,0 @@
--- Warcall: data for the in-game window.
--- This copy is empty. The launcher replaces it after every sync, or download a fresh one from the
--- website (War party > Download in-game data) and put it here. Then type /reload in game.

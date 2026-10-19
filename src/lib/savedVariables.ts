@@ -1,5 +1,5 @@
-// Reads the file the WoW addon writes (SavedVariables/Warcall.lua, or HordeWarRoom.lua from the old addon).
-// That file is Lua code, e.g.  WarcallDB = { ["characters"] = { ... } }
+// Reads the file the WoW addon writes (SavedVariables/Bloodbound.lua, or HordeWarRoom.lua from the old addon).
+// That file is Lua code, e.g.  BloodboundDB = { ["characters"] = { ... } }
 // so this is a small reader for the parts of Lua that WoW uses when saving data:
 // tables { }, ["keys"] = values, strings, numbers, true/false/nil.
 
@@ -214,7 +214,7 @@ export function readSnapshotFile(text: string): CharacterSnapshot[] {
   return readSavedVariables(text).snapshots
 }
 
-// Something done in the game's Warcall window, waiting to reach the website (addon v0.7.0+).
+// Something done in the game's crew window, waiting to reach the website (addon v0.7.0+).
 // Today that's ticking off (or un-ticking) an objective.
 export interface GameAction {
   objectiveId: string
@@ -224,7 +224,7 @@ export interface GameAction {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-// Reads the whole file once: the characters, and anything done in the Warcall window.
+// Reads the whole file once: the characters, and anything done in the crew window.
 export function readSavedVariables(text: string): { snapshots: CharacterSnapshot[]; actions: GameAction[] } {
   const db = asTable(parseLua(text))
   const actions: GameAction[] = []

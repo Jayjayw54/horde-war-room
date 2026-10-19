@@ -1,4 +1,4 @@
-// "Export backup": downloads everything you can see in Warcall (your war parties) as one file on your computer.
+// "Export backup": downloads everything you can see in The Bloodbound (your crews) as one file on your computer.
 import { supabase } from './supabase'
 
 const TABLES = [
@@ -36,11 +36,11 @@ export async function downloadBackup() {
     const rows = await fetchAll(t)
     if (rows) tables[t] = rows
   }
-  const backup = { app: 'Warcall', exportedAt: new Date().toISOString(), tables }
+  const backup = { app: 'The Bloodbound', exportedAt: new Date().toISOString(), tables }
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `warcall-backup-${new Date().toISOString().slice(0, 10)}.json`
+  a.download = `bloodbound-backup-${new Date().toISOString().slice(0, 10)}.json`
   a.click()
   URL.revokeObjectURL(a.href)
   return Object.fromEntries(Object.entries(tables).map(([k, v]) => [k, v.length]))

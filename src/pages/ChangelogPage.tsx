@@ -1,11 +1,11 @@
-// "What's new": Warcall's own patch notes.
+// "What's new": The Bloodbound's own patch notes.
 import { changelog } from '../data/changelog'
 
 export function ChangelogPage() {
   return (
     <section>
       <h2 className="font-display text-2xl font-semibold text-gold">What's new</h2>
-      <p className="mt-1 text-ash">Patch notes for Warcall itself.</p>
+      <p className="mt-1 text-ash">Patch notes for The Bloodbound itself.</p>
       <div className="mt-6 space-y-4">
         {changelog.map((r) => (
           <article key={r.version} className="panel p-5">

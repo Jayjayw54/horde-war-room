@@ -1,4 +1,4 @@
-// Hands the browser a file to save, e.g. WarcallData.lua for the addon folder.
+// Hands the browser a file to save, e.g. BloodboundData.lua for the addon folder.
 export function downloadText(fileName: string, text: string) {
   const blob = new Blob([text], { type: 'text/plain' })
   const a = document.createElement('a')
@@ -9,5 +9,5 @@ export function downloadText(fileName: string, text: string) {
 }
 
 export function downloadGameData(lua: string) {
-  if (lua) downloadText('WarcallData.lua', lua)
+  if (lua) downloadText('BloodboundData.lua', lua)
 }

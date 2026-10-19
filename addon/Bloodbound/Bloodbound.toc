@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: The Bloodbound
+## Notes: Your crew in game: orders, who has what, and everyone's toons. Also records your characters for The Bloodbound website.
+## Author: Josh
+## Version: 0.9.0
+## SavedVariables: BloodboundDB
+
+BloodboundData.lua
+Bloodbound.lua
+UI.lua

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 
 // The addon's version, read from its .toc file, so the website always shows the one it offers.
-const toc = readFileSync(new URL('./addon/Warcall/Warcall.toc', import.meta.url), 'utf8')
+const toc = readFileSync(new URL('./addon/Bloodbound/Bloodbound.toc', import.meta.url), 'utf8')
 const addonVersion = /^## Version:\s*(.+)$/m.exec(toc)?.[1].trim() ?? '?'
 
 export default defineConfig({

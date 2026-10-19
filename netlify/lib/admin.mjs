@@ -36,7 +36,7 @@ export async function playerFromToken(token) {
   return rows[0]?.id ?? null
 }
 
-// The war parties a player is in, and everyone in them.
+// The crews a player is in, and everyone in them.
 export async function partiesOf(playerId) {
   const mine = await db(`party_members?select=party_id&player_id=eq.${encodeURIComponent(playerId)}`)
   const partyIds = mine.map((m) => m.party_id)
@@ -45,7 +45,7 @@ export async function partiesOf(playerId) {
   return { partyIds, memberIds: [...new Set([playerId, ...all.map((m) => m.player_id)])] }
 }
 
-// Posts an import summary to the Discord channel of every war party the player is in (that has one set).
+// Posts an import summary to the Discord channel of every crew the player is in (that has one set).
 export async function postToPartyDiscords(playerId, title, lines) {
   const { partyIds } = await partiesOf(playerId)
   if (partyIds.length === 0) return 0
@@ -58,7 +58,7 @@ export async function postToPartyDiscords(playerId, title, lines) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        username: 'Warcall',
+        username: 'The Bloodbound',
         embeds: [{ title: String(title).slice(0, 250), description, color: 0x9b2318 }],
       }),
     }).catch(() => null)

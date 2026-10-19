@@ -41,9 +41,9 @@ export function LoginPage() {
     <div className="relative isolate flex min-h-screen items-center justify-center px-5">
       <Backdrop />
       <div className="w-full max-w-md rounded-lg border-t-4 border-blood bg-leather p-8 shadow-xl">
-        <h1 className="font-display text-3xl font-extrabold tracking-wide text-gold">Warcall</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-wide text-gold">The Bloodbound</h1>
         <p className="mt-1 text-ash">
-          {invited ? "You've been summoned to a war party. Make an account to answer the call." : 'Members only. Answer the call, champion.'}
+          {invited ? "You've been summoned to a crew. Make an account to answer the call." : 'Members only. Answer the call, champion.'}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-3">

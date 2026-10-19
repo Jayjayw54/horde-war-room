@@ -1,6 +1,6 @@
-// Netlify Function: the Warcall Discord bot. Discord sends each slash command here
+// Netlify Function: The Bloodbound Discord bot. Discord sends each slash command here
 // (/whohas, /toon, /tonight, /gold), we look up the answer in the database and reply.
-// One bot serves every war party: each party leader links their Discord server on the War party
+// One bot serves every crew: each crew leader links their Discord server on the Crew
 // page, and the bot only ever answers with that party's toons, bank and orders.
 //
 // Netlify environment variables it needs:
@@ -44,7 +44,7 @@ const gold = (copper) => {
 const option = (interaction, name) => interaction.data.options?.find((o) => o.name === name)?.value ?? ''
 const like = (text) => encodeURIComponent(`*${text.replace(/[*,()]/g, '')}*`)
 
-// Which war party is asking? The party leader links their Discord server on the War party page.
+// Which crew is asking? The crew leader links their Discord server on the Crew page.
 async function partyForServer(guildId) {
   if (!guildId) return null
   const rows = await db(`party_secrets?select=party_id&discord_guild_id=eq.${encodeURIComponent(guildId)}`)
@@ -118,7 +118,7 @@ export default async (req) => {
   // Open /api/discord-bot in a browser to check the bot's setup (shows only whether keys are set, never the keys).
   if (req.method === 'GET') {
     return Response.json({
-      bot: 'Warcall',
+      bot: 'The Bloodbound',
       publicKeySet: !!process.env.DISCORD_PUBLIC_KEY,
       publicKeyLooksRight: /^[0-9a-f]{64}$/.test((process.env.DISCORD_PUBLIC_KEY ?? '').trim()),
       databaseKeySet: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -137,15 +137,15 @@ export default async (req) => {
     try {
       // Paused for now: answer politely and show nothing. Remove these two lines to switch it back on.
       const PAUSED = true
-      if (PAUSED) return Response.json({ type: 4, data: { content: 'The Warcall bot is switched off for now.', flags: 64 } })
+      if (PAUSED) return Response.json({ type: 4, data: { content: 'The Bloodbound bot is switched off for now.', flags: 64 } })
       const party = await partyForServer(interaction.guild_id)
       if (!handler) content = 'Unknown command.'
       else if (!party)
         content =
-          "This Discord server isn't linked to a war party yet. Party leader: open Warcall, go to War party, and paste this server's ID under Discord."
+          "This Discord server isn't linked to a crew yet. Crew leader: open The Bloodbound, go to Crew, and paste this server's ID under Discord."
       else content = await handler(interaction, party)
     } catch (e) {
-      content = `Couldn't reach Warcall: ${e.message}`
+      content = `Couldn't reach The Bloodbound: ${e.message}`
     }
     return Response.json({ type: 4, data: { content: content.slice(0, 1990), allowed_mentions: { parse: [] } } })
   }

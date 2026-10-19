@@ -1,4 +1,4 @@
-// First visit after signing up: pick the name your war party will see, then start a war party
+// First visit after signing up: pick the name your crew will see, then start a crew
 // or join one with an invite code. Invite links (…/?join=K7Q2MX) fill the code in for you.
 import { useState, type FormEvent } from 'react'
 import { Backdrop } from '../components/layout/Backdrop'
@@ -45,11 +45,11 @@ export function WelcomePage({ warRoom }: { warRoom: WarRoom }) {
     <div className="relative isolate flex min-h-screen items-center justify-center px-5 py-10">
       <Backdrop />
       <div className="w-full max-w-lg rounded-lg border-t-4 border-blood bg-leather p-8 shadow-xl">
-        <h1 className="font-display text-3xl font-extrabold tracking-wide text-gold">Welcome to Warcall</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-wide text-gold">Welcome to The Bloodbound</h1>
 
         {!warRoom.me ? (
           <>
-            <p className="mt-2 text-ash">First, what should your war party call you? Your main's first name works well.</p>
+            <p className="mt-2 text-ash">First, what should your crew call you? Your main's first name works well.</p>
             <form onSubmit={saveName} className="mt-5 flex flex-col gap-3">
               <label htmlFor="display-name" className="font-display text-sm font-semibold text-parchment">
                 Your name
@@ -71,14 +71,14 @@ export function WelcomePage({ warRoom }: { warRoom: WarRoom }) {
         ) : (
           <>
             <p className="mt-2 text-ash">
-              Welcome, <span className="text-parchment">{warRoom.me.displayName}</span>. Warcall works in war parties: you and
+              Welcome, <span className="text-parchment">{warRoom.me.displayName}</span>. The Bloodbound works in crews: you and
               your mates, or your whole guild. Join one, or start your own and invite people.
             </p>
 
             <form onSubmit={join} className="mt-6 flex flex-col gap-3">
-              <h2 className="font-display text-lg font-semibold text-gold">Join a war party</h2>
+              <h2 className="font-display text-lg font-semibold text-gold">Join a crew</h2>
               <label htmlFor="invite-code" className="text-sm text-ash">
-                Ask the party leader for the invite code (it's on their War party page).
+                Ask the crew leader for the invite code (it's on their Crew page).
               </label>
               <div className="flex gap-2">
                 <input
@@ -100,7 +100,7 @@ export function WelcomePage({ warRoom }: { warRoom: WarRoom }) {
             </div>
 
             <form onSubmit={create} className="flex flex-col gap-3">
-              <h2 className="font-display text-lg font-semibold text-gold">Start a war party</h2>
+              <h2 className="font-display text-lg font-semibold text-gold">Start a crew</h2>
               <label htmlFor="party-name" className="text-sm text-ash">
                 Name it after your guild, your duo, or anything you like. You'll get an invite code to share.
               </label>

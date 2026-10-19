@@ -1,13 +1,13 @@
--- Warcall (v0.8.0). Formerly Horde War Room.
+-- The Bloodbound (v0.9.0). Formerly Warcall, and before that Horde War Room.
 -- Addons can't talk to websites. Instead, this records each character's details into
--- WarcallDB, which the game writes to a file (SavedVariables) when you log out or /reload.
--- The Warcall website then imports that file (by hand, or through the launcher).
--- The other way round, WarcallData.lua (in this folder) brings the war party's data into the game
--- for the /warcall window (UI.lua).
+-- BloodboundDB, which the game writes to a file (SavedVariables) when you log out or /reload.
+-- The Bloodbound website then imports that file (by hand, or through the launcher).
+-- The other way round, BloodboundData.lua (in this folder) brings the crew's data into the game
+-- for the /bloodbound window (UI.lua).
 
 local _, ns = ...
 ns = ns or {}
-local VERSION = "0.8.0"
+local VERSION = "0.9.0"
 ns.VERSION = VERSION
 
 ---------------------------------------------------------------------------
@@ -266,19 +266,19 @@ end
 ---------------------------------------------------------------------------
 
 local function currentCharacter()
-  WarcallDB = WarcallDB or {}
+  BloodboundDB = BloodboundDB or {}
   -- Data saved by the very first test version used the wrong name format, so start fresh.
-  if WarcallDB.version ~= 2 then WarcallDB.characters = nil end
-  WarcallDB.version = 2
-  WarcallDB.addonVersion = VERSION
-  WarcallDB.characters = WarcallDB.characters or {}
+  if BloodboundDB.version ~= 2 then BloodboundDB.characters = nil end
+  BloodboundDB.version = 2
+  BloodboundDB.addonVersion = VERSION
+  BloodboundDB.characters = BloodboundDB.characters or {}
 
   -- Forever has no realms. UnitName gives the first name and the surname separately,
   -- and GetUnitName(..., true) joins them ("Jay Mcnut"). The full name is the key the dashboard matches on.
   local firstName, surname = UnitName("player")
   local fullName = GetUnitName("player", true) or firstName
-  local c = WarcallDB.characters[fullName] or {}
-  WarcallDB.characters[fullName] = c
+  local c = BloodboundDB.characters[fullName] or {}
+  BloodboundDB.characters[fullName] = c
 
   c.name = fullName
   c.firstName = firstName
@@ -372,8 +372,8 @@ frame:SetScript("OnEvent", function(_, event)
     C_Timer.After(5, snapshot)
   elseif event == "PLAYER_LOGOUT" then
     -- Only note the time: by now the game has already unloaded professions and bags.
-    if WarcallDB and WarcallDB.characters then
-      local c = WarcallDB.characters[GetUnitName("player", true) or UnitName("player")]
+    if BloodboundDB and BloodboundDB.characters then
+      local c = BloodboundDB.characters[GetUnitName("player", true) or UnitName("player")]
       if c then c.lastPlayed = time() end
     end
   elseif event == "TRADE_SKILL_SHOW" or event == "TRADE_SKILL_LIST_UPDATE" or event == "TRADE_SKILL_DATA_SOURCE_CHANGED"
@@ -409,11 +409,11 @@ local function formatMoney(copper)
   return string.format("%dg %ds %dc", math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100)
 end
 
--- /warcall opens the Warcall window. /warcall status shows what the addon has recorded for this character,
+-- /bloodbound opens the crew window. /bloodbound status shows what the addon has recorded for this character,
 -- so you can check it's working.
 local function printStatus()
   local c = snapshot()
-  print("|cffc8a04fWarcall v" .. VERSION .. "|r recorded: " .. c.name .. ", level " .. c.level .. " " .. c.race .. " " .. c.class)
+  print("|cffc39a53The Bloodbound v" .. VERSION .. "|r recorded: " .. c.name .. ", level " .. c.level .. " " .. c.race .. " " .. c.class)
   print("  Gold: " .. formatMoney(c.money) .. "   XP: " .. c.xp .. "/" .. c.xpMax .. "   Rested: " .. c.rested)
   if #c.professions == 0 then
     print("  No professions found.")
@@ -433,22 +433,25 @@ local function printStatus()
   print("  Bags: " .. #(c.bags or {}) .. " different items.   Bank: " ..
     (c.bank and (#c.bank .. " different items") or "not seen yet (open your bank once)"))
   print("  Type /reload to save it to the file the dashboard reads.")
-  local d = WarcallData
+  local d = BloodboundData
   if d and d.generatedAt then
     local mins = math.floor((time() - d.generatedAt) / 60)
-    print("  Warcall data: from " .. mins .. " min ago, " .. #(d.toons or {}) .. " toons, " .. #(d.items or {}) .. " kinds of item.")
+    print("  Crew data: from " .. mins .. " min ago, " .. #(d.toons or {}) .. " toons, " .. #(d.items or {}) .. " kinds of item.")
   else
-    print("  Warcall data: none yet (use the launcher, or Download in-game data on the website).")
+    print("  Crew data: none yet (use the launcher, or Download in-game data on the website).")
   end
   local pending = 0
-  for _ in pairs((WarcallDB and WarcallDB.actions) or {}) do pending = pending + 1 end
+  for _ in pairs((BloodboundDB and BloodboundDB.actions) or {}) do pending = pending + 1 end
   if pending > 0 then print("  " .. pending .. " tick-off(s) waiting to sync.") end
 end
 
-SLASH_WARCALL1 = "/warcall"
-SLASH_WARCALL2 = "/wcall"
-SLASH_WARCALL3 = "/hwr" -- the old Horde War Room command, so muscle memory still works
-SlashCmdList.WARCALL = function(msg)
+SLASH_BLOODBOUND1 = "/bloodbound"
+SLASH_BLOODBOUND2 = "/bbound"
+-- Old names, so muscle memory still works: Warcall and Horde War Room.
+SLASH_BLOODBOUND3 = "/warcall"
+SLASH_BLOODBOUND4 = "/wcall"
+SLASH_BLOODBOUND5 = "/hwr"
+SlashCmdList.BLOODBOUND = function(msg)
   msg = string.lower(msg or "")
   if msg == "status" or msg == "check" then
     printStatus()
@@ -459,9 +462,9 @@ SlashCmdList.WARCALL = function(msg)
   end
 end
 
--- /warcalldebug: an investigation tool, for when something in Forever works differently than expected.
-SLASH_WARCALLDEBUG1 = "/warcalldebug"
-SlashCmdList.WARCALLDEBUG = function()
+-- /bbdebug: an investigation tool, for when something in Forever works differently than expected.
+SLASH_BLOODBOUNDDEBUG1 = "/bbdebug"
+SlashCmdList.BLOODBOUNDDEBUG = function()
   local function show(label, ...)
     local parts = {}
     for i = 1, select("#", ...) do parts[#parts + 1] = tostring((select(i, ...))) end
@@ -472,7 +475,7 @@ SlashCmdList.WARCALLDEBUG = function()
     if results[1] then show(label, unpack(results, 2)) else print(label .. " not available") end
   end
 
-  print("|cffc8a04f--- Warcall debug ---|r")
+  print("|cffc39a53--- The Bloodbound debug ---|r")
   try("GetUnitName", function() return GetUnitName("player", true) end)
   try("GetProfessions", function() return GetProfessions() end)
   try("Money / XP / XPMax / Rested", function() return GetMoney(), UnitXP("player"), UnitXPMax("player"), GetXPExhaustion() end)

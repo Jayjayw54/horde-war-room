@@ -1,14 +1,14 @@
-// Netlify Function: /api/sync — how the launcher (or anything you give your sync key to) talks to Warcall.
+// Netlify Function: /api/sync — how the launcher (or anything you give your sync key to) talks to The Bloodbound.
 //
-//   POST /api/sync   body: the addon's file (Warcall.lua from WTF\…\SavedVariables)
+//   POST /api/sync   body: the addon's file (Bloodbound.lua from WTF\…\SavedVariables)
 //                    → imports your toons and applies anything ticked off in game. Answers with a
 //                      short summary (JSON).
-//   GET  /api/sync   → the fresh in-game data: the WarcallData.lua file itself, as plain text.
+//   GET  /api/sync   → the fresh in-game data: the BloodboundData.lua file itself, as plain text.
 //                      (Plain text rather than JSON, because older Windows PowerShell struggles
 //                      with very big JSON answers, and a guild's bank gets big.)
 //
 // Either way, send your personal sync key:  Authorization: Bearer hwr_…
-// Make one on the War party page. The key only ever touches its owner's toons, and the party's objectives.
+// Make one on the Crew page. The key only ever touches its owner's toons, and the party's objectives.
 //
 // Netlify environment variables it needs: VITE_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (secret).
 import { createHash } from 'node:crypto'
@@ -98,7 +98,7 @@ export default async (req: Request) => {
 
   const key = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '').trim()
   const player = await playerForKey(db, key)
-  if (!player) return Response.json({ error: 'That sync key is not valid. Make a new one on the War party page.' }, { status: 401 })
+  if (!player) return Response.json({ error: 'That sync key is not valid. Make a new one on the Crew page.' }, { status: 401 })
 
   // GET: the in-game data file.
   if (req.method === 'GET') {
@@ -106,7 +106,7 @@ export default async (req: Request) => {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'no-store',
-        'X-Warcall-Player': encodeURIComponent(player.name),
+        'X-Bloodbound-Player': encodeURIComponent(player.name),
       },
     })
   }

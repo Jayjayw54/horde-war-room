@@ -1,0 +1,3 @@
+-- The Bloodbound: data for the in-game crew window.
+-- This copy is empty. The launcher replaces it after every sync, or download a fresh one from the
+-- website (Crew > Download in-game data) and put it here. Then type /reload in game.

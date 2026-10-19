@@ -14,7 +14,7 @@ export function RosterPage({ warRoom }: { warRoom: WarRoom }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl font-semibold text-gold">Roster</h2>
-          <p className="mt-1 text-ash">Every character your war party plays, mains and alts, straight from the game.</p>
+          <p className="mt-1 text-ash">Every character your crew plays, mains and alts, straight from the game.</p>
           <p className="mt-1 text-sm text-ash">
             War chest: <Money copper={totalGold} className="font-semibold text-parchment" />
           </p>
