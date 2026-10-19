@@ -1,8 +1,10 @@
 ## Interface: 16001
 ## Title: Horde War Room
-## Notes: Records your characters, levels and professions so the Horde War Room dashboard can import them.
+## Notes: Your war party in game: orders, who has what, and everyone's toons. Also records your characters for the Horde War Room website.
 ## Author: Josh
-## Version: 0.6.0
+## Version: 0.7.0
 ## SavedVariables: HordeWarRoomDB
 
+WarRoomData.lua
 HordeWarRoom.lua
+UI.lua

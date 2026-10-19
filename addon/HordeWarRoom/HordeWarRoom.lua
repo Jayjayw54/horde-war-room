@@ -1,9 +1,14 @@
--- Horde War Room exporter (v0.6.0).
+-- Horde War Room (v0.7.0).
 -- Addons can't talk to websites. Instead, this records each character's details into
 -- HordeWarRoomDB, which the game writes to a file (SavedVariables) when you log out or /reload.
--- The dashboard then imports that file.
+-- The website then imports that file (by hand, or through the launcher).
+-- The other way round, WarRoomData.lua (in this folder) brings the war party's data into the game
+-- for the /hwr window (UI.lua).
 
-local VERSION = "0.6.0"
+local _, ns = ...
+ns = ns or {}
+local VERSION = "0.7.0"
+ns.VERSION = VERSION
 
 ---------------------------------------------------------------------------
 -- Reading things from the game
@@ -360,6 +365,8 @@ end
 local bankOpen = false
 frame:SetScript("OnEvent", function(_, event)
   if event == "PLAYER_LOGIN" then
+    -- Tick-offs the website has already caught up with don't need sending again.
+    if ns.ForgetSyncedActions then ns.ForgetSyncedActions() end
     -- Profession and bag data load a few seconds after login, so take another reading once they're there.
     snapshot()
     C_Timer.After(5, snapshot)
@@ -402,9 +409,9 @@ local function formatMoney(copper)
   return string.format("%dg %ds %dc", math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100)
 end
 
--- /hwr shows what the addon has recorded for this character, so you can check it's working.
-SLASH_HORDEWARROOM1 = "/hwr"
-SlashCmdList.HORDEWARROOM = function()
+-- /hwr opens the War Room window. /hwr status shows what the addon has recorded for this character,
+-- so you can check it's working.
+local function printStatus()
   local c = snapshot()
   print("|cffc8a04fHorde War Room v" .. VERSION .. "|r recorded: " .. c.name .. ", level " .. c.level .. " " .. c.race .. " " .. c.class)
   print("  Gold: " .. formatMoney(c.money) .. "   XP: " .. c.xp .. "/" .. c.xpMax .. "   Rested: " .. c.rested)
@@ -426,6 +433,29 @@ SlashCmdList.HORDEWARROOM = function()
   print("  Bags: " .. #(c.bags or {}) .. " different items.   Bank: " ..
     (c.bank and (#c.bank .. " different items") or "not seen yet (open your bank once)"))
   print("  Type /reload to save it to the file the dashboard reads.")
+  local d = HordeWarRoomData
+  if d and d.generatedAt then
+    local mins = math.floor((time() - d.generatedAt) / 60)
+    print("  War Room data: from " .. mins .. " min ago, " .. #(d.toons or {}) .. " toons, " .. #(d.items or {}) .. " kinds of item.")
+  else
+    print("  War Room data: none yet (use the launcher, or Download in-game data on the website).")
+  end
+  local pending = 0
+  for _ in pairs((HordeWarRoomDB and HordeWarRoomDB.actions) or {}) do pending = pending + 1 end
+  if pending > 0 then print("  " .. pending .. " tick-off(s) waiting to sync.") end
+end
+
+SLASH_HORDEWARROOM1 = "/hwr"
+SLASH_HORDEWARROOM2 = "/warroom"
+SlashCmdList.HORDEWARROOM = function(msg)
+  msg = string.lower(msg or "")
+  if msg == "status" or msg == "check" then
+    printStatus()
+  elseif ns.ToggleWindow then
+    ns.ToggleWindow()
+  else
+    printStatus()
+  end
 end
 
 -- /hwrdebug: an investigation tool, for when something in Forever works differently than expected.
