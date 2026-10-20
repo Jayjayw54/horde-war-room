@@ -10,6 +10,18 @@ export interface Release {
 
 export const changelog: Release[] = [
   {
+    version: '5.2',
+    date: '2026-10-20',
+    title: 'The crew window, reforged',
+    changes: [
+      'Addon v0.10.0: the in-game /bloodbound window now looks like the website. Obsidian and iron, a blood-red header with the crest, and gold section titles.',
+      'Orders show the item\'s icon (or a small picture for dungeons, professions and so on). Hover one for the game\'s own item tooltip, and shift-click to link it in chat.',
+      'A progress bar for tonight\'s orders. Finished orders are greyed out and drop to the bottom, and ticking one off plays the quest-complete sound.',
+      'Who Has, Needs and Crew get item icons, class icons and class colours. Hover a toon on Crew to see its professions.',
+      'After installing, restart WoW fully (not just /reload) so the game picks up the new crest picture.',
+    ],
+  },
+  {
     version: '5.1',
     date: '2026-10-20',
     title: 'The new stronghold',

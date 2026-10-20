@@ -1,4 +1,4 @@
--- The Bloodbound (v0.9.0). Formerly Warcall, and before that Horde War Room.
+-- The Bloodbound (v0.10.0). Formerly Warcall, and before that Horde War Room.
 -- Addons can't talk to websites. Instead, this records each character's details into
 -- BloodboundDB, which the game writes to a file (SavedVariables) when you log out or /reload.
 -- The Bloodbound website then imports that file (by hand, or through the launcher).
@@ -7,7 +7,7 @@
 
 local _, ns = ...
 ns = ns or {}
-local VERSION = "0.9.0"
+local VERSION = "0.10.0"
 ns.VERSION = VERSION
 
 ---------------------------------------------------------------------------

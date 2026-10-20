@@ -79,9 +79,12 @@ function zip(files) {
 const crlf = (buf) => Buffer.from(buf.toString('utf8').replace(/\r?\n/g, '\r\n'), 'utf8')
 
 // ---- The addon ----
+// Every file in the addon folder, including the Media folder (the crest picture).
 const addonDir = join(root, 'addon', 'Bloodbound')
-const addonFiles = readdirSync(addonDir)
-  .filter((f) => /\.(lua|toc)$/.test(f))
+const addonFiles = readdirSync(addonDir, { recursive: true })
+  .map((f) => f.replace(/\\/g, '/'))
+  .filter((f) => /\.(lua|toc|tga)$/.test(f))
+  .sort()
   .map((f) => ({ name: `Bloodbound/${f}`, data: readFileSync(join(addonDir, f)) }))
 writeFileSync(join(out, 'Bloodbound.zip'), zip(addonFiles))
 
